@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <script src='../../d3.min.js'></script>
+    <script src='../../nv.d3/nv.d3.min.js'></script>
+    <script src='../../jquery-2.1.1.min.js'></script>
+    <script src='../../foundation-5.3.0/js/foundation.min.js'></script>
+    <script src='../../jquery-ui-1.11.1/jquery-ui.min.js'></script>
+    <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
+    <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
+    <style>
+      #chart svg {
+        height: 40em;
+      }
+      
+      .row {
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+    </style>
+    <script>
+      jQuery(function($) {
+        function calculateVariableCostofLabour(labourCost, labourOverhead, productionRate) {
+          return (labourCost * (100 + labourOverhead) / 100 / productionRate);
+        }
+      
+        function calculateUniformAnnualCost(machineCost, maintenanceCost, salvageValue, rateOfReturn, serviceLife) {
+          var capital_return_factor = capitalReturnFactor(rateOfReturn, serviceLife);
+          var sinking_fund_factor = sinkingFundFactor(rateOfReturn, serviceLife);
+          return ((machineCost * capital_return_factor) + maintenanceCost - (salvageValue * sinking_fund_factor));
+        }
+      
+        function calculateUniformAnnualCostWithMachineOverhead(uniformAnnualCost, machineOverheadRate) {
+          machineOverheadRate = machineOverheadRate / 100;
+          return (uniformAnnualCost * (1 + machineOverheadRate));
+        }
+      
+        function capitalReturnFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return ((rateOfReturn * Math.pow((rateOfReturn + 1), serviceLife)) / (Math.pow((rateOfReturn + 1), serviceLife) - 1));
+        }
+      
+        function calculateLabourCostPerUnit(labourRate, productionRate) {
+          return (labourRate / productionRate);
+        }
+      
+        function calculateRentPerAnnum(monthlyRent, factorySpace) {
+          return (monthlyRent * 12 * factorySpace);
+        }
+      
+        function calculateUtilityPerAnnum(utilityConsumption) {
+          return utilityConsumption * 12;
+        }
+      
+        function sinkingFundFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return (rateOfReturn/(Math.pow((1 + rateOfReturn), serviceLife) - 1));
+        }
+      
+        function calculateRevenue(revenue, numberOfUnits) {
+          return (revenue * numberOfUnits);
+        }
+      
+        function calculateCost(uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCostPerUnit, rawMaterialCost, unitsScale) {
+          return (uniformAnnualCost + rentPerAnnum + utilityPerAnnum + ((labourCostPerUnit + rawMaterialCost) * unitsScale)).toFixed(2);
+        }
+      
+        var ProfitBreakEvenGraph = {
+          _init: function() {
+            var widget = this;
+      
+            nv.addGraph(function() {
+              var chart = nv.models.lineChart()
+                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                .transitionDuration(350)  //how fast do you want the lines to transition?
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+              ;
+      
+              chart.xAxis     //Chart x-axis settings
+                .axisLabel("Annual Output")
+      
+              chart.yAxis     //Chart y-axis settings
+                .axisLabel('Cost / Revenue')
+      
+              /* Done setting the chart up? Time to render it!*/
+              var myData = widget._generateLineData();
+      
+              d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+                .datum(myData)         //Populate the <svg> element with chart data...
+                .call(chart);          //Finally, render the chart!
+      
+              //Update the chart when window resizes.
+              nv.utils.windowResize(function() { chart.update() });
+      
+              d3.selectAll('input').each(function() {
+                d3.select(this).on('input', function() {
+                  widget._updateChart(chart);
+                })
+              });
+      
+              return chart;
+            });
+          },
+      
+          _updateChart: function(chart) {
+            var myData = this._generateLineData();
+      
+            d3.select('#chart svg')
+              .datum(myData)
+              .call(chart)
+          },
+      
+          _generateLineData: function() {
+            // Method A Start
+            var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
+            var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
+            var aSalvageValue = parseFloat(d3.select('input[name=a_salvage_value]').property('value'));
+            var aServiceLife = parseFloat(d3.select('input[name=a_service_life]').property('value'));
+            var aLabourCost = parseFloat(d3.select('input[name=a_labour_cost]').property('value'));
+            var aProductionRate = parseFloat(d3.select('input[name=a_production_rate]').property('value'));
+            var aFactorySpace = parseFloat(d3.select('input[name=a_factory_space]').property('value'));
+            var aMonthlyRent = parseFloat(d3.select('input[name=a_monthly_rent]').property('value'));
+            var aUtilityConsumption = parseFloat(d3.select('input[name=a_utility_consumption]').property('value'));
+            var aMaximumProductionCapacity = parseFloat(d3.select('input[name=a_maximum_production_capacity]').property('value'));
+            var aRawMaterialCost = parseFloat(d3.select('input[name=a_raw_material_cost]').property('value'));
+            var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
+            var aInterestRate = parseFloat(d3.select('input[name=a_interest_rate]').property('value'));
+      
+            var aUniformAnnualCost = calculateUniformAnnualCost(aMachineCost, aMaintenanceCost, aSalvageValue, aInterestRate, aServiceLife);
+            var aLabourCostPerUnit = calculateLabourCostPerUnit(aLabourCost, aProductionRate);
+            var aRentPerAnnum = calculateRentPerAnnum(aMonthlyRent, aFactorySpace);
+            var aUtilityPerAnnum = calculateUtilityPerAnnum(aUtilityConsumption);
+            // Method A End
+      
+            // Grab field values of Method B
+            var bMachineCost = parseFloat(d3.select('input[name=b_machine_cost]').property('value'));
+            var bMaintenanceCost = parseFloat(d3.select('input[name=b_maintenance_cost]').property('value'));
+            var bSalvageValue = parseFloat(d3.select('input[name=b_salvage_value]').property('value'));
+            var bServiceLife = parseFloat(d3.select('input[name=b_service_life]').property('value'));
+            var bLabourCost = parseFloat(d3.select('input[name=b_labour_cost]').property('value'));
+            var bProductionRate = parseFloat(d3.select('input[name=b_production_rate]').property('value'));
+            var bFactorySpace = parseFloat(d3.select('input[name=b_factory_space]').property('value'));
+            var bMonthlyRent = parseFloat(d3.select('input[name=b_monthly_rent]').property('value'));
+            var bUtilityConsumption = parseFloat(d3.select('input[name=b_utility_consumption]').property('value'));
+            var bMaximumProductionCapacity = parseFloat(d3.select('input[name=b_maximum_production_capacity]').property('value'));
+            var bRawMaterialCost = parseFloat(d3.select('input[name=b_raw_material_cost]').property('value'));
+            var bRevenue = parseFloat(d3.select('input[name=b_revenue]').property('value'));
+            var bInterestRate = parseFloat(d3.select('input[name=b_interest_rate]').property('value'));
+      
+            var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bInterestRate, bServiceLife);
+            var bLabourCostPerUnit = calculateLabourCostPerUnit(bLabourCost, bProductionRate);
+            var bRentPerAnnum = calculateRentPerAnnum(bMonthlyRent, bFactorySpace);
+            var bUtilityPerAnnum = calculateUtilityPerAnnum(bUtilityConsumption);
+            // Method B end
+      
+            this._setMethodABreakEvenValue(aRevenue , aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost);
+            this._setMethodBBreakEvenValue(bRevenue , bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
+            this._setMethodBreakEvenValue(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
+      
+            var aRevenueData = [];
+            var bRevenueData = [];
+            var aCostData = [];
+            var bCostData = [];
+      
+            for (var units = 0; units <= 3000; units++) {
+              var unitsScale = units * 100;
+              var aRevenuePoint = calculateRevenue(aRevenue, unitsScale);
+              var bRevenuePoint = calculateRevenue(bRevenue, unitsScale);
+              var aCostPoint = calculateCost(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, unitsScale)
+              var bCostPoint = calculateCost(bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost, unitsScale)
+      
+              aRevenueData.push({ x: unitsScale, y: aRevenuePoint });
+              bRevenueData.push({ x: unitsScale, y: bRevenuePoint });
+              aCostData.push({ x: unitsScale, y: aCostPoint });
+              bCostData.push({ x: unitsScale, y: bCostPoint });
+      
+              var revenuePoint = (aRevenuePoint > bRevenuePoint) ? aRevenuePoint : bRevenuePoint;
+              if ((revenuePoint - 50000) > (aCostPoint > bCostPoint ? aCostPoint : bCostPoint)) break;
+            }
+      
+            return [
+              {
+                values: aRevenueData,
+                key: 'Method A Revenue',
+                color: '#ff7f0e'
+              },
+              {
+                values: bRevenueData,
+                key: 'Method B Revenue',
+                color: '#03d10c'
+              },
+              {
+                values: aCostData,
+                key: 'Method A Cost',
+                color: '#8b0000'
+              },
+              {
+                values: bCostData,
+                key: 'Method B Cost',
+                color: '#8c766f'
+              }
+            ];
+          },
+      
+          _setMethodABreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
+            var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
+            d3.select('input[name=a_cost_break_even]').property('value', units.toFixed(2));
+          },
+      
+          _setMethodBBreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
+            var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
+            d3.select('input[name=b_cost_break_even]').property('value', units.toFixed(2));
+          },
+      
+          _setMethodBreakEvenValue: function(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCost, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCost, bRawMaterialCost) {
+            var units = (((aUniformAnnualCost + aRentPerAnnum + aUtilityPerAnnum) - (bUniformAnnualCost + bRentPerAnnum + bUtilityPerAnnum)) / ((bLabourCost + bRawMaterialCost) - (aLabourCost + aRawMaterialCost)));
+            d3.select('input[name=a_b_cost_break_even]').property('value', units.toFixed(2));
+          }
+        }
+      
+        $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
+        $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      });
+    </script>
+  </head>
+  <body>
+    <div class='large-12 columns'>
+      <div class='text-center'>
+        <h1>
+          Profit Break Even Graph
+        </h1>
+      </div>
+      <div class='large-6 columns'>
+        <div class='row'>
+          <div data-graph='profit_break_even' id='chart'>
+            <svg>
+              <div class='row collapse'>
+                <label>Method A Cost Break Even Point</label>
+                <div class='small-8 columns'>
+                  <input name='a_cost_break_even' type='number'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    units
+                  </span>
+                </div>
+              </div>
+              <div class='row collapse'>
+                <label>Method B Cost Break Even Point</label>
+                <div class='small-8 columns'>
+                  <input name='b_cost_break_even' type='number'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    units
+                  </span>
+                </div>
+              </div>
+              <div class='row collapse'>
+                <label>Method A/B Cost Break Even point</label>
+                <div class='small-8 columns'>
+                  <input name='a_b_cost_break_even' type='number'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    units
+                  </span>
+                </div>
+              </div>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class='large-3 columns'>
+        <form>
+          <fieldset>
+            <legend>Manufacturing Setup A</legend>
+            <div class='row collapse'>
+              <label>Machine Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-10 columns'>
+                <input name='a_machine_cost' type='number' value='700000'>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Maintenance Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_maintenance_cost' type='number' value='40000'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /yr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Salvage Value</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-10 columns'>
+                <input name='a_salvage_value' type='number' value='100000'>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Service Life</label>
+              <div class='small-9 columns'>
+                <input name='a_service_life' type='number' value='5'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  years
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Labour Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_labour_cost' type='number' value='45'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /hr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Production Rate</label>
+              <div class='small-8 columns'>
+                <input name='a_production_rate' type='number' value='75'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  units/hr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Factory Space</label>
+              <div class='small-8 columns'>
+                <input name='a_factory_space' type='number' value='200'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  sq m
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Monthly Rent</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_monthly_rent' type='number' value='30'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /sq m
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Utility Consumption</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_utility_consumption' type='number' value='2500'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /month
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Maximum Production Capacity</label>
+              <div class='small-8 columns'>
+                <input name='a_maximum_production_capacity' type='number' value='20000'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  units
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Raw Material Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_raw_material_cost' type='number' value='0.7'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /unit
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Revenue</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_revenue' type='number' value='3'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /unit
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Interest Rate</label>
+              <div class='small-8 columns'>
+                <input name='a_interest_rate' type='number' value='6'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  %
+                </span>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+      <div class='large-3 columns'>
+        <form>
+          <fieldset>
+            <legend>Manufacturing Setup B</legend>
+            <div class='row collapse'>
+              <label>Machine Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-10 columns'>
+                <input name='b_machine_cost' type='number' value='950000'>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Maintenance Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_maintenance_cost' type='number' value='50000'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /yr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Salvage Value</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-10 columns'>
+                <input name='b_salvage_value' type='number' value='150000'>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Service Life</label>
+              <div class='small-9 columns'>
+                <input name='b_service_life' type='number' value='5'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  years
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Labour Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_labour_cost' type='number' value='45'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /hr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Production Rate</label>
+              <div class='small-8 columns'>
+                <input name='b_production_rate' type='number' value='100'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  units/hr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Factory Space</label>
+              <div class='small-8 columns'>
+                <input name='b_factory_space' type='number' value='200'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  sq m
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Monthly Rent</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_monthly_rent' type='number' value='30'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /sq m
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Utility Consumption</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_utility_consumption' type='number' value='2800'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /month
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Maximum Production Capacity</label>
+              <div class='small-8 columns'>
+                <input name='b_maximum_production_capacity' type='number' value='25000'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  units
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Raw Material Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_raw_material_cost' type='number' value='0.7'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /unit
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Revenue</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='b_revenue' type='number' value='3'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /unit
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Interest Rate</label>
+              <div class='small-8 columns'>
+                <input name='b_interest_rate' type='number' value='6'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  %
+                </span>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

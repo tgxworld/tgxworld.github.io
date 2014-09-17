@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <script src="d3.min.js"></script>
+  <script src="nv.d3.js"></script>
+  <script src="jquery-2.1.1.min.js"></script>
+  <script src="foundation-5.4.0/js/foundation.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="nv.d3.css">
+  <link rel="stylesheet" type="text/css" href="foundation-5.4.0/css/foundation.min.css">
+  <style>
+    #chart svg {
+      height: 500px;
+      width: 800px;
+    }
+  </style>
+
+  <script>
+    jQuery(function($) {
+      nv.addGraph(function() {
+        var chart = nv.models.lineChart()
+          .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+          .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+          .transitionDuration(350)  //how fast do you want the lines to transition?
+          .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+          .showYAxis(true)        //Show the y-axis
+          .showXAxis(true)        //Show the x-axis
+        ;
+
+        chart.xAxis     //Chart x-axis settings
+          .axisLabel("Annual Output")
+          .tickFormat(d3.format('s'))
+
+        chart.yAxis     //Chart y-axis settings
+          .axisLabel('Cost / Revenue')
+          .tickFormat(d3.format('s'));
+
+        /* Done setting the chart up? Time to render it!*/
+        var myData = generateLineData();   //You need data...
+
+        d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+          .datum(myData)         //Populate the <svg> element with chart data...
+          .call(chart);          //Finally, render the chart!
+
+        //Update the chart when window resizes.
+        nv.utils.windowResize(function() { chart.update() });
+
+        d3.selectAll('input').each(function() {
+          d3.select(this).on('input', function() {
+            updateChart(chart);
+          })
+        });
+
+        return chart;
+      });
+
+      function updateChart(chart) {
+        var myData = generateLineData();
+
+        d3.select('#chart svg')
+          .datum(myData)
+          .call(chart)
+      }
+
+      function capitalReturnFactor(rate_of_return, service_life) {
+        rate_of_return = rate_of_return * 0.01;
+        return ((rate_of_return * Math.pow((rate_of_return + 1), service_life)) / (Math.pow((rate_of_return + 1), service_life) - 1));
+      }
+
+      function variableCostOfLabour(labour_cost, labour_overhead, production_rate) {
+        return (labour_cost * (100 + labour_overhead) / 100 / production_rate);
+      }
+
+      function sinkingFundFactor(rate_of_return, service_life) {
+        rate_of_return = rate_of_return * 0.01;
+        return (rate_of_return/(Math.pow((1 + rate_of_return), service_life) - 1));
+      }
+
+      function uniformAnnualCost(machine_cost, maintenance_cost, salvage_value, rate_of_return, service_life) {
+        var capital_return_factor = capitalReturnFactor(rate_of_return, service_life);
+        var sinking_fund_factor = sinkingFundFactor(rate_of_return, service_life);
+        return ((machine_cost * capital_return_factor) + maintenance_cost - (5000 * sinking_fund_factor));
+      }
+
+      function uniformAnnualCostWithMachineOverhead(uniform_annual_cost, machine_overhead_rate) {
+        machine_overhead_rate = machine_overhead_rate / 100;
+        return (uniform_annual_cost * (1 + machine_overhead_rate));
+      }
+
+      function generateLineData() {
+        var revenue = parseInt(d3.select('input[name=revenue]').property('value'));
+        var labour_cost = parseInt(d3.select('input[name=labour_cost]').property('value'));
+        var machine_cost = parseInt(d3.select('input[name=machine_cost]').property('value'));
+        var maintenance_cost = parseInt(d3.select('input[name=maintenance_cost]').property('value'));
+        var salvage_value = parseInt(d3.select('input[name=salvage_value]').property('value'));
+        var service_life = parseInt(d3.select('input[name=service_life]').property('value'));
+        var production_rate = parseInt(d3.select('input[name=production_rate]').property('value'));
+        var machine_overhead_rate = parseInt(d3.select('input[name=machine_overhead_rate]').property('value'));
+        var labour_overhead = parseInt(d3.select('input[name=labour_overhead]').property('value'));
+        var rate_of_return = parseInt(d3.select('input[name=rate_of_return]').property('value'));
+
+        var variable_cost_of_labour = variableCostOfLabour(labour_cost, labour_overhead, production_rate);
+        var uniform_annual_cost = uniformAnnualCost(machine_cost, maintenance_cost, salvage_value, rate_of_return, service_life);
+        var uniform_annual_cost_with_overhead = uniformAnnualCostWithMachineOverhead(uniform_annual_cost, machine_overhead_rate);
+
+        var revenueData = [];
+        var costData = [];
+
+        for (var i =0; i <= 1000; i++) {
+          var iScale = i * 100;
+          revenueData.push({ x: iScale, y: revenue * iScale });
+          costData.push({ x: iScale, y: (uniform_annual_cost_with_overhead + (iScale * variable_cost_of_labour)) });
+        }
+
+        //Line chart data should be sent as an array of series objects.
+        return [
+          {
+            values: revenueData,      //values - represents the array of {x,y} data points
+            key: 'Revenue', //key  - the name of the series.
+            color: '#ff7f0e'  //color - optional: choose your own line color.
+          },
+          {
+            values: costData,
+            key: 'Total Cost',
+            color: '#2ca02c'
+          }
+        ];
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="chart">
+    <svg></svg>
+  </div>
+
+  <form>
+    <ul>
+      <li>
+        Machine Cost: $<input type='number' name='machine_cost' value='66063'/>
+      </li>
+      <li>
+        Salvage Value: $<input type='number' name='salvage_value' value='5000'/>
+      </li>
+      <li>
+        Maintenance Cost: $<input type='number' name='maintenance_cost', value='2000'/>
+      </li>
+      <li>
+        Labour Cost: $<input type='number' name='labour_cost', value='10'/>/hr
+      </li>
+      <li>
+        Revenue: $<input type='number' name='revenue', value='1'/>/unit
+      </li>
+      <li>
+        Service Life: <input type='number' name='service_life', value='7'/>years
+      </li>
+      <li>
+        Production Rate: <input type='number' name='production_rate', value='20'/>units/hr
+      </li>
+      <li>
+        Machine Overhead Rate: <input type='number' name='machine_overhead_rate', value='15'/>%
+      </li>
+      <li>
+        Labour Overhead: <input type='number' name='labour_overhead', value='30'/>%
+      </li>
+      <li>
+        Rate of Return: <input type='number' name='rate_of_return', value='20'/>%
+      </li>
+    </ul>
+  </form>
+</body>
