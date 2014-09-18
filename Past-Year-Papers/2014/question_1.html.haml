@@ -74,8 +74,7 @@
             nv.addGraph(function() {
               var chart = nv.models.lineChart()
                 .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
-                .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                .transitionDuration(350)  //how fast do you want the lines to transition?
+                .useInteractiveGuideline(false)
                 .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                 .showYAxis(true)        //Show the y-axis
                 .showXAxis(true)        //Show the x-axis
@@ -158,30 +157,28 @@
             var bUtilityPerAnnum = calculateUtilityPerAnnum(bUtilityConsumption);
             // Method B end
 
-            this._setMethodABreakEvenValue(aRevenue , aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost);
-            this._setMethodBBreakEvenValue(bRevenue , bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
-            this._setMethodBreakEvenValue(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
+            var aBreakEven = this._setMethodABreakEvenValue(aRevenue , aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost);
+            var bBreakEven = this._setMethodBBreakEvenValue(bRevenue , bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
+            var cBreakEven = this._setMethodBreakEvenValue(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
 
             var aRevenueData = [];
             var bRevenueData = [];
             var aCostData = [];
             var bCostData = [];
 
-            for (var units = 0; units <= 3000; units++) {
-              var unitsScale = units * 100;
-              var aRevenuePoint = calculateRevenue(aRevenue, unitsScale);
-              var bRevenuePoint = calculateRevenue(bRevenue, unitsScale);
-              var aCostPoint = calculateCost(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, unitsScale)
-              var bCostPoint = calculateCost(bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost, unitsScale)
+            var unitsMax = Math.max(aBreakEven, bBreakEven, cBreakEven);
 
-              aRevenueData.push({ x: unitsScale, y: aRevenuePoint });
-              bRevenueData.push({ x: unitsScale, y: bRevenuePoint });
-              aCostData.push({ x: unitsScale, y: aCostPoint });
-              bCostData.push({ x: unitsScale, y: bCostPoint });
+            [0, parseInt(unitsMax + 50000)].forEach(function(element) {
+              var aRevenuePoint = calculateRevenue(aRevenue, element);
+              var bRevenuePoint = calculateRevenue(bRevenue, element);
+              var aCostPoint = calculateCost(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, element)
+              var bCostPoint = calculateCost(bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost, element)
 
-              var revenuePoint = (aRevenuePoint > bRevenuePoint) ? aRevenuePoint : bRevenuePoint;
-              if ((revenuePoint - 50000) > (aCostPoint > bCostPoint ? aCostPoint : bCostPoint)) break;
-            }
+              aRevenueData.push({ x: element, y: aRevenuePoint });
+              bRevenueData.push({ x: element, y: bRevenuePoint });
+              aCostData.push({ x: element, y: aCostPoint });
+              bCostData.push({ x: element, y: bCostPoint });
+            });
 
             return [
               {
@@ -210,16 +207,19 @@
           _setMethodABreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
             var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
             d3.select('input[name=a_cost_break_even]').property('value', units.toFixed(2));
+            return units;
           },
 
           _setMethodBBreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
             var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
             d3.select('input[name=b_cost_break_even]').property('value', units.toFixed(2));
+            return units;
           },
 
           _setMethodBreakEvenValue: function(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCost, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCost, bRawMaterialCost) {
             var units = (((aUniformAnnualCost + aRentPerAnnum + aUtilityPerAnnum) - (bUniformAnnualCost + bRentPerAnnum + bUtilityPerAnnum)) / ((bLabourCost + bRawMaterialCost) - (aLabourCost + aRawMaterialCost)));
             d3.select('input[name=a_b_cost_break_even]').property('value', units.toFixed(2));
+            return units;
           }
         }
 
@@ -236,29 +236,30 @@
         .row
           #chart{ data: { graph: 'profit_break_even' } }
             %svg
-              .row.collapse
-                %label Method A Cost Break Even Point
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_cost_break_even',}
-                .small-4.columns
-                  %span.postfix
-                    units
 
-              .row.collapse
-                %label Method B Cost Break Even Point
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_cost_break_even',}
-                .small-4.columns
-                  %span.postfix
-                    units
+        .row.collapse
+          %label Method A Cost Break Even Point
+          .small-8.columns
+            %input{ type: 'number', name: 'a_cost_break_even',}
+          .small-4.columns
+            %span.postfix
+              units
 
-              .row.collapse
-                %label Method A/B Cost Break Even point
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_b_cost_break_even',}
-                .small-4.columns
-                  %span.postfix
-                    units
+        .row.collapse
+          %label Method B Cost Break Even Point
+          .small-8.columns
+            %input{ type: 'number', name: 'b_cost_break_even',}
+          .small-4.columns
+            %span.postfix
+              units
+
+        .row.collapse
+          %label Method A/B Cost Break Even point
+          .small-8.columns
+            %input{ type: 'number', name: 'a_b_cost_break_even',}
+          .small-4.columns
+            %span.postfix
+              units
 
       .large-3.columns
         %form
