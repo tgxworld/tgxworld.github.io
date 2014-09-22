@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <script src='../../d3.min.js'></script>
+    <script src='../../nv.d3/nv.d3.min.js'></script>
+    <script src='../../jquery-2.1.1.min.js'></script>
+    <script src='../../foundation-5.3.0/js/foundation.min.js'></script>
+    <script src='../../jquery-ui-1.11.1/jquery-ui.min.js'></script>
+    <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
+    <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
+    <style>
+      #chart svg {
+        height: 40em;
+      }
+      
+      .row {
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+    </style>
+    <script>
+      jQuery(function($) {
+        function calculateUniformAnnualCost(maintenanceCost, totalSavings, interestRate, repaymentPeriod) {
+          var capital_return_factor = capitalReturnFactor(interestRate, repaymentPeriod);
+        }
+      
+        function capitalReturnFactor(interestRate, repaymentPeriod) {
+          interestRate = interestRate * 0.01;
+          return ((interestRate * Math.pow((interestRate + 1), repaymentPeriod)) / (Math.pow((interestRate + 1), repaymentPeriod) - 1));
+        }
+      
+        function calculateUtilityPerAnnum(utilityConsumption) {
+          return utilityConsumption * 12;
+        }
+      
+        function calculateRevenue(revenue, numberOfUnits) {
+          return (revenue * numberOfUnits);
+        }
+      
+        function calculateSavings(maintenanceCost, electricityBill, labourSavings) {
+          return (labourSavings - maintenanceCost - calculateUtilityPerAnnum(electricityBill));
+        }
+      
+        function calculateLabourSavings(manualOperatorRate, supervisorSalary) {
+          return (9 * manualOperatorRate * 8 * 5 * 50 + 3 * 5000 * 12);
+        }
+      
+        var ProfitBreakEvenGraph = {
+          _init: function() {
+            var widget = this;
+      
+            nv.addGraph(function() {
+              var chart = nv.models.lineChart()
+                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(true)
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+              ;
+      
+              chart.xAxis     //Chart x-axis settings
+                .axisLabel("Number of Years")
+      
+              chart.yAxis     //Chart y-axis settings
+                .axisLabel('Capital Recovery Factor')
+      
+              /* Done setting the chart up? Time to render it!*/
+              var myData = widget._generateLineData();
+      
+              d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+                .datum(myData)         //Populate the <svg> element with chart data...
+                .call(chart);          //Finally, render the chart!
+      
+              //Update the chart when window resizes.
+              nv.utils.windowResize(function() { chart.update() });
+      
+              d3.selectAll('input').each(function() {
+                d3.select(this).on('input', function() {
+                  widget._updateChart(chart);
+                })
+              });
+      
+              return chart;
+            });
+          },
+      
+          _updateChart: function(chart) {
+            var myData = this._generateLineData();
+      
+            d3.select('#chart svg')
+              .datum(myData)
+              .call(chart)
+          },
+      
+          _generateLineData: function() {
+            // Method A Start
+            var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
+            var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
+            var aManualOperatorRate = parseFloat(d3.select('input[name=a_manual_operator_rate]').property('value'));
+            var aSupervisorSalary = parseFloat(d3.select('input[name=a_supervisor_salary]').property('value'));
+            var aMonthlyRent = parseFloat(d3.select('input[name=a_monthly_rent]').property('value'));
+            var aElectricityBill = parseFloat(d3.select('input[name=a_electricity_bill]').property('value'));
+            var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
+            var aInterestRate = parseFloat(d3.select('input[name=a_interest_rate]').property('value'));
+      
+            var labourSavings = calculateLabourSavings(aManualOperatorRate, aSupervisorSalary);
+            var totalSavings = calculateSavings(aMaintenanceCost, aElectricityBill, labourSavings);
+            // Method A End
+      
+            var capitalReturnFactorData = [];
+      
+            for (var i = 1; i <= 10; i++ ) {
+              var capitalReturnFactorPoint = capitalReturnFactor(aInterestRate, i);
+              capitalReturnFactorData.push({ x: i, y: capitalReturnFactorPoint.toFixed(4) });
+            };
+      
+            return [
+              {
+                values: capitalReturnFactorData,
+                key: 'Capital Return Factor',
+                color: '#ff7f0e'
+              },
+              {
+                values: [{x: 3, y: 0.3, shape: 'square'}],
+                key: 'Cal',
+                color: '#8b0000'
+              }
+            ];
+          }
+        }
+      
+        $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
+        $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      });
+    </script>
+  </head>
+  <body>
+    <div class='large-12 columns'>
+      <div class='text-center'>
+        <h1>
+          2013 Question 1
+        </h1>
+      </div>
+      <div class='large-9 columns'>
+        <div class='row'>
+          <div data-graph='profit_break_even' id='chart'>
+            <svg></svg>
+          </div>
+        </div>
+      </div>
+      <div class='large-3 columns'>
+        <form>
+          <fieldset>
+            <legend>Automated Assembly</legend>
+            <div class='row collapse'>
+              <label>Machine Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-10 columns'>
+                <input name='a_machine_cost' type='number' value='650000'>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Maintenance Cost</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_maintenance_cost' type='number' value='100000'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /yr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Manual Operator Rate</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_manual_operator_rate' type='number' value='10'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /hr
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Supervisor Salary</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_supervisor_salary' type='number' value='5000'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /month
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Electricity Bill</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_electricity_bill' type='number' value='4950'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /month
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Monthly Rent</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_monthly_rent' type='number' value='30'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  sq m/month
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Revenue</label>
+              <div class='small-2 columns'>
+                <span class='prefix'>
+                  $
+                </span>
+              </div>
+              <div class='small-7 columns'>
+                <input name='a_revenue' type='number' value='0.8'>
+              </div>
+              <div class='small-3 columns'>
+                <span class='postfix'>
+                  /unit
+                </span>
+              </div>
+            </div>
+            <div class='row collapse'>
+              <label>Interest Rate</label>
+              <div class='small-8 columns'>
+                <input name='a_interest_rate' type='number' value='8'>
+              </div>
+              <div class='small-4 columns'>
+                <span class='postfix'>
+                  %
+                </span>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

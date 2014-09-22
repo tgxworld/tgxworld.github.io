@@ -1,0 +1,233 @@
+!!!
+%html
+  %head
+    %meta{charset: "utf-8"}
+    %script{src: "../../d3.min.js"}
+    %script{src: "../../nv.d3/nv.d3.min.js"}
+    %script{src: "../../jquery-2.1.1.min.js"}
+    %script{src: "../../foundation-5.3.0/js/foundation.min.js"}
+    %script{src: "../../jquery-ui-1.11.1/jquery-ui.min.js"}
+    %link{href: "../../nv.d3/nv.d3.min.css", rel: "stylesheet", type: "text/css"}
+    %link{href: "../../foundation-5.3.0/css/foundation.min.css", rel: "stylesheet", type: "text/css"}
+
+    :css
+      #chart svg {
+        height: 40em;
+      }
+
+      .row {
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+
+    :javascript
+      jQuery(function($) {
+        function calculateUniformAnnualCost(maintenanceCost, totalSavings, interestRate, repaymentPeriod) {
+          var capital_return_factor = capitalReturnFactor(interestRate, repaymentPeriod);
+        }
+
+        function capitalReturnFactor(interestRate, repaymentPeriod) {
+          interestRate = interestRate * 0.01;
+          return ((interestRate * Math.pow((interestRate + 1), repaymentPeriod)) / (Math.pow((interestRate + 1), repaymentPeriod) - 1));
+        }
+
+        function calculateUtilityPerAnnum(utilityConsumption) {
+          return utilityConsumption * 12;
+        }
+
+        function calculateRevenue(revenue, numberOfUnits) {
+          return (revenue * numberOfUnits);
+        }
+
+        function calculateSavings(maintenanceCost, electricityBill, labourSavings) {
+          return (labourSavings - maintenanceCost - calculateUtilityPerAnnum(electricityBill));
+        }
+
+        function calculateLabourSavings(manualOperatorRate, supervisorSalary) {
+          return (9 * manualOperatorRate * 8 * 5 * 50 + 3 * 5000 * 12);
+        }
+
+        var ProfitBreakEvenGraph = {
+          _init: function() {
+            var widget = this;
+
+            nv.addGraph(function() {
+              var chart = nv.models.lineChart()
+                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(true)
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+              ;
+
+              chart.xAxis     //Chart x-axis settings
+                .axisLabel("Number of Years")
+
+              chart.yAxis     //Chart y-axis settings
+                .axisLabel('Capital Recovery Factor')
+
+              /* Done setting the chart up? Time to render it!*/
+              var myData = widget._generateLineData();
+
+              d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+                .datum(myData)         //Populate the <svg> element with chart data...
+                .call(chart);          //Finally, render the chart!
+
+              //Update the chart when window resizes.
+              nv.utils.windowResize(function() { chart.update() });
+
+              d3.selectAll('input').each(function() {
+                d3.select(this).on('input', function() {
+                  widget._updateChart(chart);
+                })
+              });
+
+              return chart;
+            });
+          },
+
+          _updateChart: function(chart) {
+            var myData = this._generateLineData();
+
+            d3.select('#chart svg')
+              .datum(myData)
+              .call(chart)
+          },
+
+          _generateLineData: function() {
+            // Method A Start
+            var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
+            var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
+            var aManualOperatorRate = parseFloat(d3.select('input[name=a_manual_operator_rate]').property('value'));
+            var aSupervisorSalary = parseFloat(d3.select('input[name=a_supervisor_salary]').property('value'));
+            var aMonthlyRent = parseFloat(d3.select('input[name=a_monthly_rent]').property('value'));
+            var aElectricityBill = parseFloat(d3.select('input[name=a_electricity_bill]').property('value'));
+            var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
+            var aInterestRate = parseFloat(d3.select('input[name=a_interest_rate]').property('value'));
+
+            var labourSavings = calculateLabourSavings(aManualOperatorRate, aSupervisorSalary);
+            var totalSavings = calculateSavings(aMaintenanceCost, aElectricityBill, labourSavings);
+            // Method A End
+
+            var capitalReturnFactorData = [];
+
+            for (var i = 1; i <= 10; i++ ) {
+              var capitalReturnFactorPoint = capitalReturnFactor(aInterestRate, i);
+              capitalReturnFactorData.push({ x: i, y: capitalReturnFactorPoint.toFixed(4) });
+            };
+
+            return [
+              {
+                values: capitalReturnFactorData,
+                key: 'Capital Return Factor',
+                color: '#ff7f0e'
+              },
+              {
+                values: [{x: 3, y: 0.3, shape: 'square'}],
+                key: 'Cal',
+                color: '#8b0000'
+              }
+            ];
+          }
+        }
+
+        $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
+        $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      });
+
+  %body
+    .large-12.columns
+      .text-center
+        %h1
+          2013 Question 1
+      .large-9.columns
+        .row
+          #chart{ data: { graph: 'profit_break_even' } }
+            %svg
+
+      .large-3.columns
+        %form
+          %fieldset
+            %legend Automated Assembly
+
+            .row.collapse
+              %label Machine Cost
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-10.columns
+                %input{ type: 'number', name: 'a_machine_cost', value: 650000 }
+
+            .row.collapse
+              %label Maintenance Cost
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_maintenance_cost', value: 100000 }
+              .small-3.columns
+                %span.postfix
+                  \/yr
+
+            .row.collapse
+              %label Manual Operator Rate
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_manual_operator_rate', value: 10 }
+              .small-3.columns
+                %span.postfix
+                  \/hr
+
+            .row.collapse
+              %label Supervisor Salary
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_supervisor_salary', value: 5000 }
+              .small-3.columns
+                %span.postfix
+                  \/month
+
+            .row.collapse
+              %label Electricity Bill
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_electricity_bill', value: 4950 }
+              .small-3.columns
+                %span.postfix
+                  \/month
+
+            .row.collapse
+              %label Monthly Rent
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_monthly_rent', value: 30 }
+              .small-3.columns
+                %span.postfix
+                  sq m/month
+
+            .row.collapse
+              %label Revenue
+              .small-2.columns
+                %span.prefix
+                  $
+              .small-7.columns
+                %input{ type: 'number', name: 'a_revenue', value: 0.8 }
+              .small-3.columns
+                %span.postfix
+                  \/unit
+
+            .row.collapse
+              %label Interest Rate
+              .small-8.columns
+                %input{ type: 'number', name: 'a_interest_rate', value: 8 }
+              .small-4.columns
+                %span.postfix
+                  \%
