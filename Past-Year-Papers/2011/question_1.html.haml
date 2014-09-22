@@ -1,0 +1,542 @@
+!!!
+%html
+  %head
+    %meta{charset: "utf-8"}
+    %script{src: "../../d3.min.js"}
+    %script{src: "../../nv.d3/nv.d3.min.js"}
+    %script{src: "../../jquery-2.1.1.min.js"}
+    %script{src: "../../foundation-5.3.0/js/foundation.min.js"}
+    %script{src: "../../jquery-ui-1.11.1/jquery-ui.min.js"}
+    %link{href: "../../nv.d3/nv.d3.min.css", rel: "stylesheet", type: "text/css"}
+    %link{href: "../../foundation-5.3.0/css/foundation.min.css", rel: "stylesheet", type: "text/css"}
+
+    :css
+      #chart svg {
+        height: 40em;
+      }
+
+      .row {
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+
+    :javascript
+      jQuery(function($) {
+        function calculateVariableCostofLabour(labourCost, labourOverhead, productionRate) {
+          return (labourCost * (100 + labourOverhead) / 100 / productionRate);
+        }
+
+        function calculateUniformAnnualCost(machineCost, maintenanceCost, salvageValue, rateOfReturn, serviceLife) {
+          var capitalReturnFactor = calculateCapitalReturnFactor(rateOfReturn, serviceLife).toFixed(4);
+          var sinkingFundFactor = calculatorSinkingFundFactor(rateOfReturn, serviceLife).toFixed(4);
+          return ((machineCost * capitalReturnFactor) + maintenanceCost - (salvageValue * sinkingFundFactor));
+        }
+
+        function calculateUniformAnnualCostWithMachineOverhead(uniformAnnualCost, machineOverheadRate) {
+          machineOverheadRate = machineOverheadRate / 100;
+          return (uniformAnnualCost * (1 + machineOverheadRate));
+        }
+
+        function calculateCapitalReturnFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return ((rateOfReturn * Math.pow((rateOfReturn + 1), serviceLife)) / (Math.pow((rateOfReturn + 1), serviceLife) - 1));
+        }
+
+        function calculateLabourCostPerUnit(labourRate, productionRate) {
+          return (labourRate / productionRate);
+        }
+
+        function calculateVariableCost(labourCost, materialCost, electricityRate, productionRate) {
+          return (labourCost + materialCost + (electricityRate * 3 / productionRate));
+        }
+
+        function calculateVariableCostWithOverhead(variableCost, overheadRate) {
+          return (variableCost * (1 + (overheadRate / 100)));
+        }
+
+        function calculateUtilityPerAnnum(utilityConsumption) {
+          return utilityConsumption * 12;
+        }
+
+        function calculatorSinkingFundFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return (rateOfReturn/(Math.pow((1 + rateOfReturn), serviceLife) - 1));
+        }
+
+        function calculateRevenue(revenue, numberOfUnits) {
+          return (revenue * numberOfUnits);
+        }
+
+        function calculateCost(cost, variableCost, number_of_units) {
+          return (cost + (variableCost * number_of_units)).toFixed(2);
+        }
+
+        var ProfitBreakEvenGraph = {
+          _init: function() {
+            var widget = this;
+
+            nv.addGraph(function() {
+              var chart = nv.models.lineChart()
+                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(false)
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+              ;
+
+              chart.xAxis     //Chart x-axis settings
+                .axisLabel("Annual Output")
+
+              chart.yAxis     //Chart y-axis settings
+                .axisLabel('Cost / Revenue')
+
+              /* Done setting the chart up? Time to render it!*/
+              var myData = widget._generateLineData();
+
+              d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+                .datum(myData)         //Populate the <svg> element with chart data...
+                .call(chart);          //Finally, render the chart!
+
+              //Update the chart when window resizes.
+              nv.utils.windowResize(function() { chart.update() });
+
+              d3.selectAll('input').each(function() {
+                d3.select(this).on('input', function() {
+                  widget._updateChart(chart);
+                })
+              });
+
+              return chart;
+            });
+          },
+
+          _updateChart: function(chart) {
+            var myData = this._generateLineData();
+
+            d3.select('#chart svg')
+              .datum(myData)
+              .call(chart)
+          },
+
+          _generateLineData: function() {
+            // Method A Start
+            var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
+            var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
+            var aSalvageValue = parseFloat(d3.select('input[name=a_salvage_value]').property('value'));
+            var aServiceLife = parseFloat(d3.select('input[name=a_service_life]').property('value'));
+            var aLabourCost = parseFloat(d3.select('input[name=a_labour_cost]').property('value'));
+            var aRawMaterialCost = parseFloat(d3.select('input[name=a_raw_material_cost]').property('value'));
+            var aProductionRate = parseFloat(d3.select('input[name=a_production_rate]').property('value'));
+            var aElectricityConsumption = parseFloat(d3.select('input[name=a_electricity_rate]').property('value'));
+            var aPowerConsumption = parseFloat(d3.select('input[name=a_power_consumption]').property('value'));
+            var aMachineOverheadRate = parseFloat(d3.select('input[name=a_machine_overhead_rate]').property('value'));
+            var aVariableCostOverheadRate = parseFloat(d3.select('input[name=a_variable_cost_overhead_rate]').property('value'));
+            var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
+            var aInterestRate = parseFloat(d3.select('input[name=a_interest_rate]').property('value'));
+
+            var aUniformAnnualCost = calculateUniformAnnualCost(aMachineCost, aMaintenanceCost, aSalvageValue, aInterestRate, aServiceLife);
+            var aUniformAnnualCostWithMachineOverhead = calculateUniformAnnualCostWithMachineOverhead(aUniformAnnualCost, aMachineOverheadRate);
+            var aLabourCostPerUnit = calculateLabourCostPerUnit(aLabourCost, aProductionRate);
+            var aVariableCost = calculateVariableCost(aLabourCostPerUnit, aRawMaterialCost, aElectricityConsumption, aProductionRate);
+            var aVariableCostWithOverhead = calculateVariableCostWithOverhead(aVariableCost, aVariableCostOverheadRate);
+            // Method A End
+
+            // Grab field values of Method B
+            var bMachineCost = parseFloat(d3.select('input[name=b_machine_cost]').property('value'));
+            var bMaintenanceCost = parseFloat(d3.select('input[name=b_maintenance_cost]').property('value'));
+            var bSalvageValue = parseFloat(d3.select('input[name=b_salvage_value]').property('value'));
+            var bServiceLife = parseFloat(d3.select('input[name=b_service_life]').property('value'));
+            var bLabourCost = parseFloat(d3.select('input[name=b_labour_cost]').property('value'));
+            var bRawMaterialCost = parseFloat(d3.select('input[name=b_raw_material_cost]').property('value'));
+            var bProductionRate = parseFloat(d3.select('input[name=b_production_rate]').property('value'));
+            var bElectricityConsumption = parseFloat(d3.select('input[name=b_electricity_rate]').property('value'));
+            var bPowerConsumption = parseFloat(d3.select('input[name=b_power_consumption]').property('value'));
+            var bMachineOverheadRate = parseFloat(d3.select('input[name=b_machine_overhead_rate]').property('value'));
+            var bVariableCostOverheadRate = parseFloat(d3.select('input[name=b_variable_cost_overhead_rate]').property('value'));
+            var bRevenue = parseFloat(d3.select('input[name=b_revenue]').property('value'));
+            var bInterestRate = parseFloat(d3.select('input[name=b_interest_rate]').property('value'));
+
+            var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bInterestRate, bServiceLife);
+            var bUniformAnnualCostWithMachineOverhead = calculateUniformAnnualCostWithMachineOverhead(bUniformAnnualCost, bMachineOverheadRate);
+            var bLabourCostPerUnit = calculateLabourCostPerUnit(bLabourCost, bProductionRate);
+            var bVariableCost = calculateVariableCost(bLabourCostPerUnit, bRawMaterialCost, bElectricityConsumption, bProductionRate);
+            var bVariableCostWithOverhead = calculateVariableCostWithOverhead(bVariableCost, bVariableCostOverheadRate);
+            // Method B end
+
+            var aBreakEven = this._setMethodABreakEvenValue(aRevenue, aVariableCostWithOverhead, aUniformAnnualCostWithMachineOverhead, aProductionRate);
+            var bBreakEven = this._setMethodBBreakEvenValue(bRevenue, bVariableCostWithOverhead, bUniformAnnualCostWithMachineOverhead, bProductionRate);
+
+            var aRevenueData = [];
+            var bRevenueData = [];
+            var aCostData = [];
+            var bCostData = [];
+
+            var unitsMax = Math.max(aBreakEven, bBreakEven);
+
+            [parseInt(unitsMax - 10000), parseInt(unitsMax + 10000)].forEach(function(element) {
+              var aRevenuePoint = calculateRevenue(aRevenue, element);
+              var bRevenuePoint = calculateRevenue(bRevenue, element);
+              var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
+              var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
+
+              aRevenueData.push({ x: element, y: aRevenuePoint });
+              bRevenueData.push({ x: element, y: bRevenuePoint });
+              aCostData.push({ x: element, y: aCostPoint });
+              bCostData.push({ x: element, y: bCostPoint });
+            });
+
+            return [
+              {
+                values: aRevenueData,
+                key: 'Method A Revenue'
+              },
+              {
+                values: bRevenueData,
+                key: 'Method B Revenue'
+              },
+              {
+                values: aCostData,
+                key: 'Method A Cost'
+              },
+              {
+                values: bCostData,
+                key: 'Method B Cost'
+              }
+            ];
+          },
+
+          _setMethodABreakEvenValue: function(revenue, variableCostWithOverhead, uniformAnnualCostWithOverhead, productionRate) {
+            var units = (uniformAnnualCostWithOverhead / (revenue - variableCostWithOverhead));
+            d3.select('input[name=a_cost_break_even]').property('value', (units / productionRate).toFixed(2));
+            return units;
+          },
+
+          _setMethodBBreakEvenValue: function(revenue, variableCostWithOverhead, uniformAnnualCostWithOverhead, productionRate) {
+            var units = (uniformAnnualCostWithOverhead / (revenue - variableCostWithOverhead));
+            d3.select('input[name=b_cost_break_even]').property('value', (units / productionRate).toFixed(2));
+            return units;
+          }
+        }
+
+        $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
+        $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      });
+
+  %body
+    .large-12.columns
+      .text-center
+        %h1
+          ME4262 Finals 2011 Question 1
+      .large-6.columns
+        .row
+          #chart{ data: { graph: 'profit_break_even' } }
+            %svg
+
+        %table
+          %tr
+            %th
+            %th Production Machine A
+            %th Production Machine B
+
+          %tr
+            %td Time to Break Even Point
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_cost_break_even',}
+                .small-4.columns
+                  %span.postfix
+                    hrs
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_cost_break_even',}
+                .small-4.columns
+                  %span.postfix
+                    hrs
+
+      .large-6.columns
+        %table
+          %tr
+            %th
+            %th Production Machine A
+            %th Production Machine B
+
+          %tr
+            %td Machine Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_machine_cost', value: 72000 }
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_machine_cost', value: 128000 }
+
+          %tr
+            %td Maintenance Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'a_maintenance_cost', value: 3000 }
+                .small-3.columns
+                  %span.postfix
+                    \/yr
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'b_maintenance_cost', value: 6000 }
+                .small-3.columns
+                  %span.postfix
+                    \/yr
+
+          %tr
+            %td Salvage Value
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_salvage_value', value: 5000 }
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_salvage_value', value: 8000 }
+
+          %tr
+            %td Service Life
+
+            %td
+              .row.collapse
+                .small-9.columns
+                  %input{ type: 'number', name: 'a_service_life', value: 5 }
+                .small-3.columns
+                  %span.postfix
+                    years
+
+            %td
+              .row.collapse
+                .small-9.columns
+                  %input{ type: 'number', name: 'b_service_life', value: 5 }
+                .small-3.columns
+                  %span.postfix
+                    years
+
+          %tr
+            %td Production Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_production_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_production_rate', value: 60 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
+
+          %tr
+            %td Labour Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'a_labour_cost', value: 12 }
+                .small-3.columns
+                  %span.postfix
+                    \/hr
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'b_labour_cost', value: 12 }
+                .small-3.columns
+                  %span.postfix
+                    \/hr
+
+          %tr
+            %td Raw Material Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.2 }
+                .small-3.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.2 }
+                .small-3.columns
+                  %span.postfix
+                    \/unit
+
+
+          %tr
+            %td Power Consumption
+
+            %td
+              .row.collapse
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_power_consumption', value: 3 }
+                .small-2.columns
+                  %span.postfix
+                    kW
+
+            %td
+              .row.collapse
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_power_consumption', value: 5 }
+                .small-2.columns
+                  %span.postfix
+                    kW
+
+          %tr
+            %td Electricity Rate
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'a_electricity_rate', value: 0.12 }
+                .small-3.columns
+                  %span.postfix
+                    \/kWh
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'b_electricity_rate', value: 0.12 }
+                .small-3.columns
+                  %span.postfix
+                    \/kWh
+
+          %tr
+            %td Machine Overhead Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_machine_overhead_rate', value: 15 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_machine_overhead_rate', value: 15 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+          %tr
+            %td Variable Cost Overhead Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_variable_cost_overhead_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_variable_cost_overhead_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+          %tr
+            %td Revenue
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'a_revenue', value: 1.2 }
+                .small-3.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-7.columns
+                  %input{ type: 'number', name: 'b_revenue', value: 1.2 }
+                .small-3.columns
+                  %span.postfix
+                    \/unit
+
+          %tr
+            %td Interest Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_interest_rate', value: 8 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_interest_rate', value: 8 }
+                .small-4.columns
+                  %span.postfix
+                    \%
