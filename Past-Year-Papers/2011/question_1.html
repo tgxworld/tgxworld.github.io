@@ -45,16 +45,33 @@
           return (labourRate / productionRate);
         }
       
-        function calculateVariableCost(labourCost, materialCost, electricityRate, productionRate) {
-          return (labourCost + materialCost + (electricityRate * 3 / productionRate));
+        function calculateVariableCost(labourCost, materialCost, electricityRate) {
+          return (labourCost + materialCost + electricityRate);
+        }
+      
+        function calculateVariableCostOvertime(labourCost, materialCost, electricityRate, labourOvertimeRate) {
+          return ((labourCost * (1 + (labourOvertimeRate / 100))) + materialCost + electricityRate);
         }
       
         function calculateVariableCostWithOverhead(variableCost, overheadRate) {
           return (variableCost * (1 + (overheadRate / 100)));
         }
       
-        function calculateUtilityPerAnnum(utilityConsumption) {
-          return utilityConsumption * 12;
+        function calculateElecricityRate(electricityConsumption, powerConsumption, productionRate) {
+          return (electricityConsumption * powerConsumption / productionRate);
+        }
+      
+        function calculateOvertimeCost(cost, variableCostWithOverhead, variableCostOvertimeWithOverhead, productionRate, numberOfUnits) {
+          var currentSales = productionRate * 8 * 5 * 50;
+          var salesDifference = numberOfUnits - currentSales;
+      
+          if (salesDifference < 0) {
+            var variableCost = variableCostWithOverhead * numberOfUnits
+          } else {
+            var variableCost = (variableCostWithOverhead * currentSales) + (variableCostOvertimeWithOverhead * salesDifference);
+          }
+      
+          return variableCost + cost;
         }
       
         function calculatorSinkingFundFactor(rateOfReturn, serviceLife) {
@@ -118,6 +135,8 @@
           },
       
           _generateLineData: function() {
+            var labourOvertimeRate = parseFloat(d3.select('input[name=labour_overtime_rate]').property('value'));
+            var projectedSales = parseFloat(d3.select('input[name=projected_sales]').property('value'));
             // Method A Start
             var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
             var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
@@ -136,8 +155,11 @@
             var aUniformAnnualCost = calculateUniformAnnualCost(aMachineCost, aMaintenanceCost, aSalvageValue, aInterestRate, aServiceLife);
             var aUniformAnnualCostWithMachineOverhead = calculateUniformAnnualCostWithMachineOverhead(aUniformAnnualCost, aMachineOverheadRate);
             var aLabourCostPerUnit = calculateLabourCostPerUnit(aLabourCost, aProductionRate);
-            var aVariableCost = calculateVariableCost(aLabourCostPerUnit, aRawMaterialCost, aElectricityConsumption, aProductionRate);
+            var aElectricityRate = calculateElecricityRate(aElectricityConsumption, aPowerConsumption, aProductionRate);
+            var aVariableCost = calculateVariableCost(aLabourCostPerUnit, aRawMaterialCost, aElectricityRate);
             var aVariableCostWithOverhead = calculateVariableCostWithOverhead(aVariableCost, aVariableCostOverheadRate);
+            var aVariableCostOvertime = calculateVariableCostOvertime(aLabourCostPerUnit, aRawMaterialCost, aElectricityRate, labourOvertimeRate);
+            var aVariableCostOvertimeWithOverhead = calculateVariableCostWithOverhead(aVariableCostOvertime, aVariableCostOverheadRate);
             // Method A End
       
             // Grab field values of Method B
@@ -158,48 +180,106 @@
             var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bInterestRate, bServiceLife);
             var bUniformAnnualCostWithMachineOverhead = calculateUniformAnnualCostWithMachineOverhead(bUniformAnnualCost, bMachineOverheadRate);
             var bLabourCostPerUnit = calculateLabourCostPerUnit(bLabourCost, bProductionRate);
-            var bVariableCost = calculateVariableCost(bLabourCostPerUnit, bRawMaterialCost, bElectricityConsumption, bProductionRate);
+            var bElectricityRate = calculateElecricityRate(bElectricityConsumption, bPowerConsumption, bProductionRate);
+            var bVariableCost = calculateVariableCost(bLabourCostPerUnit, bRawMaterialCost, bElectricityRate);
             var bVariableCostWithOverhead = calculateVariableCostWithOverhead(bVariableCost, bVariableCostOverheadRate);
+            var bVariableCostOvertime = calculateVariableCostOvertime(bLabourCostPerUnit, bRawMaterialCost, bElectricityRate, labourOvertimeRate);
+            var bVariableCostOvertimeWithOverhead = calculateVariableCostWithOverhead(bVariableCostOvertime, bVariableCostOverheadRate);
             // Method B end
       
+            var breakEvenPoints = [];
+      
             var aBreakEven = this._setMethodABreakEvenValue(aRevenue, aVariableCostWithOverhead, aUniformAnnualCostWithMachineOverhead, aProductionRate);
+      
+            if (aBreakEven > 0) { breakEvenPoints.push(aBreakEven); }
+      
             var bBreakEven = this._setMethodBBreakEvenValue(bRevenue, bVariableCostWithOverhead, bUniformAnnualCostWithMachineOverhead, bProductionRate);
+      
+            if (bBreakEven > 0) { breakEvenPoints.push(bBreakEven); }
+      
+            this._setMethodAProfit(projectedSales, aRevenue, calculateOvertimeCost(aUniformAnnualCostWithMachineOverhead,
+              aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead,
+              aProductionRate, projectedSales
+            ));
+      
+            this._setMethodBProfit(projectedSales, bRevenue, calculateOvertimeCost(bUniformAnnualCostWithMachineOverhead,
+              bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead,
+              bProductionRate, projectedSales
+            ));
+      
+            var cBreakEven = this._setMethodABBreakEvenValue(
+              aVariableCostWithOverhead, aUniformAnnualCostWithMachineOverhead,
+              bVariableCostWithOverhead, bUniformAnnualCostWithMachineOverhead
+            );
+      
+            var aCurrentSales = aProductionRate * 8 * 5 *50;
+            var bCurrentSales = bProductionRate * 8 * 5 *50;
+      
+            var dBreakEven = this._setMethodABBreakEvenValueWithOvertime(
+              aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead, aCurrentSales,
+              bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead, bCurrentSales,
+              cBreakEven
+            );
       
             var aRevenueData = [];
             var bRevenueData = [];
             var aCostData = [];
+            var aCostDataWithOvertime = [];
             var bCostData = [];
+            var bCostDataWithOvertime = [];
       
-            var unitsMax = Math.max(aBreakEven, bBreakEven);
+            var unitsMax = Math.max.apply(null, breakEvenPoints);
+            var unitsMin = Math.min.apply(null, breakEvenPoints);
       
-            [parseInt(unitsMax - 10000), parseInt(unitsMax + 10000)].forEach(function(element) {
+            [parseInt(unitsMin - 10000), parseInt(unitsMax + 10000)].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
               var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
+      
+              var aCostPointWithOvertime = calculateOvertimeCost(aUniformAnnualCostWithMachineOverhead,
+                aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead,
+                aProductionRate, element
+              );
+      
               var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
+      
+              var bCostPointWithOvertime = calculateOvertimeCost(bUniformAnnualCostWithMachineOverhead,
+                bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead,
+                bProductionRate, element
+              );
       
               aRevenueData.push({ x: element, y: aRevenuePoint });
               bRevenueData.push({ x: element, y: bRevenuePoint });
               aCostData.push({ x: element, y: aCostPoint });
+              aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
               bCostData.push({ x: element, y: bCostPoint });
+              bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
             });
       
             return [
               {
                 values: aRevenueData,
-                key: 'Method A Revenue'
+                key: 'Production Machine A Revenue'
               },
               {
                 values: bRevenueData,
-                key: 'Method B Revenue'
+                key: 'Production Machine B Revenue'
               },
               {
                 values: aCostData,
-                key: 'Method A Cost'
+                key: 'Production Machine A Cost'
               },
               {
                 values: bCostData,
-                key: 'Method B Cost'
+                key: 'Production Machine B Cost'
+              },
+              {
+                values: aCostDataWithOvertime,
+                key: 'Production Machine A Cost With Overtime'
+              },
+              {
+                values: bCostDataWithOvertime,
+                key: 'Production Machine B Cost With Overtime'
               }
             ];
           },
@@ -214,6 +294,51 @@
             var units = (uniformAnnualCostWithOverhead / (revenue - variableCostWithOverhead));
             d3.select('input[name=b_cost_break_even]').property('value', (units / productionRate).toFixed(2));
             return units;
+          },
+      
+          _setMethodAProfit: function(projectedSales,revenue, cost) {
+            d3.select('input[name=a_profit_overtime]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+      
+          _setMethodBProfit: function(projectedSales,revenue, cost) {
+            d3.select('input[name=b_profit_overtime]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+      
+          _setMethodABBreakEvenValue: function(aVariableCostWithOverhead, aUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, bUniformAnnualCostWithMachineOverhead) {
+            var units = (aUniformAnnualCostWithMachineOverhead - bUniformAnnualCostWithMachineOverhead) / (bVariableCostWithOverhead - aVariableCostWithOverhead);
+            d3.select('input[name=a_b_cost_break_even]').property('value', units.toFixed(2));
+            return units;
+          },
+      
+          _setMethodABBreakEvenValueWithOvertime: function(
+              aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead, aCurrentSales,
+              bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead, bCurrentSales,
+              projectedSales
+            ) {
+      
+            var aSalesDifference = projectedSales - aCurrentSales;
+            var bSalesDifference = projectedSales - bCurrentSales;
+      
+            if (aSalesDifference < 0) {
+              var aCost = aUniformAnnualCostWithMachineOverhead;
+              var aVariableCost = aVariableCostWithOverhead;
+            } else {
+              var aCost = aUniformAnnualCostWithMachineOverhead + (aVariableCostWithOverhead * aCurrentSales) - (aVariableCostOvertimeWithOverhead * aCurrentSales);
+              var aVariableCost = aVariableCostOvertimeWithOverhead;
+            }
+      
+            if (bSalesDifference < 0) {
+              var bCost = bUniformAnnualCostWithMachineOverhead;
+              var bVariableCost = bVariableCostWithOverhead;
+            } else {
+              var bCost = bUniformAnnualCostWithMachineOverhead + (bVariableCostWithOverhead * bCurrentSales) - (bVariableCostOvertimeWithOverhead * bCurrentSales);
+              var bVariableCost = bVariableCostOvertimeWithOverhead;
+            }
+      
+            var breakEvenPoint = (aCost - bCost) / (bVariableCost - aVariableCost);
+            d3.select('input[name=a_b_cost_break_even_with_overtime]').property('value', breakEvenPoint.toFixed(2));
+      
+            return breakEvenPoint;
           }
         }
       
@@ -246,7 +371,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='a_cost_break_even' type='number'>
+                  <input disabled='' name='a_cost_break_even' type='number'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -258,12 +383,73 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='b_cost_break_even' type='number'>
+                  <input disabled='' name='b_cost_break_even' type='number'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
                     hrs
                   </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Profit With Overtime</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-4 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_profit_overtime' type='number'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-4 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-8 columns'>
+                  <input disabled='' name='b_profit_overtime' type='number'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Cost Break Even Without Overtime</td>
+            <td colspan='2'>
+              <div class='small-10 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input disabled='' name='a_b_cost_break_even' type='number'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Cost Break Even With Overtime</td>
+            <td colspan='2'>
+              <div class='small-10 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input disabled='' name='a_b_cost_break_even_with_overtime' type='number'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
                 </div>
               </div>
             </td>
@@ -674,6 +860,40 @@
                   <span class='postfix'>
                     %
                   </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Over Time Rate</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='labour_overtime_rate' type='number' value='50'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Projected Sale</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='projected_sales' type='number' value='69000'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
                 </div>
               </div>
             </td>
