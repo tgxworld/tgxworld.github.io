@@ -11,13 +11,33 @@
     %link{href: "../../foundation-5.3.0/css/foundation.min.css", rel: "stylesheet", type: "text/css"}
 
     :css
+      body {
+        height: 800px;
+        margin: auto;
+      }
+
       #chart svg {
-        height: 40em;
+        height: 650px;
       }
 
       .row {
         margin: 0 !important;
         max-width: 100% !important;
+      }
+
+      @media (min-width: 1024px) {
+        table tr td, table tr th {
+          padding: 0;
+          font-size: 0.6rem;
+        }
+
+        input, .postfix, .prefix {
+          font-size: 0.6rem !important;
+          margin-bottom: 0 !important;
+          height: 1.125rem !important;
+          padding: 0 0.2rem !important;
+          line-height: 1.125rem !important;
+        }
       }
 
     :javascript
@@ -94,7 +114,7 @@
 
             nv.addGraph(function() {
               var chart = nv.models.lineChart()
-                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .margin({left: 80, right: 40})  //Adjust chart margins to give the x-axis some breathing room.
                 .useInteractiveGuideline(false)
                 .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                 .showYAxis(true)        //Show the y-axis
@@ -350,12 +370,320 @@
   %body
     .large-12.columns
       .text-center
-        %h1
+        %h3
           ME4262 Finals 2011 Question 1
-      .large-6.columns
+      .large-7.columns
         .row
           #chart{ data: { graph: 'profit_break_even' } }
             %svg
+
+      .large-5.columns
+        %table
+          %tr
+            %th
+            %th Production Machine A
+            %th Production Machine B
+
+          %tr
+            %td Machine Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_machine_cost', value: 72000 }
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_machine_cost', value: 128000 }
+
+          %tr
+            %td Maintenance Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_maintenance_cost', value: 3000 }
+                .small-4.columns
+                  %span.postfix
+                    \/yr
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_maintenance_cost', value: 6000 }
+                .small-4.columns
+                  %span.postfix
+                    \/yr
+
+          %tr
+            %td Salvage Value
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_salvage_value', value: 5000 }
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_salvage_value', value: 8000 }
+
+          %tr
+            %td Service Life
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_service_life', value: 5 }
+                .small-4.columns
+                  %span.postfix
+                    years
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_service_life', value: 5 }
+                .small-4.columns
+                  %span.postfix
+                    years
+
+          %tr
+            %td Production Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_production_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_production_rate', value: 60 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
+
+          %tr
+            %td Labour Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_labour_cost', value: 12 }
+                .small-4.columns
+                  %span.postfix
+                    \/hr
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_labour_cost', value: 12 }
+                .small-4.columns
+                  %span.postfix
+                    \/hr
+
+          %tr
+            %td Raw Material Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.2 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.2 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+
+          %tr
+            %td Power Consumption
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_power_consumption', value: 3 }
+                .small-4.columns
+                  %span.postfix
+                    kW
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_power_consumption', value: 5 }
+                .small-4.columns
+                  %span.postfix
+                    kW
+
+          %tr
+            %td Electricity Rate
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_electricity_rate', value: 0.12 }
+                .small-4.columns
+                  %span.postfix
+                    \/kWh
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_electricity_rate', value: 0.12 }
+                .small-4.columns
+                  %span.postfix
+                    \/kWh
+
+          %tr
+            %td Machine Overhead Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_machine_overhead_rate', value: 15 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_machine_overhead_rate', value: 15 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+          %tr
+            %td Variable Cost Overhead Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_variable_cost_overhead_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_variable_cost_overhead_rate', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+          %tr
+            %td Revenue
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_revenue', value: 1.2 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_revenue', value: 1.2 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+          %tr
+            %td Interest Rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_interest_rate', value: 8 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_interest_rate', value: 8 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+          %tr
+            %td Labour Over Time Rate
+
+            %td{ colspan: 2 }
+              .small-8.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'number', name: 'labour_overtime_rate', value: 50 }
+                  .small-4.columns
+                    %span.postfix
+                      \%
+
+          %tr
+            %td Projected Sale
+
+            %td{ colspan: 2 }
+              .small-8.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'number', name: 'projected_sales', value: 69000 }
+                  .small-4.columns
+                    %span.postfix
+                      units
 
         %table
           %tr
@@ -421,314 +749,6 @@
                 .row.collapse
                   .small-8.columns
                     %input{ type: 'number', name: 'a_b_cost_break_even_with_overtime', disabled: '' }
-                  .small-4.columns
-                    %span.postfix
-                      units
-
-      .large-6.columns
-        %table
-          %tr
-            %th
-            %th Production Machine A
-            %th Production Machine B
-
-          %tr
-            %td Machine Cost
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-10.columns
-                  %input{ type: 'number', name: 'a_machine_cost', value: 72000 }
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-10.columns
-                  %input{ type: 'number', name: 'b_machine_cost', value: 128000 }
-
-          %tr
-            %td Maintenance Cost
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'a_maintenance_cost', value: 3000 }
-                .small-3.columns
-                  %span.postfix
-                    \/yr
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'b_maintenance_cost', value: 6000 }
-                .small-3.columns
-                  %span.postfix
-                    \/yr
-
-          %tr
-            %td Salvage Value
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-10.columns
-                  %input{ type: 'number', name: 'a_salvage_value', value: 5000 }
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-10.columns
-                  %input{ type: 'number', name: 'b_salvage_value', value: 8000 }
-
-          %tr
-            %td Service Life
-
-            %td
-              .row.collapse
-                .small-9.columns
-                  %input{ type: 'number', name: 'a_service_life', value: 5 }
-                .small-3.columns
-                  %span.postfix
-                    years
-
-            %td
-              .row.collapse
-                .small-9.columns
-                  %input{ type: 'number', name: 'b_service_life', value: 5 }
-                .small-3.columns
-                  %span.postfix
-                    years
-
-          %tr
-            %td Production Rate
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_production_rate', value: 30 }
-                .small-4.columns
-                  %span.postfix
-                    units/hr
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_production_rate', value: 60 }
-                .small-4.columns
-                  %span.postfix
-                    units/hr
-
-          %tr
-            %td Labour Cost
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'a_labour_cost', value: 12 }
-                .small-3.columns
-                  %span.postfix
-                    \/hr
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'b_labour_cost', value: 12 }
-                .small-3.columns
-                  %span.postfix
-                    \/hr
-
-          %tr
-            %td Raw Material Cost
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.2 }
-                .small-3.columns
-                  %span.postfix
-                    \/unit
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.2 }
-                .small-3.columns
-                  %span.postfix
-                    \/unit
-
-
-          %tr
-            %td Power Consumption
-
-            %td
-              .row.collapse
-                .small-10.columns
-                  %input{ type: 'number', name: 'a_power_consumption', value: 3 }
-                .small-2.columns
-                  %span.postfix
-                    kW
-
-            %td
-              .row.collapse
-                .small-10.columns
-                  %input{ type: 'number', name: 'b_power_consumption', value: 5 }
-                .small-2.columns
-                  %span.postfix
-                    kW
-
-          %tr
-            %td Electricity Rate
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'a_electricity_rate', value: 0.12 }
-                .small-3.columns
-                  %span.postfix
-                    \/kWh
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'b_electricity_rate', value: 0.12 }
-                .small-3.columns
-                  %span.postfix
-                    \/kWh
-
-          %tr
-            %td Machine Overhead Rate
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_machine_overhead_rate', value: 15 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_machine_overhead_rate', value: 15 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-          %tr
-            %td Variable Cost Overhead Rate
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_variable_cost_overhead_rate', value: 30 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_variable_cost_overhead_rate', value: 30 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-          %tr
-            %td Revenue
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'a_revenue', value: 1.2 }
-                .small-3.columns
-                  %span.postfix
-                    \/unit
-
-            %td
-              .row.collapse
-                .small-2.columns
-                  %span.prefix
-                    $
-                .small-7.columns
-                  %input{ type: 'number', name: 'b_revenue', value: 1.2 }
-                .small-3.columns
-                  %span.postfix
-                    \/unit
-
-          %tr
-            %td Interest Rate
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_interest_rate', value: 8 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_interest_rate', value: 8 }
-                .small-4.columns
-                  %span.postfix
-                    \%
-
-          %tr
-            %td Labour Over Time Rate
-
-            %td{ colspan: 2 }
-              .small-8.small-centered.columns
-                .row.collapse
-                  .small-8.columns
-                    %input{ type: 'number', name: 'labour_overtime_rate', value: 50 }
-                  .small-4.columns
-                    %span.postfix
-                      \%
-
-          %tr
-            %td Projected Sale
-
-            %td{ colspan: 2 }
-              .small-8.small-centered.columns
-                .row.collapse
-                  .small-8.columns
-                    %input{ type: 'number', name: 'projected_sales', value: 69000 }
                   .small-4.columns
                     %span.postfix
                       units

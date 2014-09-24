@@ -10,13 +10,33 @@
     <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
     <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
     <style>
+      body {
+        height: 800px;
+        margin: auto;
+      }
+      
       #chart svg {
-        height: 40em;
+        height: 650px;
       }
       
       .row {
         margin: 0 !important;
         max-width: 100% !important;
+      }
+      
+      @media (min-width: 1024px) {
+        table tr td, table tr th {
+          padding: 0;
+          font-size: 0.6rem;
+        }
+      
+        input, .postfix, .prefix {
+          font-size: 0.6rem !important;
+          margin-bottom: 0 !important;
+          height: 1.125rem !important;
+          padding: 0 0.2rem !important;
+          line-height: 1.125rem !important;
+        }
       }
     </style>
     <script>
@@ -93,7 +113,7 @@
       
             nv.addGraph(function() {
               var chart = nv.models.lineChart()
-                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .margin({left: 80, right: 40})  //Adjust chart margins to give the x-axis some breathing room.
                 .useInteractiveGuideline(false)
                 .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                 .showYAxis(true)        //Show the y-axis
@@ -350,16 +370,460 @@
   <body>
     <div class='large-12 columns'>
       <div class='text-center'>
-        <h1>
+        <h3>
           ME4262 Finals 2011 Question 1
-        </h1>
+        </h3>
       </div>
-      <div class='large-6 columns'>
+      <div class='large-7 columns'>
         <div class='row'>
           <div data-graph='profit_break_even' id='chart'>
             <svg></svg>
           </div>
         </div>
+      </div>
+      <div class='large-5 columns'>
+        <table>
+          <tr>
+            <th></th>
+            <th>Production Machine A</th>
+            <th>Production Machine B</th>
+          </tr>
+          <tr>
+            <td>Machine Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='a_machine_cost' type='number' value='72000'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='b_machine_cost' type='number' value='128000'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Maintenance Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_maintenance_cost' type='number' value='3000'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /yr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_maintenance_cost' type='number' value='6000'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /yr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Salvage Value</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='a_salvage_value' type='number' value='5000'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='b_salvage_value' type='number' value='8000'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Service Life</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_service_life' type='number' value='5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    years
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_service_life' type='number' value='5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    years
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Production Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_production_rate' type='number' value='30'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    units/hr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_production_rate' type='number' value='60'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    units/hr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_labour_cost' type='number' value='12'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /hr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_labour_cost' type='number' value='12'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /hr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Raw Material Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_raw_material_cost' type='number' value='0.2'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_raw_material_cost' type='number' value='0.2'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Power Consumption</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_power_consumption' type='number' value='3'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    kW
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_power_consumption' type='number' value='5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    kW
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Electricity Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_electricity_rate' type='number' value='0.12'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /kWh
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_electricity_rate' type='number' value='0.12'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /kWh
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Machine Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_machine_overhead_rate' type='number' value='15'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_machine_overhead_rate' type='number' value='15'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Variable Cost Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_variable_cost_overhead_rate' type='number' value='30'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_variable_cost_overhead_rate' type='number' value='30'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Revenue</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_revenue' type='number' value='1.2'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_revenue' type='number' value='1.2'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Interest Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_interest_rate' type='number' value='8'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_interest_rate' type='number' value='8'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Over Time Rate</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='labour_overtime_rate' type='number' value='50'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Projected Sale</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='projected_sales' type='number' value='69000'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
         <table>
           <tr>
             <th></th>
@@ -444,450 +908,6 @@
                 <div class='row collapse'>
                   <div class='small-8 columns'>
                     <input disabled='' name='a_b_cost_break_even_with_overtime' type='number'>
-                  </div>
-                  <div class='small-4 columns'>
-                    <span class='postfix'>
-                      units
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
-      <div class='large-6 columns'>
-        <table>
-          <tr>
-            <th></th>
-            <th>Production Machine A</th>
-            <th>Production Machine B</th>
-          </tr>
-          <tr>
-            <td>Machine Cost</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-10 columns'>
-                  <input name='a_machine_cost' type='number' value='72000'>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-10 columns'>
-                  <input name='b_machine_cost' type='number' value='128000'>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Maintenance Cost</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='a_maintenance_cost' type='number' value='3000'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /yr
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='b_maintenance_cost' type='number' value='6000'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /yr
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Salvage Value</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-10 columns'>
-                  <input name='a_salvage_value' type='number' value='5000'>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-10 columns'>
-                  <input name='b_salvage_value' type='number' value='8000'>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Service Life</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-9 columns'>
-                  <input name='a_service_life' type='number' value='5'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    years
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-9 columns'>
-                  <input name='b_service_life' type='number' value='5'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    years
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Production Rate</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_production_rate' type='number' value='30'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    units/hr
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_production_rate' type='number' value='60'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    units/hr
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Labour Cost</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='a_labour_cost' type='number' value='12'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /hr
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='b_labour_cost' type='number' value='12'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /hr
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Raw Material Cost</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='a_raw_material_cost' type='number' value='0.2'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /unit
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='b_raw_material_cost' type='number' value='0.2'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /unit
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Power Consumption</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-10 columns'>
-                  <input name='a_power_consumption' type='number' value='3'>
-                </div>
-                <div class='small-2 columns'>
-                  <span class='postfix'>
-                    kW
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-10 columns'>
-                  <input name='b_power_consumption' type='number' value='5'>
-                </div>
-                <div class='small-2 columns'>
-                  <span class='postfix'>
-                    kW
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Electricity Rate</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='a_electricity_rate' type='number' value='0.12'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /kWh
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='b_electricity_rate' type='number' value='0.12'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /kWh
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Machine Overhead Rate</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_machine_overhead_rate' type='number' value='15'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_machine_overhead_rate' type='number' value='15'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Variable Cost Overhead Rate</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_variable_cost_overhead_rate' type='number' value='30'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_variable_cost_overhead_rate' type='number' value='30'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Revenue</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='a_revenue' type='number' value='1.2'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /unit
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-2 columns'>
-                  <span class='prefix'>
-                    $
-                  </span>
-                </div>
-                <div class='small-7 columns'>
-                  <input name='b_revenue' type='number' value='1.2'>
-                </div>
-                <div class='small-3 columns'>
-                  <span class='postfix'>
-                    /unit
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Interest Rate</td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_interest_rate' type='number' value='8'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-            <td>
-              <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_interest_rate' type='number' value='8'>
-                </div>
-                <div class='small-4 columns'>
-                  <span class='postfix'>
-                    %
-                  </span>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Labour Over Time Rate</td>
-            <td colspan='2'>
-              <div class='small-8 small-centered columns'>
-                <div class='row collapse'>
-                  <div class='small-8 columns'>
-                    <input name='labour_overtime_rate' type='number' value='50'>
-                  </div>
-                  <div class='small-4 columns'>
-                    <span class='postfix'>
-                      %
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td>Projected Sale</td>
-            <td colspan='2'>
-              <div class='small-8 small-centered columns'>
-                <div class='row collapse'>
-                  <div class='small-8 columns'>
-                    <input name='projected_sales' type='number' value='69000'>
                   </div>
                   <div class='small-4 columns'>
                     <span class='postfix'>
