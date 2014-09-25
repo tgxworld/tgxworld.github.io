@@ -11,13 +11,33 @@
     %link{href: "../../foundation-5.3.0/css/foundation.min.css", rel: "stylesheet", type: "text/css"}
 
     :css
+      body {
+        height: 800px;
+        margin: auto;
+      }
+
       #chart svg {
-        height: 40em;
+        height: 650px;
       }
 
       .row {
         margin: 0 !important;
         max-width: 100% !important;
+      }
+
+      @media (min-width: 1024px) {
+        table tr td, table tr th {
+          padding: 0.2rem;
+          font-size: 0.6rem;
+        }
+
+        input, .postfix, .prefix {
+          font-size: 0.6rem !important;
+          margin-bottom: 0 !important;
+          height: 1.125rem !important;
+          padding: 0 0.2rem !important;
+          line-height: 1.125rem !important;
+        }
       }
 
     :javascript
@@ -73,7 +93,7 @@
 
             nv.addGraph(function() {
               var chart = nv.models.lineChart()
-                .margin({left: 80, right: 80})  //Adjust chart margins to give the x-axis some breathing room.
+                .margin({left: 80, right: 40})  //Adjust chart margins to give the x-axis some breathing room.
                 .useInteractiveGuideline(false)
                 .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
                 .showYAxis(true)        //Show the y-axis
@@ -232,285 +252,335 @@
       .text-center
         %h1
           Profit Break Even Graph
-      .large-6.columns
+      .large-7.columns
         .row
           #chart{ data: { graph: 'profit_break_even' } }
             %svg
 
-        .row.collapse
-          %label Method A Cost Break Even Point
-          .small-8.columns
-            %input{ type: 'number', name: 'a_cost_break_even',}
-          .small-4.columns
-            %span.postfix
-              units
+      .large-5.columns
+        %table
+          %tr
+            %th
+            %th Manufacturing Setup A
+            %th Manufacturing Setup B
 
-        .row.collapse
-          %label Method B Cost Break Even Point
-          .small-8.columns
-            %input{ type: 'number', name: 'b_cost_break_even',}
-          .small-4.columns
-            %span.postfix
-              units
+          %tr
+            %td Machine Cost
 
-        .row.collapse
-          %label Method A/B Cost Break Even point
-          .small-8.columns
-            %input{ type: 'number', name: 'a_b_cost_break_even',}
-          .small-4.columns
-            %span.postfix
-              units
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_machine_cost', value: 700000 }
 
-      .large-3.columns
-        %form
-          %fieldset
-            %legend Manufacturing Setup A
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_machine_cost', value: 950000 }
 
-            .row.collapse
-              %label Machine Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-10.columns
-                %input{ type: 'number', name: 'a_machine_cost', value: 700000 }
 
-            .row.collapse
-              %label Maintenance Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_maintenance_cost', value: 40000 }
-              .small-3.columns
-                %span.postfix
-                  \/yr
+          %tr
+            %td Maintenance Cost
 
-            .row.collapse
-              %label Salvage Value
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-10.columns
-                %input{ type: 'number', name: 'a_salvage_value', value: 100000 }
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_maintenance_cost', value: 40000 }
+                .small-4.columns
+                  %span.postfix
+                    \/yr
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_maintenance_cost', value: 50000 }
+                .small-4.columns
+                  %span.postfix
+                    \/yr
 
-            .row.collapse
-              %label Service Life
-              .small-9.columns
-                %input{ type: 'number', name: 'a_service_life', value: 5 }
-              .small-3.columns
-                %span.postfix
-                  years
+          %tr
+            %td Salvage value
 
-            .row.collapse
-              %label Labour Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_labour_cost', value: 45 }
-              .small-3.columns
-                %span.postfix
-                  \/hr
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'a_salvage_value', value: 100000 }
 
-            .row.collapse
-              %label Production Rate
-              .small-8.columns
-                %input{ type: 'number', name: 'a_production_rate', value: 75 }
-              .small-4.columns
-                %span.postfix
-                  units/hr
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-10.columns
+                  %input{ type: 'number', name: 'b_salvage_value', value: 150000 }
 
-            .row.collapse
-              %label Factory Space
-              .small-8.columns
-                %input{ type: 'number', name: 'a_factory_space', value: 200 }
-              .small-4.columns
-                %span.postfix
-                  sq m
 
-            .row.collapse
-              %label Monthly Rent
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_monthly_rent', value: 30 }
-              .small-3.columns
-                %span.postfix
-                  \/sq m
+          %tr
+            %td Service Life
 
-            .row.collapse
-              %label Utility Consumption
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_utility_consumption', value: 2500 }
-              .small-3.columns
-                %span.postfix
-                  \/month
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_service_life', value: 5 }
+                .small-4.columns
+                  %span.postfix
+                    years
 
-            .row.collapse
-              %label Maximum Production Capacity
-              .small-8.columns
-                %input{ type: 'number', name: 'a_maximum_production_capacity', value: 20000 }
-              .small-4.columns
-                %span.postfix
-                  units
+            %td
+              .row.collapse
+                .small-9.columns
+                  %input{ type: 'number', name: 'b_service_life', value: 5 }
+                .small-3.columns
+                  %span.postfix
+                    years
 
-            .row.collapse
-              %label Raw Material Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_raw_material_cost', value: 0.7 }
-              .small-3.columns
-                %span.postfix
-                  \/unit
+          %tr
+            %td Labour Cost
 
-            .row.collapse
-              %label Revenue
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'a_revenue', value: 3 }
-              .small-3.columns
-                %span.postfix
-                  \/unit
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_labour_cost', value: 45 }
+                .small-4.columns
+                  %span.postfix
+                    \/hr
 
-            .row.collapse
-              %label Interest Rate
-              .small-8.columns
-                %input{ type: 'number', name: 'a_interest_rate', value: 6 }
-              .small-4.columns
-                %span.postfix
-                  \%
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_labour_cost', value: 45 }
+                .small-4.columns
+                  %span.postfix
+                    \/hr
 
-      .large-3.columns
-        %form
-          %fieldset
-            %legend Manufacturing Setup B
+          %tr
+            %td Production Rate
 
-            .row.collapse
-              %label Machine Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-10.columns
-                %input{ type: 'number', name: 'b_machine_cost', value: 950000 }
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_production_rate', value: 75 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
 
-            .row.collapse
-              %label Maintenance Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_maintenance_cost', value: 50000 }
-              .small-3.columns
-                %span.postfix
-                  \/yr
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_production_rate', value: 100 }
+                .small-4.columns
+                  %span.postfix
+                    units/hr
 
-            .row.collapse
-              %label Salvage Value
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-10.columns
-                %input{ type: 'number', name: 'b_salvage_value', value: 150000 }
+          %tr
+            %td Factory Space
 
-            .row.collapse
-              %label Service Life
-              .small-9.columns
-                %input{ type: 'number', name: 'b_service_life', value: 5 }
-              .small-3.columns
-                %span.postfix
-                  years
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_factory_space', value: 200 }
+                .small-4.columns
+                  %span.postfix
+                    sq m
 
-            .row.collapse
-              %label Labour Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_labour_cost', value: 45 }
-              .small-3.columns
-                %span.postfix
-                  \/hr
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_factory_space', value: 200 }
+                .small-4.columns
+                  %span.postfix
+                    sq m
 
-            .row.collapse
-              %label Production Rate
-              .small-8.columns
-                %input{ type: 'number', name: 'b_production_rate', value: 100 }
-              .small-4.columns
-                %span.postfix
-                  units/hr
+          %tr
+            %td Monthly Rent
 
-            .row.collapse
-              %label Factory Space
-              .small-8.columns
-                %input{ type: 'number', name: 'b_factory_space', value: 200 }
-              .small-4.columns
-                %span.postfix
-                  sq m
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_monthly_rent', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \/sq m
 
-            .row.collapse
-              %label Monthly Rent
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_monthly_rent', value: 30 }
-              .small-3.columns
-                %span.postfix
-                  \/sq m
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_monthly_rent', value: 30 }
+                .small-4.columns
+                  %span.postfix
+                    \/sq m
 
-            .row.collapse
-              %label Utility Consumption
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_utility_consumption', value: 2800 }
-              .small-3.columns
-                %span.postfix
-                  \/month
+          %tr
+            %td Utility Consumption
 
-            .row.collapse
-              %label Maximum Production Capacity
-              .small-8.columns
-                %input{ type: 'number', name: 'b_maximum_production_capacity', value: 25000 }
-              .small-4.columns
-                %span.postfix
-                  units
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_utility_consumption', value: 2500 }
+                .small-4.columns
+                  %span.postfix
+                    \/month
 
-            .row.collapse
-              %label Raw Material Cost
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_raw_material_cost', value: 0.7 }
-              .small-3.columns
-                %span.postfix
-                  \/unit
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_utility_consumption', value: 2800 }
+                .small-4.columns
+                  %span.postfix
+                    \/month
 
-            .row.collapse
-              %label Revenue
-              .small-2.columns
-                %span.prefix
-                  $
-              .small-7.columns
-                %input{ type: 'number', name: 'b_revenue', value: 3 }
-              .small-3.columns
-                %span.postfix
-                  \/unit
+          %tr
+            %td Maximum Production Capacity
 
-            .row.collapse
-              %label Interest Rate
-              .small-8.columns
-                %input{ type: 'number', name: 'b_interest_rate', value: 6 }
-              .small-4.columns
-                %span.postfix
-                  \%
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_maximum_production_capacity', value: 20000 }
+                .small-4.columns
+                  %span.postfix
+                    units
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_maximum_production_capacity', value: 25000 }
+                .small-4.columns
+                  %span.postfix
+                    units
+
+          %tr
+            %td Raw Material Cost
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.7 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.7 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+          %tr
+            %td Revenue
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'a_revenue', value: 3 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+            %td
+              .row.collapse
+                .small-2.columns
+                  %span.prefix
+                    $
+                .small-6.columns
+                  %input{ type: 'number', name: 'b_revenue', value: 3 }
+                .small-4.columns
+                  %span.postfix
+                    \/unit
+
+          %tr
+            %td Interest rate
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_interest_rate', value: 6 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_interest_rate', value: 6 }
+                .small-4.columns
+                  %span.postfix
+                    \%
+
+        %table
+          %tr
+            %th
+            %th Method A
+            %th Method B
+
+          %tr
+            %td Cost Break Even Point
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'a_cost_break_even', disabled: '' }
+                .small-4.columns
+                  %span.postfix
+                    units
+
+            %td
+              .row.collapse
+                .small-8.columns
+                  %input{ type: 'number', name: 'b_cost_break_even', disabled: '' }
+                .small-4.columns
+                  %span.postfix
+                    units
+
+          %tr
+            %td Method A/B Cost Break Even Point
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'number', name: 'a_b_cost_break_even', disabled: '' }
+                  .small-4.columns
+                    %span.postfix
+                      units
