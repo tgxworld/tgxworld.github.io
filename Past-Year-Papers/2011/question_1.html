@@ -21,24 +21,27 @@
         height: 650px;
       }
       
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+      
       .row {
         margin: 0 !important;
         max-width: 100% !important;
       }
       
-      @media (min-width: 1024px) {
-        table tr td, table tr th {
-          padding: 0;
-          font-size: 0.6rem;
-        }
+      table tr td, table tr th {
+        padding: 0.2rem;
+        font-size: 0.6rem;
+      }
       
-        input, .postfix, .prefix {
-          font-size: 0.6rem !important;
-          margin-bottom: 0 !important;
-          height: 1.125rem !important;
-          padding: 0 0.2rem !important;
-          line-height: 1.125rem !important;
-        }
+      input, .postfix, .prefix {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+        height: 1.125rem !important;
+        padding: 0 0.2rem !important;
+        line-height: 1.125rem !important;
       }
     </style>
     <script>
@@ -400,7 +403,7 @@
                   </span>
                 </div>
                 <div class='small-10 columns'>
-                  <input name='a_machine_cost' type='number' value='72000'>
+                  <input name='a_machine_cost' type='text' value='72000'>
                 </div>
               </div>
             </td>
@@ -412,7 +415,7 @@
                   </span>
                 </div>
                 <div class='small-10 columns'>
-                  <input name='b_machine_cost' type='number' value='128000'>
+                  <input name='b_machine_cost' type='text' value='128000'>
                 </div>
               </div>
             </td>
@@ -427,7 +430,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='a_maintenance_cost' type='number' value='3000'>
+                  <input name='a_maintenance_cost' type='text' value='3000'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -444,7 +447,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='b_maintenance_cost' type='number' value='6000'>
+                  <input name='b_maintenance_cost' type='text' value='6000'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -464,7 +467,7 @@
                   </span>
                 </div>
                 <div class='small-10 columns'>
-                  <input name='a_salvage_value' type='number' value='5000'>
+                  <input name='a_salvage_value' type='text' value='5000'>
                 </div>
               </div>
             </td>
@@ -476,7 +479,7 @@
                   </span>
                 </div>
                 <div class='small-10 columns'>
-                  <input name='b_salvage_value' type='number' value='8000'>
+                  <input name='b_salvage_value' type='text' value='8000'>
                 </div>
               </div>
             </td>
@@ -485,10 +488,10 @@
             <td>Service Life</td>
             <td>
               <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_service_life' type='number' value='5'>
+                <div class='small-7 columns'>
+                  <input name='a_service_life' type='text' value='5'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-5 columns'>
                   <span class='postfix'>
                     years
                   </span>
@@ -497,10 +500,10 @@
             </td>
             <td>
               <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_service_life' type='number' value='5'>
+                <div class='small-7 columns'>
+                  <input name='b_service_life' type='text' value='5'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-5 columns'>
                   <span class='postfix'>
                     years
                   </span>
@@ -512,10 +515,10 @@
             <td>Production Rate</td>
             <td>
               <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='a_production_rate' type='number' value='30'>
+                <div class='small-6 columns'>
+                  <input name='a_production_rate' type='text' value='30'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-6 columns'>
                   <span class='postfix'>
                     units/hr
                   </span>
@@ -524,10 +527,10 @@
             </td>
             <td>
               <div class='row collapse'>
-                <div class='small-8 columns'>
-                  <input name='b_production_rate' type='number' value='60'>
+                <div class='small-6 columns'>
+                  <input name='b_production_rate' type='text' value='60'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-6 columns'>
                   <span class='postfix'>
                     units/hr
                   </span>
@@ -545,7 +548,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='a_labour_cost' type='number' value='12'>
+                  <input name='a_labour_cost' type='text' value='12'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -562,7 +565,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='b_labour_cost' type='number' value='12'>
+                  <input name='b_labour_cost' type='text' value='12'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -582,7 +585,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='a_raw_material_cost' type='number' value='0.2'>
+                  <input name='a_raw_material_cost' type='text' value='0.2'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -599,7 +602,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='b_raw_material_cost' type='number' value='0.2'>
+                  <input name='b_raw_material_cost' type='text' value='0.2'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -614,7 +617,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='a_power_consumption' type='number' value='3'>
+                  <input name='a_power_consumption' type='text' value='3'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -626,7 +629,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='b_power_consumption' type='number' value='5'>
+                  <input name='b_power_consumption' type='text' value='5'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -645,10 +648,10 @@
                     $
                   </span>
                 </div>
-                <div class='small-6 columns'>
-                  <input name='a_electricity_rate' type='number' value='0.12'>
+                <div class='small-5 columns'>
+                  <input name='a_electricity_rate' type='text' value='0.12'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-5 columns'>
                   <span class='postfix'>
                     /kWh
                   </span>
@@ -662,10 +665,10 @@
                     $
                   </span>
                 </div>
-                <div class='small-6 columns'>
-                  <input name='b_electricity_rate' type='number' value='0.12'>
+                <div class='small-5 columns'>
+                  <input name='b_electricity_rate' type='text' value='0.12'>
                 </div>
-                <div class='small-4 columns'>
+                <div class='small-5 columns'>
                   <span class='postfix'>
                     /kWh
                   </span>
@@ -678,7 +681,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='a_machine_overhead_rate' type='number' value='15'>
+                  <input name='a_machine_overhead_rate' type='text' value='15'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -690,7 +693,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='b_machine_overhead_rate' type='number' value='15'>
+                  <input name='b_machine_overhead_rate' type='text' value='15'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -705,7 +708,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='a_variable_cost_overhead_rate' type='number' value='30'>
+                  <input name='a_variable_cost_overhead_rate' type='text' value='30'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -717,7 +720,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='b_variable_cost_overhead_rate' type='number' value='30'>
+                  <input name='b_variable_cost_overhead_rate' type='text' value='30'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -737,7 +740,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='a_revenue' type='number' value='1.2'>
+                  <input name='a_revenue' type='text' value='1.2'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -754,7 +757,7 @@
                   </span>
                 </div>
                 <div class='small-6 columns'>
-                  <input name='b_revenue' type='number' value='1.2'>
+                  <input name='b_revenue' type='text' value='1.2'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -769,7 +772,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='a_interest_rate' type='number' value='8'>
+                  <input name='a_interest_rate' type='text' value='8'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -781,7 +784,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input name='b_interest_rate' type='number' value='8'>
+                  <input name='b_interest_rate' type='text' value='8'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -797,7 +800,7 @@
               <div class='small-8 small-centered columns'>
                 <div class='row collapse'>
                   <div class='small-8 columns'>
-                    <input name='labour_overtime_rate' type='number' value='50'>
+                    <input name='labour_overtime_rate' type='text' value='50'>
                   </div>
                   <div class='small-4 columns'>
                     <span class='postfix'>
@@ -814,7 +817,7 @@
               <div class='small-8 small-centered columns'>
                 <div class='row collapse'>
                   <div class='small-8 columns'>
-                    <input name='projected_sales' type='number' value='69000'>
+                    <input name='projected_sales' type='text' value='69000'>
                   </div>
                   <div class='small-4 columns'>
                     <span class='postfix'>
@@ -837,7 +840,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input disabled='' name='a_cost_break_even' type='number'>
+                  <input disabled='' name='a_cost_break_even' type='text'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -849,7 +852,7 @@
             <td>
               <div class='row collapse'>
                 <div class='small-8 columns'>
-                  <input disabled='' name='b_cost_break_even' type='number'>
+                  <input disabled='' name='b_cost_break_even' type='text'>
                 </div>
                 <div class='small-4 columns'>
                   <span class='postfix'>
@@ -869,7 +872,7 @@
                   </span>
                 </div>
                 <div class='small-8 columns'>
-                  <input disabled='' name='a_profit_overtime' type='number'>
+                  <input disabled='' name='a_profit_overtime' type='text'>
                 </div>
               </div>
             </td>
@@ -881,7 +884,7 @@
                   </span>
                 </div>
                 <div class='small-8 columns'>
-                  <input disabled='' name='b_profit_overtime' type='number'>
+                  <input disabled='' name='b_profit_overtime' type='text'>
                 </div>
               </div>
             </td>
@@ -892,7 +895,7 @@
               <div class='small-10 small-centered columns'>
                 <div class='row collapse'>
                   <div class='small-8 columns'>
-                    <input disabled='' name='a_b_cost_break_even' type='number'>
+                    <input disabled='' name='a_b_cost_break_even' type='text'>
                   </div>
                   <div class='small-4 columns'>
                     <span class='postfix'>
@@ -909,7 +912,7 @@
               <div class='small-10 small-centered columns'>
                 <div class='row collapse'>
                   <div class='small-8 columns'>
-                    <input disabled='' name='a_b_cost_break_even_with_overtime' type='number'>
+                    <input disabled='' name='a_b_cost_break_even_with_overtime' type='text'>
                   </div>
                   <div class='small-4 columns'>
                     <span class='postfix'>

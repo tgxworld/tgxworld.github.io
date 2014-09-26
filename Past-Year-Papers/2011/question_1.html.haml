@@ -22,24 +22,27 @@
         height: 650px;
       }
 
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+
       .row {
         margin: 0 !important;
         max-width: 100% !important;
       }
 
-      @media (min-width: 1024px) {
-        table tr td, table tr th {
-          padding: 0;
-          font-size: 0.6rem;
-        }
+      table tr td, table tr th {
+        padding: 0.2rem;
+        font-size: 0.6rem;
+      }
 
-        input, .postfix, .prefix {
-          font-size: 0.6rem !important;
-          margin-bottom: 0 !important;
-          height: 1.125rem !important;
-          padding: 0 0.2rem !important;
-          line-height: 1.125rem !important;
-        }
+      input, .postfix, .prefix {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+        height: 1.125rem !important;
+        padding: 0 0.2rem !important;
+        line-height: 1.125rem !important;
       }
 
     :javascript
@@ -374,6 +377,7 @@
       .text-center
         %h3
           ME4262 Finals 2011 Question 1
+
       .large-7.columns
         .row
           #chart{ data: { graph: 'profit_break_even' } }
@@ -395,14 +399,14 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'a_machine_cost', value: 72000 }
+                  %input{ type: 'text', name: 'a_machine_cost', value: 72000 }
             %td
               .row.collapse
                 .small-2.columns
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'b_machine_cost', value: 128000 }
+                  %input{ type: 'text', name: 'b_machine_cost', value: 128000 }
 
           %tr
             %td Maintenance Cost
@@ -413,7 +417,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_maintenance_cost', value: 3000 }
+                  %input{ type: 'text', name: 'a_maintenance_cost', value: 3000 }
                 .small-4.columns
                   %span.postfix
                     \/yr
@@ -424,7 +428,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_maintenance_cost', value: 6000 }
+                  %input{ type: 'text', name: 'b_maintenance_cost', value: 6000 }
                 .small-4.columns
                   %span.postfix
                     \/yr
@@ -438,7 +442,7 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'a_salvage_value', value: 5000 }
+                  %input{ type: 'text', name: 'a_salvage_value', value: 5000 }
 
             %td
               .row.collapse
@@ -446,24 +450,24 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'b_salvage_value', value: 8000 }
+                  %input{ type: 'text', name: 'b_salvage_value', value: 8000 }
 
           %tr
             %td Service Life
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_service_life', value: 5 }
-                .small-4.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'a_service_life', value: 5 }
+                .small-5.columns
                   %span.postfix
                     years
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_service_life', value: 5 }
-                .small-4.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'b_service_life', value: 5 }
+                .small-5.columns
                   %span.postfix
                     years
 
@@ -472,17 +476,17 @@
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_production_rate', value: 30 }
-                .small-4.columns
+                .small-6.columns
+                  %input{ type: 'text', name: 'a_production_rate', value: 30 }
+                .small-6.columns
                   %span.postfix
                     units/hr
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_production_rate', value: 60 }
-                .small-4.columns
+                .small-6.columns
+                  %input{ type: 'text', name: 'b_production_rate', value: 60 }
+                .small-6.columns
                   %span.postfix
                     units/hr
 
@@ -495,7 +499,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_labour_cost', value: 12 }
+                  %input{ type: 'text', name: 'a_labour_cost', value: 12 }
                 .small-4.columns
                   %span.postfix
                     \/hr
@@ -506,7 +510,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_labour_cost', value: 12 }
+                  %input{ type: 'text', name: 'b_labour_cost', value: 12 }
                 .small-4.columns
                   %span.postfix
                     \/hr
@@ -520,7 +524,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.2 }
+                  %input{ type: 'text', name: 'a_raw_material_cost', value: 0.2 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -531,7 +535,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.2 }
+                  %input{ type: 'text', name: 'b_raw_material_cost', value: 0.2 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -543,7 +547,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_power_consumption', value: 3 }
+                  %input{ type: 'text', name: 'a_power_consumption', value: 3 }
                 .small-4.columns
                   %span.postfix
                     kW
@@ -551,7 +555,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_power_consumption', value: 5 }
+                  %input{ type: 'text', name: 'b_power_consumption', value: 5 }
                 .small-4.columns
                   %span.postfix
                     kW
@@ -564,9 +568,9 @@
                 .small-2.columns
                   %span.prefix
                     $
-                .small-6.columns
-                  %input{ type: 'number', name: 'a_electricity_rate', value: 0.12 }
-                .small-4.columns
+                .small-5.columns
+                  %input{ type: 'text', name: 'a_electricity_rate', value: 0.12 }
+                .small-5.columns
                   %span.postfix
                     \/kWh
 
@@ -575,9 +579,9 @@
                 .small-2.columns
                   %span.prefix
                     $
-                .small-6.columns
-                  %input{ type: 'number', name: 'b_electricity_rate', value: 0.12 }
-                .small-4.columns
+                .small-5.columns
+                  %input{ type: 'text', name: 'b_electricity_rate', value: 0.12 }
+                .small-5.columns
                   %span.postfix
                     \/kWh
 
@@ -587,7 +591,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_machine_overhead_rate', value: 15 }
+                  %input{ type: 'text', name: 'a_machine_overhead_rate', value: 15 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -595,7 +599,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_machine_overhead_rate', value: 15 }
+                  %input{ type: 'text', name: 'b_machine_overhead_rate', value: 15 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -606,7 +610,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_variable_cost_overhead_rate', value: 30 }
+                  %input{ type: 'text', name: 'a_variable_cost_overhead_rate', value: 30 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -614,7 +618,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_variable_cost_overhead_rate', value: 30 }
+                  %input{ type: 'text', name: 'b_variable_cost_overhead_rate', value: 30 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -628,7 +632,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_revenue', value: 1.2 }
+                  %input{ type: 'text', name: 'a_revenue', value: 1.2 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -639,7 +643,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_revenue', value: 1.2 }
+                  %input{ type: 'text', name: 'b_revenue', value: 1.2 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -650,7 +654,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_interest_rate', value: 8 }
+                  %input{ type: 'text', name: 'a_interest_rate', value: 8 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -658,7 +662,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_interest_rate', value: 8 }
+                  %input{ type: 'text', name: 'b_interest_rate', value: 8 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -670,7 +674,7 @@
               .small-8.small-centered.columns
                 .row.collapse
                   .small-8.columns
-                    %input{ type: 'number', name: 'labour_overtime_rate', value: 50 }
+                    %input{ type: 'text', name: 'labour_overtime_rate', value: 50 }
                   .small-4.columns
                     %span.postfix
                       \%
@@ -682,7 +686,7 @@
               .small-8.small-centered.columns
                 .row.collapse
                   .small-8.columns
-                    %input{ type: 'number', name: 'projected_sales', value: 69000 }
+                    %input{ type: 'text', name: 'projected_sales', value: 69000 }
                   .small-4.columns
                     %span.postfix
                       units
@@ -699,7 +703,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_cost_break_even', disabled: '' }
+                  %input{ type: 'text', name: 'a_cost_break_even', disabled: '' }
                 .small-4.columns
                   %span.postfix
                     hrs
@@ -707,7 +711,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_cost_break_even', disabled: '' }
+                  %input{ type: 'text', name: 'b_cost_break_even', disabled: '' }
                 .small-4.columns
                   %span.postfix
                     hrs
@@ -721,7 +725,7 @@
                   %span.prefix
                     $
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_profit_overtime', disabled: '' }
+                  %input{ type: 'text', name: 'a_profit_overtime', disabled: '' }
 
             %td
               .row.collapse
@@ -729,7 +733,7 @@
                   %span.prefix
                     $
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_profit_overtime', disabled: '' }
+                  %input{ type: 'text', name: 'b_profit_overtime', disabled: '' }
 
           %tr
             %td Cost Break Even Without Overtime
@@ -738,7 +742,7 @@
               .small-10.small-centered.columns
                 .row.collapse
                   .small-8.columns
-                    %input{ type: 'number', name: 'a_b_cost_break_even', disabled: '' }
+                    %input{ type: 'text', name: 'a_b_cost_break_even', disabled: '' }
                   .small-4.columns
                     %span.postfix
                       units
@@ -750,7 +754,7 @@
               .small-10.small-centered.columns
                 .row.collapse
                   .small-8.columns
-                    %input{ type: 'number', name: 'a_b_cost_break_even_with_overtime', disabled: '' }
+                    %input{ type: 'text', name: 'a_b_cost_break_even_with_overtime', disabled: '' }
                   .small-4.columns
                     %span.postfix
                       units
