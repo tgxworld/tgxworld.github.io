@@ -22,24 +22,27 @@
         height: 650px;
       }
 
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+
       .row {
         margin: 0 !important;
         max-width: 100% !important;
       }
 
-      @media (min-width: 1024px) {
-        table tr td, table tr th {
-          padding: 0.2rem;
-          font-size: 0.6rem;
-        }
+      table tr td, table tr th {
+        padding: 0.2rem;
+        font-size: 0.6rem;
+      }
 
-        input, .postfix, .prefix {
-          font-size: 0.6rem !important;
-          margin-bottom: 0 !important;
-          height: 1.125rem !important;
-          padding: 0 0.2rem !important;
-          line-height: 1.125rem !important;
-        }
+      input, .postfix, .prefix {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+        height: 1.125rem !important;
+        padding: 0 0.2rem !important;
+        line-height: 1.125rem !important;
       }
 
     :javascript
@@ -253,7 +256,8 @@
     .large-12.columns
       .text-center
         %h1
-          Profit Break Even Graph
+          ME4262 Finals 2009 Question 1
+
       .large-7.columns
         .row
           #chart{ data: { graph: 'profit_break_even' } }
@@ -263,11 +267,11 @@
         %table
           %tr
             %th
-            %th Manufacturing Setup A
-            %th Manufacturing Setup B
+            %th Production Setup A
+            %th Production Setup B
 
           %tr
-            %td Machine Cost
+            %td Machine + Integrated material handling system
 
             %td
               .row.collapse
@@ -275,7 +279,7 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'a_machine_cost', value: 700000 }
+                  %input{ type: 'text', name: 'a_machine_cost', value: 500000 }
 
             %td
               .row.collapse
@@ -283,7 +287,7 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'b_machine_cost', value: 950000 }
+                  %input{ type: 'text', name: 'b_machine_cost', value: 650000 }
 
 
           %tr
@@ -295,7 +299,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_maintenance_cost', value: 40000 }
+                  %input{ type: 'text', name: 'a_maintenance_cost', value: 30000 }
                 .small-4.columns
                   %span.postfix
                     \/yr
@@ -305,7 +309,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_maintenance_cost', value: 50000 }
+                  %input{ type: 'text', name: 'b_maintenance_cost', value: 30000 }
                 .small-4.columns
                   %span.postfix
                     \/yr
@@ -319,7 +323,7 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'a_salvage_value', value: 100000 }
+                  %input{ type: 'text', name: 'a_salvage_value', value: 80000 }
 
             %td
               .row.collapse
@@ -327,7 +331,7 @@
                   %span.prefix
                     $
                 .small-10.columns
-                  %input{ type: 'number', name: 'b_salvage_value', value: 150000 }
+                  %input{ type: 'text', name: 'b_salvage_value', value: 100000 }
 
 
           %tr
@@ -335,17 +339,17 @@
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_service_life', value: 5 }
-                .small-4.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'a_service_life', value: 5 }
+                .small-5.columns
                   %span.postfix
                     years
 
             %td
               .row.collapse
-                .small-9.columns
-                  %input{ type: 'number', name: 'b_service_life', value: 5 }
-                .small-3.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'b_service_life', value: 5 }
+                .small-5.columns
                   %span.postfix
                     years
 
@@ -358,7 +362,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_labour_cost', value: 45 }
+                  %input{ type: 'text', name: 'a_labour_cost', value: 30 }
                 .small-4.columns
                   %span.postfix
                     \/hr
@@ -369,7 +373,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_labour_cost', value: 45 }
+                  %input{ type: 'text', name: 'b_labour_cost', value: 30 }
                 .small-4.columns
                   %span.postfix
                     \/hr
@@ -379,27 +383,27 @@
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_production_rate', value: 75 }
-                .small-4.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'a_production_rate', value: 50 }
+                .small-5.columns
                   %span.postfix
                     units/hr
 
             %td
               .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_production_rate', value: 100 }
-                .small-4.columns
+                .small-7.columns
+                  %input{ type: 'text', name: 'b_production_rate', value: 75 }
+                .small-5.columns
                   %span.postfix
                     units/hr
 
           %tr
-            %td Factory Space
+            %td Factory Space Needed
 
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_factory_space', value: 200 }
+                  %input{ type: 'text', name: 'a_factory_space', value: 180 }
                 .small-4.columns
                   %span.postfix
                     sq m
@@ -407,7 +411,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_factory_space', value: 200 }
+                  %input{ type: 'text', name: 'b_factory_space', value: 180 }
                 .small-4.columns
                   %span.postfix
                     sq m
@@ -421,7 +425,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_monthly_rent', value: 30 }
+                  %input{ type: 'text', name: 'a_monthly_rent', value: 20 }
                 .small-4.columns
                   %span.postfix
                     \/sq m
@@ -432,13 +436,13 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_monthly_rent', value: 30 }
+                  %input{ type: 'text', name: 'b_monthly_rent', value: 20 }
                 .small-4.columns
                   %span.postfix
                     \/sq m
 
           %tr
-            %td Utility Consumption
+            %td Estimated Utility Consumption
 
             %td
               .row.collapse
@@ -446,10 +450,10 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_utility_consumption', value: 2500 }
+                  %input{ type: 'text', name: 'a_utility_consumption', value: 2000 }
                 .small-4.columns
                   %span.postfix
-                    \/month
+                    \/mth
 
             %td
               .row.collapse
@@ -457,10 +461,10 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_utility_consumption', value: 2800 }
+                  %input{ type: 'text', name: 'b_utility_consumption', value: 2000 }
                 .small-4.columns
                   %span.postfix
-                    \/month
+                    \/mth
 
           %tr
             %td Maximum Production Capacity
@@ -468,7 +472,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_maximum_production_capacity', value: 20000 }
+                  %input{ type: 'text', name: 'a_maximum_production_capacity', value: 20000 }
                 .small-4.columns
                   %span.postfix
                     units
@@ -476,7 +480,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_maximum_production_capacity', value: 25000 }
+                  %input{ type: 'text', name: 'b_maximum_production_capacity', value: 22000 }
                 .small-4.columns
                   %span.postfix
                     units
@@ -490,7 +494,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_raw_material_cost', value: 0.7 }
+                  %input{ type: 'text', name: 'a_raw_material_cost', value: 0.5 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -501,7 +505,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_raw_material_cost', value: 0.7 }
+                  %input{ type: 'text', name: 'b_raw_material_cost', value: 0.5 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -515,7 +519,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'a_revenue', value: 3 }
+                  %input{ type: 'text', name: 'a_revenue', value: 2.50 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -526,7 +530,7 @@
                   %span.prefix
                     $
                 .small-6.columns
-                  %input{ type: 'number', name: 'b_revenue', value: 3 }
+                  %input{ type: 'text', name: 'b_revenue', value: 2.50 }
                 .small-4.columns
                   %span.postfix
                     \/unit
@@ -537,7 +541,7 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'a_interest_rate', value: 6 }
+                  %input{ type: 'text', name: 'a_interest_rate', value: 6 }
                 .small-4.columns
                   %span.postfix
                     \%
@@ -545,35 +549,35 @@
             %td
               .row.collapse
                 .small-8.columns
-                  %input{ type: 'number', name: 'b_interest_rate', value: 6 }
+                  %input{ type: 'text', name: 'b_interest_rate', value: 6 }
                 .small-4.columns
                   %span.postfix
                     \%
 
         %table
           %tr
-            %th
-            %th Method A
-            %th Method B
+            %td Method A Cost Break Even Point
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'text', name: 'a_cost_break_even', disabled: '' }
+                  .small-4.columns
+                    %span.postfix
+                      units
 
           %tr
-            %td Cost Break Even Point
+            %td Method B Cost Break Even Point
 
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'a_cost_break_even', disabled: '' }
-                .small-4.columns
-                  %span.postfix
-                    units
-
-            %td
-              .row.collapse
-                .small-8.columns
-                  %input{ type: 'number', name: 'b_cost_break_even', disabled: '' }
-                .small-4.columns
-                  %span.postfix
-                    units
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'text', name: 'b_cost_break_even', disabled: '' }
+                  .small-4.columns
+                    %span.postfix
+                      units
 
           %tr
             %td Method A/B Cost Break Even Point
@@ -582,7 +586,7 @@
               .small-10.small-centered.columns
                 .row.collapse
                   .small-8.columns
-                    %input{ type: 'number', name: 'a_b_cost_break_even', disabled: '' }
+                    %input{ type: 'text', name: 'a_b_cost_break_even', disabled: '' }
                   .small-4.columns
                     %span.postfix
                       units
