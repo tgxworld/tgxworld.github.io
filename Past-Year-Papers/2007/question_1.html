@@ -9,6 +9,7 @@
     <script src='../../foundation-5.3.0/js/foundation.min.js'></script>
     <script src='../../foundation-5.3.0/js/vendor/modernizr.js'></script>
     <script src='../../jquery-ui-1.11.1/jquery-ui.min.js'></script>
+    <link href='../../jquery-ui-1.11.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>
     <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
     <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
     <style>
@@ -18,7 +19,15 @@
       }
       
       #chart svg {
-        height: 650px;
+        height: 600px;
+      }
+      
+      #range-slider {
+        margin-bottom: 1em;
+      }
+      
+      #range-input {
+        display: inline;
       }
       
       table {
@@ -109,8 +118,22 @@
         }
       
         function calculateCost(cost, variableCost, number_of_units) {
-          return (cost + (variableCost * number_of_units)).toFixed(2);
+          return Number((cost + (variableCost * number_of_units)).toFixed(2));
         }
+      
+        function roundUp(x){
+          var y = Math.pow(10, parseInt(x).toString().length - 1);
+          x = (x / y);
+          x = Math.ceil(x);
+          x = x * y;
+          return x;
+        }
+      
+        var lowerBound = 0;
+        var upperBound = 0;
+        var upperBoundMax = 0;
+        var slider;
+        var $slider = $('#range-slider');
       
         var ProfitBreakEvenGraph = {
           _init: function() {
@@ -132,7 +155,7 @@
                 .axisLabel('Cost / Revenue')
       
               /* Done setting the chart up? Time to render it!*/
-              var myData = widget._generateLineData();
+              var myData = widget._generateLineData(false);
       
               d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
                 .datum(myData)         //Populate the <svg> element with chart data...
@@ -143,23 +166,41 @@
       
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
-                  widget._updateChart(chart);
+                  widget._updateChart(chart, false);
                 })
               });
+      
+              $rangeInputValue = $('#range-input-value');
+      
+              slider = $slider.slider({
+                range: true,
+                min: lowerBound,
+                max: upperBoundMax,
+                values: [lowerBound, upperBound],
+                slide: function(event, ui) {
+                  lowerBound = ui.values[0];
+                  upperBound = ui.values[1];
+      
+                  widget._updateChart(chart, true);
+      
+                  $rangeInputValue.text(lowerBound + '-' + upperBound);
+                }
+              });
+              $rangeInputValue.text(lowerBound + '-' + upperBound);
       
               return chart;
             });
           },
       
-          _updateChart: function(chart) {
-            var myData = this._generateLineData();
+          _updateChart: function(chart, isSlider) {
+            var myData = this._generateLineData(isSlider);
       
             d3.select('#chart svg')
               .datum(myData)
               .call(chart)
           },
       
-          _generateLineData: function() {
+          _generateLineData: function(isSlider) {
             var labourOvertimeRate = parseFloat(d3.select('input[name=labour_overtime_rate]').property('value'));
             var projectedSales = parseFloat(d3.select('input[name=projected_sales]').property('value'));
             // Method A Start
@@ -240,11 +281,16 @@
       
             var aCurrentSales = aProductionRate * 8 * 5 *50;
             var bCurrentSales = bProductionRate * 8 * 5 *50;
+            var aIsOvertime = (projectedSales > aCurrentSales);
+            var bIsOvertime = (projectedSales > bCurrentSales);
+      
+            if (aIsOvertime) { breakEvenPoints.push(aCurrentSales); }
+            if (bIsOvertime) { breakEvenPoints.push(bCurrentSales); }
       
             var dBreakEven = this._setMethodABBreakEvenValueWithOvertime(
               aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead, aCurrentSales,
               bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead, bCurrentSales,
-              cBreakEven
+              projectedSales
             );
       
             var aRevenueData = [];
@@ -254,32 +300,72 @@
             var bCostData = [];
             var bCostDataWithOvertime = [];
       
-            var unitsMax = Math.max.apply(null, breakEvenPoints);
-            var unitsMin = Math.min.apply(null, breakEvenPoints);
+            var unitsMax = roundUp(Math.max.apply(null, breakEvenPoints));
+            upperBoundMax = unitsMax;
       
-            [parseInt(unitsMin - 10000), parseInt(unitsMax + 10000)].forEach(function(element) {
+            if (isSlider) {
+              unitsMax = upperBound;
+            } else {
+              upperBound = unitsMax;
+            }
+      
+            if (slider != null) {
+              $slider.slider('option', 'max', upperBoundMax);
+              if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
+            }
+      
+            if (!aIsOvertime) {
+              [lowerBound, unitsMax].forEach(function(element) {
+                var aCostPointWithOvertime = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
+      
+                aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+              });
+            } else {
+              var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+      
+              if (aCurrentSales < unitsMax) {
+                [lowerElement, unitsMax].forEach(function(element) {
+                  var aCostPointWithOvertime = calculateOvertimeCost(aUniformAnnualCostWithMachineOverhead,
+                    aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead,
+                    aProductionRate, element
+                  );
+      
+                  aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+                });
+              }
+            }
+      
+            if (!bIsOvertime) {
+              [lowerBound, unitsMax].forEach(function(element) {
+                var bCostPointWithOvertime = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
+      
+                bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
+              });
+            } else {
+              var lowerElement = (lowerBound > bCurrentSales) ? lowerBound : bCurrentSales;
+      
+              if (bCurrentSales < unitsMax) {
+                [lowerElement, unitsMax].forEach(function(element) {
+                  var bCostPointWithOvertime = calculateOvertimeCost(bUniformAnnualCostWithMachineOverhead,
+                    bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead,
+                    bProductionRate, element
+                  );
+      
+                  bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
+                });
+              }
+            }
+      
+            [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
               var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
-      
-              var aCostPointWithOvertime = calculateOvertimeCost(aUniformAnnualCostWithMachineOverhead,
-                aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead,
-                aProductionRate, element
-              );
-      
               var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
-      
-              var bCostPointWithOvertime = calculateOvertimeCost(bUniformAnnualCostWithMachineOverhead,
-                bVariableCostWithOverhead, bVariableCostOvertimeWithOverhead,
-                bProductionRate, element
-              );
       
               aRevenueData.push({ x: element, y: aRevenuePoint });
               bRevenueData.push({ x: element, y: bRevenuePoint });
               aCostData.push({ x: element, y: aCostPoint });
-              aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
               bCostData.push({ x: element, y: bCostPoint });
-              bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
             });
       
             return [
@@ -385,6 +471,13 @@
           <div data-graph='profit_break_even' id='chart'>
             <svg></svg>
           </div>
+        </div>
+        <div class='row text-center'>
+          <div id='range-input'>
+            X-Axis Range:
+            <div id='range-input-value'></div>
+          </div>
+          <div id='range-slider'></div>
         </div>
       </div>
       <div class='large-5 columns'>

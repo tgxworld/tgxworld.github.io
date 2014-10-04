@@ -9,6 +9,7 @@
     <script src='../../foundation-5.3.0/js/foundation.min.js'></script>
     <script src='../../foundation-5.3.0/js/vendor/modernizr.js'></script>
     <script src='../../jquery-ui-1.11.1/jquery-ui.min.js'></script>
+    <link href='../../jquery-ui-1.11.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>
     <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
     <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
     <style>
@@ -18,7 +19,19 @@
       }
       
       #chart svg {
-        height: 650px;
+        height: 600px;
+      }
+      
+      #range-slider {
+        margin-bottom: 1em;
+      }
+      
+      #range-input {
+        display: inline;
+      }
+      
+      #range-input-value {
+        display: inline-block;
       }
       
       table {
@@ -91,6 +104,20 @@
           return (uniformAnnualCost + rentPerAnnum + utilityPerAnnum + ((labourCostPerUnit + rawMaterialCost) * unitsScale)).toFixed(2);
         }
       
+        function roundUp(x){
+          var y = Math.pow(10, parseInt(x).toString().length - 1);
+          x = (x / y);
+          x = Math.ceil(x);
+          x = x * y;
+          return x;
+        }
+      
+        var lowerBound = 0;
+        var upperBound = 0;
+        var upperBoundMax = 0;
+        var slider;
+        var $slider = $('#range-slider');
+      
         var ProfitBreakEvenGraph = {
           _init: function() {
             var widget = this;
@@ -111,7 +138,7 @@
                 .axisLabel('Cost / Revenue')
       
               /* Done setting the chart up? Time to render it!*/
-              var myData = widget._generateLineData();
+              var myData = widget._generateLineData(false);
       
               d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
                 .datum(myData)         //Populate the <svg> element with chart data...
@@ -122,23 +149,41 @@
       
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
-                  widget._updateChart(chart);
+                  widget._updateChart(chart, false);
                 })
               });
+      
+              $rangeInputValue = $('#range-input-value');
+      
+              slider = $slider.slider({
+                range: true,
+                min: lowerBound,
+                max: upperBoundMax,
+                values: [lowerBound, upperBound],
+                slide: function(event, ui) {
+                  lowerBound = ui.values[0];
+                  upperBound = ui.values[1];
+      
+                  widget._updateChart(chart, true);
+      
+                  $rangeInputValue.text(lowerBound + '-' + upperBound);
+                }
+              });
+              $rangeInputValue.text(lowerBound + '-' + upperBound);
       
               return chart;
             });
           },
       
-          _updateChart: function(chart) {
-            var myData = this._generateLineData();
+          _updateChart: function(chart, isSlider) {
+            var myData = this._generateLineData(isSlider);
       
             d3.select('#chart svg')
               .datum(myData)
               .call(chart)
           },
       
-          _generateLineData: function() {
+          _generateLineData: function(isSlider) {
             // Method A Start
             var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
             var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
@@ -190,9 +235,21 @@
             var aCostData = [];
             var bCostData = [];
       
-            var unitsMax = Math.max(aBreakEven, bBreakEven, cBreakEven);
+            var unitsMax = roundUp(Math.max(aBreakEven, bBreakEven, cBreakEven));
+            upperBoundMax = unitsMax;
       
-            [0, parseInt(unitsMax + 50000)].forEach(function(element) {
+            if (isSlider) {
+              unitsMax = upperBound;
+            } else {
+              upperBound = unitsMax;
+            }
+      
+            if (slider != null) {
+              $slider.slider('option', 'max', upperBoundMax);
+              if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
+            }
+      
+            [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
               var aCostPoint = calculateCost(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, element)
@@ -264,6 +321,13 @@
           <div data-graph='profit_break_even' id='chart'>
             <svg></svg>
           </div>
+        </div>
+        <div class='row text-center'>
+          <div id='range-input'>
+            X-Axis Range:
+            <div id='range-input-value'></div>
+          </div>
+          <div id='range-slider'></div>
         </div>
       </div>
       <div class='large-5 columns'>
