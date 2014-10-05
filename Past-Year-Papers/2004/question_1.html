@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <script src='../../d3.min.js'></script>
+    <script src='../../nv.d3/nv.d3.min.js'></script>
+    <script src='../../jquery-2.1.1.min.js'></script>
+    <script src='../../foundation-5.3.0/js/foundation.min.js'></script>
+    <script src='../../foundation-5.3.0/js/vendor/modernizr.js'></script>
+    <script src='../../jquery-ui-1.11.1/jquery-ui.min.js'></script>
+    <link href='../../jquery-ui-1.11.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>
+    <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
+    <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
+    <style>
+      body {
+        height: 800px;
+        margin: auto;
+      }
+      
+      #chart svg {
+        height: 600px;
+      }
+      
+      #range-slider {
+        margin-bottom: 1em;
+      }
+      
+      #range-input {
+        display: inline;
+      }
+      
+      #range-input-value {
+        display: inline-block;
+      }
+      
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+      
+      .row {
+        margin: 0 !important;
+        max-width: 100% !important;
+      }
+      
+      table tr td, table tr th {
+        padding: 0.2rem;
+        font-size: 0.6rem;
+      }
+      
+      input, .postfix, .prefix {
+        font-size: 0.6rem !important;
+        margin-bottom: 0 !important;
+        height: 1.125rem !important;
+        padding: 0 0.2rem !important;
+        line-height: 1.125rem !important;
+      }
+    </style>
+    <script>
+      jQuery(function($) {
+        function calculateVariableCostofLabour(labourCost, labourOverhead, productionRate) {
+          return (labourCost * (100 + labourOverhead) / 100 / productionRate);
+        }
+      
+        function calculateUniformAnnualCost(machineCost, maintenanceCost, salvageValue, rateOfReturn, serviceLife) {
+          var capitalReturnFactor = Number(calculateCapitalReturnFactor(rateOfReturn, serviceLife).toFixed(4));
+          var sinkingFundFactor = Number(calculatorSinkingFundFactor(rateOfReturn, serviceLife).toFixed(4));
+          return ((machineCost * capitalReturnFactor) + maintenanceCost - (salvageValue * sinkingFundFactor));
+        }
+      
+        function calculateCapitalReturnFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return ((rateOfReturn * Math.pow((rateOfReturn + 1), serviceLife)) / (Math.pow((rateOfReturn + 1), serviceLife) - 1));
+        }
+      
+        function calculateLabourCostPerUnit(labourRate, productionRate) {
+          return (labourRate / productionRate);
+        }
+      
+        function calculateCostWithOverhead(cost, overheadRate) {
+          return (cost * (1 + (overheadRate / 100)));
+        }
+      
+        function calculateElecricityRate(electricityConsumption, powerConsumption, productionRate) {
+          return (electricityConsumption * powerConsumption / productionRate);
+        }
+      
+        function calculateOvertimeCost(cost, variableCostWithOverhead, variableCostOvertimeWithOverhead, productionRate, numberOfUnits) {
+          var currentSales = productionRate * 8 * 5 * 50;
+          var salesDifference = numberOfUnits - currentSales;
+      
+          if (salesDifference < 0) {
+            var variableCost = variableCostWithOverhead * numberOfUnits
+          } else {
+            var variableCost = (variableCostWithOverhead * currentSales) + (variableCostOvertimeWithOverhead * salesDifference);
+          }
+      
+          return variableCost + cost;
+        }
+      
+        function calculatorSinkingFundFactor(rateOfReturn, serviceLife) {
+          rateOfReturn = rateOfReturn * 0.01;
+          return (rateOfReturn/(Math.pow((1 + rateOfReturn), serviceLife) - 1));
+        }
+      
+        function calculateRevenue(revenue, numberOfUnits) {
+          return (revenue * numberOfUnits);
+        }
+      
+        function calculateCost(cost, variableCost, number_of_units) {
+          return Number((cost + (variableCost * number_of_units)).toFixed(2));
+        }
+      
+        function roundUp(x){
+          var y = Math.pow(10, parseInt(x).toString().length - 1);
+          x = (x / y);
+          x = Math.ceil(x);
+          x = x * y;
+          return x;
+        }
+      
+        var lowerBound = 0;
+        var upperBound = 0;
+        var upperBoundMax = 0;
+        var slider;
+        var $slider = $('#range-slider');
+      
+        var ProfitBreakEvenGraph = {
+          _init: function() {
+            var widget = this;
+      
+            nv.addGraph(function() {
+              var chart = nv.models.lineChart()
+                .margin({left: 80, right: 40})  //Adjust chart margins to give the x-axis some breathing room.
+                .useInteractiveGuideline(false)
+                .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                .showYAxis(true)        //Show the y-axis
+                .showXAxis(true)        //Show the x-axis
+              ;
+      
+              chart.xAxis     //Chart x-axis settings
+                .axisLabel("Annual Output")
+      
+              chart.yAxis     //Chart y-axis settings
+                .axisLabel('Cost / Revenue')
+      
+              /* Done setting the chart up? Time to render it!*/
+              var myData = widget._generateLineData(false);
+      
+              d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+                .datum(myData)         //Populate the <svg> element with chart data...
+                .call(chart);          //Finally, render the chart!
+      
+              //Update the chart when window resizes.
+              nv.utils.windowResize(function() { chart.update() });
+      
+              d3.selectAll('input').each(function() {
+                d3.select(this).on('input', function() {
+                  widget._updateChart(chart, false);
+                  $rangeInputValue.text(lowerBound + '-' + upperBound);
+                })
+              });
+      
+              $rangeInputValue = $('#range-input-value');
+      
+              slider = $slider.slider({
+                range: true,
+                min: lowerBound,
+                max: upperBoundMax,
+                values: [lowerBound, upperBound],
+                slide: function(event, ui) {
+                  lowerBound = ui.values[0];
+                  upperBound = ui.values[1];
+      
+                  widget._updateChart(chart, true);
+      
+                  $rangeInputValue.text(lowerBound + '-' + upperBound);
+                }
+              });
+              $rangeInputValue.text(lowerBound + '-' + upperBound);
+      
+              return chart;
+            });
+          },
+      
+          _updateChart: function(chart, isSlider) {
+            var myData = this._generateLineData(isSlider);
+      
+            d3.select('#chart svg')
+              .datum(myData)
+              .call(chart)
+          },
+      
+          _generateLineData: function(isSlider) {
+            var labourOvertimeRate = parseFloat(d3.select('input[name=labour_overtime_rate]').property('value'));
+            var projectedSales = parseFloat(d3.select('input[name=projected_sales]').property('value'));
+            // Method A Start
+            var aLabourCost = parseFloat(d3.select('input[name=a_labour_cost]').property('value'));
+            var aRawMaterialCost = parseFloat(d3.select('input[name=a_raw_material_cost]').property('value'));
+            var aProductionRate = parseFloat(d3.select('input[name=a_production_rate]').property('value'));
+            var aMaterialOverheadRate = parseFloat(d3.select('input[name=a_material_overhead_rate]').property('value'));
+            var aLabourOverheadRate = parseFloat(d3.select('input[name=a_labour_overhead_rate]').property('value'));
+            var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
+      
+            var aLabourCostPerUnit = calculateLabourCostPerUnit(aLabourCost, aProductionRate);
+            var aLabourCostPerUnitWithOverHead = calculateCostWithOverhead(aLabourCostPerUnit, aLabourOverheadRate);
+            var aLabourCostPerUnitWithOvertime = calculateCostWithOverhead(aLabourCostPerUnitWithOverHead, labourOvertimeRate);
+            var aRawMaterialCostPerUnitWithOverHead = calculateCostWithOverhead(aRawMaterialCost, aMaterialOverheadRate);
+            var aCostPerUnit = aLabourCostPerUnitWithOverHead + aRawMaterialCostPerUnitWithOverHead;
+            var aCostPerUnitWithOvertime = aLabourCostPerUnitWithOvertime + aRawMaterialCostPerUnitWithOverHead;
+            // Method A End
+      
+            // Grab field values of Method B
+            var bMachineCost = parseFloat(d3.select('input[name=b_machine_cost]').property('value'));
+            var bMaintenanceCost = parseFloat(d3.select('input[name=b_maintenance_cost]').property('value'));
+            var bSalvageValue = parseFloat(d3.select('input[name=b_salvage_value]').property('value'));
+            var bServiceLife = parseFloat(d3.select('input[name=b_service_life]').property('value'));
+            var bRawMaterialCost = parseFloat(d3.select('input[name=b_raw_material_cost]').property('value'));
+            var bProductionRate = parseFloat(d3.select('input[name=b_production_rate]').property('value'));
+            var bElectricityRate = parseFloat(d3.select('input[name=b_electricity_rate]').property('value'));
+            var bPowerConsumption = parseFloat(d3.select('input[name=b_power_consumption]').property('value'));
+            var bMaterialOverheadRate = parseFloat(d3.select('input[name=b_material_overhead_rate]').property('value'));
+            var bLabourOverheadRate = parseFloat(d3.select('input[name=b_labour_overhead_rate]').property('value'));
+            var bMachineOverheadRate = parseFloat(d3.select('input[name=b_machine_overhead_rate]').property('value'));
+            var bElectricityOverheadRate = parseFloat(d3.select('input[name=b_electricity_overhead_rate]').property('value'));
+            var bRevenue = parseFloat(d3.select('input[name=b_revenue]').property('value'));
+            var bRateOfReturn = parseFloat(d3.select('input[name=b_rate_of_return]').property('value'));
+      
+            var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bRateOfReturn, bServiceLife);
+            var bUniformAnnualCostWithMachineOverHead = calculateCostWithOverhead(bUniformAnnualCost, bMachineOverheadRate);
+            var bRawMaterialCostPerUnitWithOverHead = calculateCostWithOverhead(bRawMaterialCost, bMaterialOverheadRate);
+            var bElectricityCostPerUnit = calculateElecricityRate(bElectricityRate, bPowerConsumption, bProductionRate);
+            var bElectricityCostPerUnitWithOverHead = calculateCostWithOverhead(bElectricityCostPerUnit, bElectricityOverheadRate);
+            var bCostPerUnit = bRawMaterialCostPerUnitWithOverHead + bElectricityCostPerUnitWithOverHead;
+            // Method B End
+      
+            var breakEvenPoints = [];
+      
+            var bBreakEven = this._setMethodABBreakEvenTime(
+              aCostPerUnit, bCostPerUnit, bUniformAnnualCostWithMachineOverHead,
+              aProductionRate, bProductionRate
+            );
+      
+            if (bBreakEven > 0) { breakEvenPoints.push(bBreakEven); }
+      
+            this._setMethodAProfit(projectedSales, aRevenue, calculateOvertimeCost(
+              0, aCostPerUnit, aCostPerUnitWithOvertime,
+              aProductionRate, projectedSales
+            ));
+      
+            this._setMethodBProfit(projectedSales, bRevenue, calculateOvertimeCost(
+              bUniformAnnualCostWithMachineOverHead,
+              bCostPerUnit, bCostPerUnit,
+              bProductionRate, projectedSales
+            ));
+      
+            var cBreakEven = this._setMethodABBreakEvenValue(
+              aCostPerUnit, bCostPerUnit, bUniformAnnualCostWithMachineOverHead,
+              aProductionRate, bProductionRate
+            );
+            breakEvenPoints.push(bBreakEven);
+      
+            var aCurrentSales = aProductionRate * 8 * 5 *50;
+            var bCurrentSales = bProductionRate * 8 * 5 *50;
+            var aIsOvertime = (projectedSales > aCurrentSales);
+      
+            if (aIsOvertime) { breakEvenPoints.push(aCurrentSales); }
+      
+            var dBreakEven = this._setMethodABBreakEvenValueWithOvertime(
+              0, aCostPerUnit, aCostPerUnitWithOvertime, aCurrentSales,
+              bUniformAnnualCostWithMachineOverHead, bCostPerUnit, bCostPerUnit, bCurrentSales,
+              projectedSales
+            );
+      
+            var aRevenueData = [];
+            var bRevenueData = [];
+            var aCostData = [];
+            var aCostDataWithOvertime = [];
+            var bCostData = [];
+      
+            var unitsMax = roundUp(Math.max.apply(null, breakEvenPoints));
+            upperBoundMax = unitsMax;
+      
+            if (isSlider) {
+              unitsMax = upperBound;
+            } else {
+              upperBound = unitsMax;
+            }
+      
+            if (slider != null) {
+              $slider.slider('option', 'max', upperBoundMax);
+              if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
+            }
+      
+            if (!aIsOvertime) {
+              [lowerBound, unitsMax].forEach(function(element) {
+                var aCostPointWithOvertime = calculateCost(0, aCostPerUnit, element);
+      
+                aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+              });
+            } else {
+              var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+      
+              if (aCurrentSales < unitsMax) {
+                [lowerElement, unitsMax].forEach(function(element) {
+                  var aCostPointWithOvertime = calculateOvertimeCost(0,
+                    aCostPerUnit, aCostPerUnitWithOvertime,
+                    aProductionRate, element
+                  );
+      
+                  aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+                });
+              }
+            }
+      
+            [lowerBound, unitsMax].forEach(function(element) {
+              var aRevenuePoint = calculateRevenue(aRevenue, element);
+              var bRevenuePoint = calculateRevenue(bRevenue, element);
+              var aCostPoint = calculateCost(0, aCostPerUnit, element);
+              var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverHead, bCostPerUnit, element);
+      
+              aRevenueData.push({ x: element, y: aRevenuePoint });
+              bRevenueData.push({ x: element, y: bRevenuePoint });
+              aCostData.push({ x: element, y: aCostPoint });
+              bCostData.push({ x: element, y: bCostPoint });
+            });
+      
+            return [
+              {
+                values: aRevenueData,
+                key: 'Manual Labour Revenue'
+              },
+              {
+                values: bRevenueData,
+                key: 'Automated Machine Revenue'
+              },
+              {
+                values: aCostData,
+                key: 'Manual Labour Cost'
+              },
+              {
+                values: bCostData,
+                key: 'Automated Machine Cost'
+              },
+              {
+                values: aCostDataWithOvertime,
+                key: 'Manual Labour Cost With Overtime'
+              }
+            ];
+          },
+      
+          _setMethodABBreakEvenTime: function(
+            aCostPerUnit, bCostPerUnit, bUniformAnnualCostWithMachineOverHead,
+            aProductionRate, bProductionRate
+          ) {
+      
+            var units = bUniformAnnualCostWithMachineOverHead / (aCostPerUnit - bCostPerUnit );
+            d3.select('input[name=a_cost_break_even_time]').property('value', (units / aProductionRate).toFixed(2));
+            d3.select('input[name=b_cost_break_even_time]').property('value', (units / bProductionRate).toFixed(2));
+            return units;
+          },
+      
+          _setMethodAProfit: function(projectedSales,revenue, cost) {
+            d3.select('input[name=a_profit_overtime]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+      
+          _setMethodBProfit: function(projectedSales,revenue, cost) {
+            d3.select('input[name=b_profit_overtime]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+      
+          _setMethodABBreakEvenValue: function(
+            aCostPerUnit, bCostPerUnit, bUniformAnnualCostWithMachineOverHead,
+            aProductionRate, bProductionRate
+          ) {
+      
+            var units = bUniformAnnualCostWithMachineOverHead / (aCostPerUnit - bCostPerUnit );
+            d3.select('input[name=a_b_cost_break_even]').property('value', units.toFixed(2));
+            return units;
+          },
+      
+          _setMethodABBreakEvenValueWithOvertime: function(
+              aUniformAnnualCostWithMachineOverhead, aCostPerUnit, aCostPerUnitWithOvertime, aCurrentSales,
+              bUniformAnnualCostWithMachineOverhead, bCostPerUnit, bCostPerUnitWithOvertime, bCurrentSales,
+              projectedSales
+            ) {
+      
+            var aSalesDifference = projectedSales - aCurrentSales;
+            var bSalesDifference = projectedSales - bCurrentSales;
+      
+            if (aSalesDifference < 0) {
+              var aCost = aUniformAnnualCostWithMachineOverhead;
+              var aVariableCost = aCostPerUnit;
+            } else {
+              var aCost = aUniformAnnualCostWithMachineOverhead + (aCostPerUnit * aCurrentSales) - (aCostPerUnitWithOvertime * aCurrentSales);
+              var aVariableCost = aCostPerUnitWithOvertime;
+            }
+      
+            if (bSalesDifference < 0) {
+              var bCost = bUniformAnnualCostWithMachineOverhead;
+              var bVariableCost = bCostPerUnit;
+            } else {
+              var bCost = bUniformAnnualCostWithMachineOverhead + (bCostPerUnit * bCurrentSales) - (bCostPerUnitWithOvertime * bCurrentSales);
+              var bVariableCost = bCostPerUnitWithOvertime;
+            }
+      
+            var breakEvenPoint = (aCost - bCost) / (bVariableCost - aVariableCost);
+            d3.select('input[name=a_b_cost_break_even_with_overtime]').property('value', breakEvenPoint.toFixed(2));
+      
+            return breakEvenPoint;
+          }
+        }
+      
+        $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
+        $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      });
+    </script>
+  </head>
+  <body>
+    <div class='large-12 columns'>
+      <div class='text-center'>
+        <h3>
+          ME4262 Finals 2004 Question 1
+        </h3>
+      </div>
+      <div class='large-7 columns'>
+        <div class='row'>
+          <div data-graph='profit_break_even' id='chart'>
+            <svg></svg>
+          </div>
+        </div>
+        <div class='row text-center'>
+          <div id='range-input'>
+            X-Axis Range:
+            <div id='range-input-value'></div>
+          </div>
+          <div id='range-slider'></div>
+        </div>
+      </div>
+      <div class='large-5 columns'>
+        <table>
+          <tr>
+            <th></th>
+            <th>Production Machine A</th>
+            <th>Production Machine B</th>
+          </tr>
+          <tr>
+            <td>Machine Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input disabled='' name='a_machine_cost' type='text'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='b_machine_cost' type='text' value='125000'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Maintenance Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input disabled='' name='a_maintenance_cost' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /yr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_maintenance_cost' type='text' value='3000'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /yr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Salvage Value</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input disabled='' name='a_salvage_value' type='text'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-10 columns'>
+                  <input name='b_salvage_value' type='text' value='0'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Service Life</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-7 columns'>
+                  <input disabled='' name='a_service_life' type='text'>
+                </div>
+                <div class='small-5 columns'>
+                  <span class='postfix'>
+                    years
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-7 columns'>
+                  <input name='b_service_life' type='text' value='4'>
+                </div>
+                <div class='small-5 columns'>
+                  <span class='postfix'>
+                    years
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Production Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-6 columns'>
+                  <input name='a_production_rate' type='text' value='36'>
+                </div>
+                <div class='small-6 columns'>
+                  <span class='postfix'>
+                    units/hr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-6 columns'>
+                  <input name='b_production_rate' type='text' value='100'>
+                </div>
+                <div class='small-6 columns'>
+                  <span class='postfix'>
+                    units/hr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_labour_cost' type='text' value='18'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /hr
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input disabled='' name='b_labour_cost' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /hr
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Raw Material Cost</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_raw_material_cost' type='text' value='0.5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_raw_material_cost' type='text' value='0.5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Power Consumption</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_power_consumption' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    kW
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_power_consumption' type='text' value='50'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    kW
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Electricity Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-5 columns'>
+                  <input disabled='' name='a_electricity_rate' type='text'>
+                </div>
+                <div class='small-5 columns'>
+                  <span class='postfix'>
+                    /kWh
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-5 columns'>
+                  <input name='b_electricity_rate' type='text' value='0.05'>
+                </div>
+                <div class='small-5 columns'>
+                  <span class='postfix'>
+                    /kWh
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Machine Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_machine_overhead_rate' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_machine_overhead_rate' type='text' value='20'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Material Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_material_overhead_rate' type='text' value='20'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_material_overhead_rate' type='text' value='20'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Electricity Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_electricity_overhead_rate' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_electricity_overhead_rate' type='text' value='20'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Overhead Rate</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='a_labour_overhead_rate' type='text' value='30'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='b_labour_overhead_rate' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Revenue</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='a_revenue' type='text' value='1.5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-2 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-6 columns'>
+                  <input name='b_revenue' type='text' value='1.5'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    /unit
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Rate of Return</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_rate_of_return' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input name='b_rate_of_return' type='text' value='25'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    %
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Labour Over Time Rate</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='labour_overtime_rate' type='text' value='50'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      %
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Projected Sale</td>
+            <td colspan='2'>
+              <div class='small-8 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input name='projected_sales' type='text' value='108000'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+        <table>
+          <tr>
+            <th></th>
+            <th>Production Machine A</th>
+            <th>Production Machine B</th>
+          </tr>
+          <tr>
+            <td>Time to Break Even Point</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_cost_break_even_time' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    hrs
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-8 columns'>
+                  <input disabled='' name='b_cost_break_even_time' type='text'>
+                </div>
+                <div class='small-4 columns'>
+                  <span class='postfix'>
+                    hrs
+                  </span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Profit With Overtime</td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-4 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-8 columns'>
+                  <input disabled='' name='a_profit_overtime' type='text'>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class='row collapse'>
+                <div class='small-4 columns'>
+                  <span class='prefix'>
+                    $
+                  </span>
+                </div>
+                <div class='small-8 columns'>
+                  <input disabled='' name='b_profit_overtime' type='text'>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Cost Break Even Without Overtime</td>
+            <td colspan='2'>
+              <div class='small-10 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input disabled='' name='a_b_cost_break_even' type='text'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units/yr
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>Cost Break Even With Overtime</td>
+            <td colspan='2'>
+              <div class='small-10 small-centered columns'>
+                <div class='row collapse'>
+                  <div class='small-8 columns'>
+                    <input disabled='' name='a_b_cost_break_even_with_overtime' type='text'>
+                  </div>
+                  <div class='small-4 columns'>
+                    <span class='postfix'>
+                      units
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
