@@ -167,6 +167,7 @@
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
                   widget._updateChart(chart, false);
+                  $rangeInputValue.text(lowerBound + '-' + upperBound);
                 })
               });
       
