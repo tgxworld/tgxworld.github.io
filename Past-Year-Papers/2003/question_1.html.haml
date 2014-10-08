@@ -59,6 +59,31 @@
         line-height: 1.125rem !important;
       }
 
+      @media only screen {
+        .header {
+          font-weight: bold;
+          font-size: 1em;
+        }
+      }
+
+      /* For iPhone */
+      @media only screen
+      and (min-device-width : 320px)
+      and (max-device-width : 640px) {
+        #chart svg {
+          height: 250px;
+        }
+      }
+
+      /* Samsung Tab Devices */
+      @media only screen
+      and (min-device-width : 960px)
+      and (max-device-width : 970px) {
+        #chart svg {
+          height: 450px;
+        }
+      }
+
     :javascript
       jQuery(function($) {
         function calculateVariableCostofLabour(labourCost, labourOverhead, productionRate) {

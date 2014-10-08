@@ -13,6 +13,7 @@
     <link href='../../jquery-ui-1.11.1/jquery-ui.min.css' rel='stylesheet' type='text/css'>
     <link href='../../nv.d3/nv.d3.min.css' rel='stylesheet' type='text/css'>
     <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
+    <link href='../../foundation-5.3.0/css/foundation.min.css' rel='stylesheet' type='text/css'>
     <style>
       body {
         height: 800px;
@@ -56,6 +57,31 @@
         height: 1.125rem !important;
         padding: 0 0.2rem !important;
         line-height: 1.125rem !important;
+      }
+      
+      @media only screen {
+        .header {
+          font-weight: bold;
+          font-size: 1em;
+        }
+      }
+      
+      /* For iPhone */
+      @media only screen
+      and (min-device-width : 320px)
+      and (max-device-width : 640px) {
+        #chart svg {
+          height: 250px;
+        }
+      }
+      
+      /* Samsung Tab Devices */
+      @media only screen
+      and (min-device-width : 960px)
+      and (max-device-width : 970px) {
+        #chart svg {
+          height: 450px;
+        }
       }
     </style>
     <script>
@@ -334,7 +360,7 @@
   <body>
     <div class='large-12 columns'>
       <div class='text-center'>
-        <h1>
+        <h1 class='header'>
           ME4262 Finals 2002 Question 1
         </h1>
       </div>
