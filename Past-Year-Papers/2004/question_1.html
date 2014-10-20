@@ -167,10 +167,10 @@
               ;
       
               chart.xAxis     //Chart x-axis settings
-                .axisLabel("Annual Output")
+                .axisLabel("Annual Output (units)")
       
               chart.yAxis     //Chart y-axis settings
-                .axisLabel('Cost / Revenue')
+                .axisLabel('Cost / Revenue ($)')
       
               /* Done setting the chart up? Time to render it!*/
               var myData = widget._generateLineData(false);
@@ -466,6 +466,10 @@
       
         $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
         $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      
+        $('.reset-graph').click(function() {
+          location.reload();
+        })
       });
     </script>
   </head>
