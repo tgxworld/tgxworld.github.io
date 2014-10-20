@@ -152,6 +152,7 @@
         var upperBoundMax = 0;
         var slider;
         var $slider = $('#range-slider');
+        var drawOvertime = false;
 
         var ProfitBreakEvenGraph = {
           _init: function() {
@@ -181,6 +182,20 @@
 
               //Update the chart when window resizes.
               nv.utils.windowResize(function() { chart.update() });
+
+              d3.select('.draw-overtime').on('click', function() {
+                drawOvertime = !drawOvertime;
+
+                if (drawOvertime) {
+                  d3.select(this).text('Remove Overtime')
+                  d3.select(this).attr('class', 'alert button radius tiny draw-overtime')
+                } else {
+                  d3.select(this).text('Draw Overtime')
+                  d3.select(this).attr('class', 'success button radius tiny draw-overtime')
+                }
+
+                widget._updateChart(chart, false)
+              });
 
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
@@ -320,7 +335,7 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
 
-            if (!aIsOvertime) {
+            if (!aIsOvertime && drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var aCostPointWithOvertime = calculateCost(0, aCostPerUnit, element);
 
@@ -353,28 +368,40 @@
               bCostData.push({ x: element, y: bCostPoint });
             });
 
-            return [
+            results = [
               {
                 values: aRevenueData,
-                key: 'Manual Labour Revenue'
+                key: 'Manual Labour Revenue',
+                color: '#ff7f0e'
               },
               {
                 values: bRevenueData,
-                key: 'Automated Machine Revenue'
+                key: 'Automated Machine Revenue',
+                color: '#03d10c'
               },
               {
                 values: aCostData,
-                key: 'Manual Labour Cost'
+                key: 'Manual Labour Cost',
+                color: '#3333FF'
               },
               {
                 values: bCostData,
-                key: 'Automated Machine Cost'
-              },
-              {
-                values: aCostDataWithOvertime,
-                key: 'Manual Labour Cost With Overtime'
+                key: 'Automated Machine Cost',
+                color: '#CC0000'
               }
             ];
+
+            if (drawOvertime) {
+              results.push(
+                {
+                  values: aCostDataWithOvertime,
+                  key: 'Manual Labour Cost With Overtime',
+                  color: '#732C7B'
+                }
+              )
+            }
+
+            return results
           },
 
           _setMethodABBreakEvenTime: function(
@@ -459,6 +486,10 @@
             #range-input-value
 
           #range-slider
+
+        .row.text-center
+          %a.button.radius.tiny.success.draw-overtime Draw overtime
+          %a.button.radius.tiny.reset-graph Reset graph
 
       .large-5.columns
         %table
