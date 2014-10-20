@@ -161,6 +161,7 @@
         var upperBoundMax = 0;
         var slider;
         var $slider = $('#range-slider');
+        var drawOvertime = false;
       
         var ProfitBreakEvenGraph = {
           _init: function() {
@@ -190,6 +191,20 @@
       
               //Update the chart when window resizes.
               nv.utils.windowResize(function() { chart.update() });
+      
+              d3.select('.draw-overtime').on('click', function() {
+                drawOvertime = !drawOvertime;
+      
+                if (drawOvertime) {
+                  d3.select(this).text('Remove Overtime')
+                  d3.select(this).attr('class', 'alert button radius tiny draw-overtime')
+                } else {
+                  d3.select(this).text('Draw Overtime')
+                  d3.select(this).attr('class', 'success button radius tiny draw-overtime')
+                }
+      
+                widget._updateChart(chart, false)
+              });
       
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
@@ -287,7 +302,7 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
       
-            if (!aIsOvertime) {
+            if (!aIsOvertime && drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var aCostPointWithOvertime = calculateCost(
                   aUniformAnnualCostWithOverhead,
@@ -321,20 +336,30 @@
               aCostData.push({ x: element, y: aCostPoint });
             });
       
-            return [
+            results = [
               {
                 values: aRevenueData,
-                key: 'Revenue'
+                key: 'Revenue',
+                color: '#ff7f0e'
               },
               {
                 values: aCostData,
-                key: 'Cost'
-              },
-              {
-                values: aCostDataWithOvertime,
-                key: 'Cost With Overtime'
+                key: 'Cost',
+                color: '#3333FF'
               }
             ];
+      
+            if (drawOvertime) {
+              results.push(
+                {
+                  values: aCostDataWithOvertime,
+                  key: 'Cost With Overtime',
+                  color: '#732C7B'
+                }
+              )
+            }
+      
+            return results
           },
       
           _setMethodABreakEvenValue: function(revenuePerUnit , costPerUnit, uniformAnnualCost) {
@@ -354,15 +379,19 @@
       
         $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
         $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+      
+        $('.reset-graph').click(function() {
+          location.reload();
+        })
       });
     </script>
   </head>
   <body>
     <div class='large-12 columns'>
       <div class='text-center'>
-        <h1 class='header'>
+        <h3 class='header'>
           ME4262 Finals 2002 Question 1
-        </h1>
+        </h3>
       </div>
       <div class='large-7 columns'>
         <div class='row'>
@@ -376,6 +405,10 @@
             <div id='range-input-value'></div>
           </div>
           <div id='range-slider'></div>
+        </div>
+        <div class='row text-center'>
+          <a class='button radius tiny success draw-overtime'>Draw overtime</a>
+          <a class='button radius tiny reset-graph'>Reset graph</a>
         </div>
       </div>
       <div class='large-5 columns'>

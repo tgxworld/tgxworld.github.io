@@ -158,10 +158,10 @@
               ;
       
               chart.xAxis     //Chart x-axis settings
-                .axisLabel("Annual Output")
+                .axisLabel("Annual Output (units)")
       
               chart.yAxis     //Chart y-axis settings
-                .axisLabel('Cost / Revenue')
+                .axisLabel('Cost / Revenue ($)')
       
               /* Done setting the chart up? Time to render it!*/
               var myData = widget._generateLineData(false);
@@ -302,12 +302,12 @@
               {
                 values: aCostData,
                 key: 'Method A Cost',
-                color: '#8b0000'
+                color: '#3333FF'
               },
               {
                 values: bCostData,
                 key: 'Method B Cost',
-                color: '#8c766f'
+                color: '#CC0000'
               }
             ];
           },
@@ -339,9 +339,9 @@
   <body>
     <div class='large-12 columns'>
       <div class='text-center'>
-        <h1>
+        <h3 class='header'>
           ME4262 Finals 2014 Question 1
-        </h1>
+        </h3>
       </div>
       <div class='large-7 columns'>
         <div class='row'>
