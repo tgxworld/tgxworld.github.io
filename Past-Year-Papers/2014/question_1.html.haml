@@ -91,9 +91,9 @@
         }
 
         function calculateUniformAnnualCost(machineCost, maintenanceCost, salvageValue, rateOfReturn, serviceLife) {
-          var capital_return_factor = capitalReturnFactor(rateOfReturn, serviceLife);
-          var sinking_fund_factor = sinkingFundFactor(rateOfReturn, serviceLife);
-          return ((machineCost * capital_return_factor) + maintenanceCost - (salvageValue * sinking_fund_factor));
+          var capitalReturnFactor = calculateCapitalReturnFactor(rateOfReturn, serviceLife).toFixed(5);
+          var sinkingFundFactor = calculatorSinkingFundFactor(rateOfReturn, serviceLife).toFixed(5);
+          return ((machineCost * capitalReturnFactor) + maintenanceCost - (salvageValue * sinkingFundFactor));
         }
 
         function calculateUniformAnnualCostWithMachineOverhead(uniformAnnualCost, machineOverheadRate) {
@@ -101,7 +101,7 @@
           return (uniformAnnualCost * (1 + machineOverheadRate));
         }
 
-        function capitalReturnFactor(rateOfReturn, serviceLife) {
+        function calculateCapitalReturnFactor(rateOfReturn, serviceLife) {
           rateOfReturn = rateOfReturn * 0.01;
           return ((rateOfReturn * Math.pow((rateOfReturn + 1), serviceLife)) / (Math.pow((rateOfReturn + 1), serviceLife) - 1));
         }
@@ -110,15 +110,37 @@
           return (labourRate / productionRate);
         }
 
+        function calculateVariableCost(labourCost, materialCost) {
+          return (labourCost + materialCost);
+        }
+
+        function calculateVariableCostOvertime(labourCost, materialCost, labourOvertimeRate) {
+          return ((labourCost * (1 + (labourOvertimeRate / 100))) + materialCost);
+        }
+
+        function calculateElecricityRate(electricityConsumption, powerConsumption, productionRate) {
+          return (electricityConsumption * powerConsumption / productionRate);
+        }
+
+        function calculateOvertimeCost(cost, variableCostWithOverhead, variableCostOvertimeWithOverhead, productionRate, projectedSales, maximumProductionCapcity) {
+          var currentSales = productionRate * 8 * 5 * 50;
+          var salesDifference = projectedSales - currentSales;
+          projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
+1
+          if (!drawOvertime || salesDifference < 0) {
+            var variableCost = variableCostWithOverhead * projectedSales
+          } else {
+            var variableCost = (variableCostWithOverhead * currentSales) + (variableCostOvertimeWithOverhead * salesDifference);
+          }
+
+          return variableCost + cost;
+        }
+
         function calculateRentPerAnnum(monthlyRent, factorySpace) {
           return (monthlyRent * 12 * factorySpace);
         }
 
-        function calculateUtilityPerAnnum(utilityConsumption) {
-          return utilityConsumption * 12;
-        }
-
-        function sinkingFundFactor(rateOfReturn, serviceLife) {
+        function calculatorSinkingFundFactor(rateOfReturn, serviceLife) {
           rateOfReturn = rateOfReturn * 0.01;
           return (rateOfReturn/(Math.pow((1 + rateOfReturn), serviceLife) - 1));
         }
@@ -127,8 +149,8 @@
           return (revenue * numberOfUnits);
         }
 
-        function calculateCost(uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCostPerUnit, rawMaterialCost, unitsScale) {
-          return (uniformAnnualCost + rentPerAnnum + utilityPerAnnum + ((labourCostPerUnit + rawMaterialCost) * unitsScale)).toFixed(2);
+        function calculateCost(cost, variableCost, number_of_units) {
+          return Number((cost + (variableCost * number_of_units)).toFixed(2));
         }
 
         function roundUp(x){
@@ -144,6 +166,7 @@
         var upperBoundMax = 0;
         var slider;
         var $slider = $('#range-slider');
+        var drawOvertime = false;
 
         var ProfitBreakEvenGraph = {
           _init: function() {
@@ -173,6 +196,24 @@
 
               //Update the chart when window resizes.
               nv.utils.windowResize(function() { chart.update() });
+
+              d3.select('.draw-overtime').on('click', function() {
+                drawOvertime = !drawOvertime;
+
+                if (drawOvertime) {
+                  d3.select(this).text('Remove Overtime');
+                  d3.select(this).attr('class', 'alert button radius tiny draw-overtime');
+                  d3.select('.a-profit-header').text('Method A Profit Based on Projected Sales With Overtime');
+                  d3.select('.b-profit-header').text('Method B Profit Based on Projected Sales With Overtime');
+                } else {
+                  d3.select(this).text('Draw Overtime');
+                  d3.select(this).attr('class', 'success button radius tiny draw-overtime');
+                  d3.select('.a-profit-header').text('Method A Profit Based on Projected Sales');
+                  d3.select('.b-profit-header').text('Method B Profit Based on Projected Sales');
+                }
+
+                widget._updateChart(chart, false)
+              });
 
               d3.selectAll('input').each(function() {
                 d3.select(this).on('input', function() {
@@ -212,6 +253,8 @@
           },
 
           _generateLineData: function(isSlider) {
+            var labourOvertimeRate = parseFloat(d3.select('input[name=labour_overtime_rate]').property('value'));
+            var projectedSales = parseFloat(d3.select('input[name=projected_sales]').property('value'));
             // Method A Start
             var aMachineCost = parseFloat(d3.select('input[name=a_machine_cost]').property('value'));
             var aMaintenanceCost = parseFloat(d3.select('input[name=a_maintenance_cost]').property('value'));
@@ -221,7 +264,7 @@
             var aProductionRate = parseFloat(d3.select('input[name=a_production_rate]').property('value'));
             var aFactorySpace = parseFloat(d3.select('input[name=a_factory_space]').property('value'));
             var aMonthlyRent = parseFloat(d3.select('input[name=a_monthly_rent]').property('value'));
-            var aUtilityConsumption = parseFloat(d3.select('input[name=a_utility_consumption]').property('value'));
+            var aUtilityConsumptionPerMonth = parseFloat(d3.select('input[name=a_utility_consumption]').property('value'));
             var aMaximumProductionCapacity = parseFloat(d3.select('input[name=a_maximum_production_capacity]').property('value'));
             var aRawMaterialCost = parseFloat(d3.select('input[name=a_raw_material_cost]').property('value'));
             var aRevenue = parseFloat(d3.select('input[name=a_revenue]').property('value'));
@@ -230,7 +273,11 @@
             var aUniformAnnualCost = calculateUniformAnnualCost(aMachineCost, aMaintenanceCost, aSalvageValue, aInterestRate, aServiceLife);
             var aLabourCostPerUnit = calculateLabourCostPerUnit(aLabourCost, aProductionRate);
             var aRentPerAnnum = calculateRentPerAnnum(aMonthlyRent, aFactorySpace);
-            var aUtilityPerAnnum = calculateUtilityPerAnnum(aUtilityConsumption);
+            var aUtilityConsumptionPerAnnum = aUtilityConsumptionPerMonth * 12;
+            var aTotalCost = aUniformAnnualCost + aRentPerAnnum + aUtilityConsumptionPerAnnum;
+            var aVariableCost = calculateVariableCost(aLabourCostPerUnit, aRawMaterialCost);
+            var aVariableCostOvertime = calculateVariableCostOvertime(aLabourCostPerUnit, aRawMaterialCost, labourOvertimeRate);
+            var aMaximumProductionCapacityPerAnnum = aMaximumProductionCapacity * 12;
             // Method A End
 
             // Grab field values of Method B
@@ -242,7 +289,7 @@
             var bProductionRate = parseFloat(d3.select('input[name=b_production_rate]').property('value'));
             var bFactorySpace = parseFloat(d3.select('input[name=b_factory_space]').property('value'));
             var bMonthlyRent = parseFloat(d3.select('input[name=b_monthly_rent]').property('value'));
-            var bUtilityConsumption = parseFloat(d3.select('input[name=b_utility_consumption]').property('value'));
+            var bUtilityConsumptionPerMonth = parseFloat(d3.select('input[name=b_utility_consumption]').property('value'));
             var bMaximumProductionCapacity = parseFloat(d3.select('input[name=b_maximum_production_capacity]').property('value'));
             var bRawMaterialCost = parseFloat(d3.select('input[name=b_raw_material_cost]').property('value'));
             var bRevenue = parseFloat(d3.select('input[name=b_revenue]').property('value'));
@@ -251,19 +298,69 @@
             var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bInterestRate, bServiceLife);
             var bLabourCostPerUnit = calculateLabourCostPerUnit(bLabourCost, bProductionRate);
             var bRentPerAnnum = calculateRentPerAnnum(bMonthlyRent, bFactorySpace);
-            var bUtilityPerAnnum = calculateUtilityPerAnnum(bUtilityConsumption);
+            var bUtilityConsumptionPerAnnum = bUtilityConsumptionPerMonth * 12;
+            var bTotalCost = bUniformAnnualCost + bRentPerAnnum + bUtilityConsumptionPerAnnum;
+            var bVariableCost = calculateVariableCost(bLabourCostPerUnit, bRawMaterialCost);
+            var bVariableCostOvertime = calculateVariableCostOvertime(bLabourCostPerUnit, bRawMaterialCost, labourOvertimeRate);
+            var bMaximumProductionCapacityPerAnnum = bMaximumProductionCapacity * 12;
             // Method B end
 
-            var aBreakEven = this._setMethodABreakEvenValue(aRevenue , aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost);
-            var bBreakEven = this._setMethodBBreakEvenValue(bRevenue , bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
-            var cBreakEven = this._setMethodBreakEvenValue(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost);
+            var breakEvenPoints = [];
+
+            var aBreakEven = this._setMethodABreakEvenValue(aRevenue, aVariableCost, aTotalCost);
+
+            if (aBreakEven > 0) { breakEvenPoints.push(aBreakEven); }
+
+            var bBreakEven = this._setMethodBBreakEvenValue(bRevenue, bVariableCost, bTotalCost);
+
+            if (bBreakEven > 0) { breakEvenPoints.push(bBreakEven); }
+
+            this._setMethodAProfit(
+              projectedSales,
+              aMaximumProductionCapacityPerAnnum,
+              aRevenue,
+              calculateOvertimeCost(aTotalCost,
+                aVariableCost, aVariableCostOvertime,
+                aProductionRate, projectedSales, aMaximumProductionCapacityPerAnnum
+              )
+            );
+
+            this._setMethodBProfit(
+              projectedSales,
+              bMaximumProductionCapacityPerAnnum,
+              bRevenue,
+              calculateOvertimeCost(bTotalCost,
+                bVariableCost, bVariableCostOvertime,
+                bProductionRate, projectedSales, bMaximumProductionCapacityPerAnnum
+              )
+            );
+
+            var cBreakEven = this._setMethodABBreakEvenValue(
+              aVariableCost, aTotalCost,
+              bVariableCost, bTotalCost
+            );
+            breakEvenPoints.push(cBreakEven);
+
+            var aCurrentSales = aProductionRate * 8 * 5 *50;
+            var bCurrentSales = bProductionRate * 8 * 5 *50;
+
+            if (drawOvertime) {
+              breakEvenPoints.push(aCurrentSales);
+              breakEvenPoints.push(bCurrentSales);
+            }
 
             var aRevenueData = [];
             var bRevenueData = [];
             var aCostData = [];
+            var aCostDataWithOvertime = [];
             var bCostData = [];
+            var bCostDataWithOvertime = [];
 
-            var unitsMax = roundUp(Math.max(aBreakEven, bBreakEven, cBreakEven));
+            var unitsMax = roundUp(Math.max.apply(null, breakEvenPoints));
+
+            var maxProductionCapacity = ( aMaximumProductionCapacityPerAnnum >= bMaximumProductionCapacityPerAnnum) ? aMaximumProductionCapacityPerAnnum : bMaximumProductionCapacityPerAnnum;
+
+            unitsMax = (maxProductionCapacity <= unitsMax) ? maxProductionCapacity : unitsMax;
             upperBoundMax = unitsMax;
 
             if (isSlider) {
@@ -277,63 +374,146 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
 
+            if (!drawOvertime) {
+              [lowerBound, unitsMax].forEach(function(element) {
+                var aCostPointWithOvertime = calculateCost(aTotalCost, aVariableCost, element);
+                aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+
+                var aCostPoint = calculateCost(aTotalCost, aVariableCost, element);
+                aCostData.push({ x: element, y: aCostPoint });
+              });
+            } else {
+              var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+
+              [lowerBound, aCurrentSales].forEach(function(element) {
+                var aCostPoint = calculateCost(aTotalCost, aVariableCost, element);
+                aCostData.push({ x: element, y: aCostPoint });
+              });
+
+              if (aCurrentSales < unitsMax) {
+                [lowerElement, unitsMax].forEach(function(element) {
+                  var aCostPointWithOvertime = calculateOvertimeCost(aTotalCost,
+                    aVariableCost, aVariableCostOvertime,
+                    aProductionRate, element
+                  );
+
+                  aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+                });
+              }
+            }
+
+            if (!drawOvertime) {
+              [lowerBound, unitsMax].forEach(function(element) {
+                var bCostPointWithOvertime = calculateCost(bTotalCost, bVariableCost, element);
+                bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
+
+                var bCostPoint = calculateCost(bTotalCost, bVariableCost, element);
+                bCostData.push({ x: element, y: bCostPoint });
+              });
+            } else {
+              var lowerElement = (lowerBound > bCurrentSales) ? lowerBound : bCurrentSales;
+
+              [lowerBound, bCurrentSales].forEach(function(element) {
+                var bCostPoint = calculateCost(bTotalCost, bVariableCost, element);
+                bCostData.push({ x: element, y: bCostPoint });
+              });
+
+              if (bCurrentSales < unitsMax) {
+                [lowerElement, unitsMax].forEach(function(element) {
+                  var bCostPointWithOvertime = calculateOvertimeCost(bTotalCost,
+                    bVariableCost, bVariableCostOvertime,
+                    bProductionRate, element
+                  );
+
+                  bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
+                });
+              }
+            }
+
             [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
-              var aCostPoint = calculateCost(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerUnit, aRawMaterialCost, element)
-              var bCostPoint = calculateCost(bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerUnit, bRawMaterialCost, element)
 
               aRevenueData.push({ x: element, y: aRevenuePoint });
               bRevenueData.push({ x: element, y: bRevenuePoint });
-              aCostData.push({ x: element, y: aCostPoint });
-              bCostData.push({ x: element, y: bCostPoint });
             });
 
-            return [
+            results = [
               {
                 values: aRevenueData,
-                key: 'Method A Revenue',
+                key: 'Production Machine A Revenue',
                 color: '#ff7f0e'
               },
               {
                 values: bRevenueData,
-                key: 'Method B Revenue',
+                key: 'Production Machine B Revenue',
                 color: '#03d10c'
               },
               {
                 values: aCostData,
-                key: 'Method A Cost',
+                key: 'Production Machine A Cost',
                 color: '#3333FF'
               },
               {
                 values: bCostData,
-                key: 'Method B Cost',
+                key: 'Production Machine B Cost',
                 color: '#CC0000'
               }
             ];
+
+            if (drawOvertime) {
+              results.push(
+                {
+                  values: aCostDataWithOvertime,
+                  key: 'Production Machine A Cost With Overtime',
+                  color: '#3333FF'
+                },
+                {
+                  values: bCostDataWithOvertime,
+                  key: 'Production Machine B Cost With Overtime',
+                  color: '#CC0000'
+                }
+              )
+            }
+
+            return results;
           },
 
-          _setMethodABreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
-            var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
+          _setMethodABreakEvenValue: function(revenue, variableCost, totalCost) {
+            var units = (totalCost / (revenue - variableCost));
             d3.select('input[name=a_cost_break_even]').property('value', units.toFixed(2));
             return units;
           },
 
-          _setMethodBBreakEvenValue: function(revenue , uniformAnnualCost, rentPerAnnum, utilityPerAnnum, labourCost, rawMaterialCost) {
-            var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum) / (revenue - labourCost - rawMaterialCost));
+          _setMethodBBreakEvenValue: function(revenue, variableCost, totalCost) {
+            var units = (totalCost / (revenue - variableCost));
             d3.select('input[name=b_cost_break_even]').property('value', units.toFixed(2));
             return units;
           },
 
-          _setMethodBreakEvenValue: function(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCost, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCost, bRawMaterialCost) {
-            var units = (((aUniformAnnualCost + aRentPerAnnum + aUtilityPerAnnum) - (bUniformAnnualCost + bRentPerAnnum + bUtilityPerAnnum)) / ((bLabourCost + bRawMaterialCost) - (aLabourCost + aRawMaterialCost)));
+          _setMethodAProfit: function(projectedSales, maximumProductionCapcity, revenue, cost) {
+            projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
+            d3.select('input[name=a_profit]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+
+          _setMethodBProfit: function(projectedSales, maximumProductionCapcity, revenue, cost) {
+            projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
+            d3.select('input[name=b_profit]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+
+          _setMethodABBreakEvenValue: function(aVariableCost, aTotalCost, bVariableCost, bTotalCost) {
+            var units = (aTotalCost - bTotalCost) / (bVariableCost - aVariableCost);
             d3.select('input[name=a_b_cost_break_even]').property('value', units.toFixed(2));
             return units;
-          }
+          },
         }
 
         $.widget('custom.profitBreakEvenGraph', ProfitBreakEvenGraph);
         $("[data-graph='profit_break_even']").profitBreakEvenGraph();
+
+        $('.reset-graph').click(function() {
+          location.reload();
+        })
       });
 
   %body
@@ -354,6 +534,10 @@
 
           #range-slider
 
+        .row.text-center
+          %a.button.radius.tiny.success.draw-overtime Draw overtime
+          %a.button.radius.tiny.reset-graph Reset graph
+
       .large-5.columns
         %table
           %tr
@@ -371,7 +555,6 @@
                     $
                 .small-10.columns
                   %input{ type: 'text', name: 'a_machine_cost', value: 700000 }
-
             %td
               .row.collapse
                 .small-2.columns
@@ -379,7 +562,6 @@
                     $
                 .small-10.columns
                   %input{ type: 'text', name: 'b_machine_cost', value: 950000 }
-
 
           %tr
             %td Maintenance Cost
@@ -394,6 +576,7 @@
                 .small-4.columns
                   %span.postfix
                     \/yr
+
             %td
               .row.collapse
                 .small-2.columns
@@ -406,7 +589,7 @@
                     \/yr
 
           %tr
-            %td Salvage value
+            %td Salvage Value
 
             %td
               .row.collapse
@@ -423,7 +606,6 @@
                     $
                 .small-10.columns
                   %input{ type: 'text', name: 'b_salvage_value', value: 150000 }
-
 
           %tr
             %td Service Life
@@ -474,17 +656,17 @@
 
             %td
               .row.collapse
-                .small-7.columns
+                .small-6.columns
                   %input{ type: 'text', name: 'a_production_rate', value: 75 }
-                .small-5.columns
+                .small-6.columns
                   %span.postfix
                     units/hr
 
             %td
               .row.collapse
-                .small-7.columns
+                .small-6.columns
                   %input{ type: 'text', name: 'b_production_rate', value: 100 }
-                .small-5.columns
+                .small-6.columns
                   %span.postfix
                     units/hr
 
@@ -627,7 +809,7 @@
                     \/unit
 
           %tr
-            %td Interest rate
+            %td Interest Rate
 
             %td
               .row.collapse
@@ -644,6 +826,31 @@
                 .small-4.columns
                   %span.postfix
                     \%
+
+          %tr
+            %td Labour Over Time Rate
+
+            %td{ colspan: 2 }
+              .small-8.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'text', name: 'labour_overtime_rate', value: 50 }
+                  .small-4.columns
+                    %span.postfix
+                      \%
+
+
+          %tr
+            %td Projected Sale
+
+            %td{ colspan: 2 }
+              .small-8.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'text', name: 'projected_sales', value: 180000 }
+                  .small-4.columns
+                    %span.postfix
+                      units
 
         %table
           %tr
@@ -669,6 +876,30 @@
                   .small-4.columns
                     %span.postfix
                       units
+
+          %tr
+            %td.a-profit-header Method A Profit Based on Projected Sales
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-4.columns
+                    %span.prefix
+                      $
+                  .small-8.columns
+                    %input{ type: 'text', name: 'a_profit', disabled: '' }
+
+          %tr
+            %td.b-profit-header Method B Profit Based on Projected Sales
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-4.columns
+                    %span.prefix
+                      $
+                  .small-8.columns
+                    %input{ type: 'text', name: 'b_profit', disabled: '' }
 
           %tr
             %td Method A/B Cost Break Even Point
