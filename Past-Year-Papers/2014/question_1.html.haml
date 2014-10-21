@@ -126,7 +126,7 @@
           var currentSales = productionRate * 8 * 5 * 50;
           var salesDifference = projectedSales - currentSales;
           projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
-1
+
           if (!drawOvertime || salesDifference < 0) {
             var variableCost = variableCostWithOverhead * projectedSales
           } else {

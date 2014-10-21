@@ -283,7 +283,7 @@
             ));
 
             var aIsOvertime = (projectedSales > aCurrentSales);
-            if (aIsOvertime) { breakEvenPoints.push(aCurrentSales); }
+            if (drawOvertime) { breakEvenPoints.push(aCurrentSales); }
 
             var aRevenueData = [];
             var aCostData = [];
@@ -303,7 +303,7 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
 
-            if (!aIsOvertime && drawOvertime) {
+            if (!drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var aCostPointWithOvertime = calculateCost(
                   aUniformAnnualCostWithOverhead,
@@ -312,9 +312,16 @@
                 );
 
                 aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+                var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
+                aCostData.push({ x: element, y: aCostPoint });
               });
             } else {
               var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+
+              [lowerBound, aCurrentSales].forEach(function(element) {
+                var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
+                aCostData.push({ x: element, y: aCostPoint });
+              })
 
               if (aCurrentSales < unitsMax) {
                 [lowerElement, unitsMax].forEach(function(element) {
@@ -331,10 +338,7 @@
 
             [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
-              var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
-
               aRevenueData.push({ x: element, y: aRevenuePoint });
-              aCostData.push({ x: element, y: aCostPoint });
             });
 
             results = [
@@ -355,7 +359,7 @@
                 {
                   values: aCostDataWithOvertime,
                   key: 'Cost With Overtime',
-                  color: '#732C7B'
+                  color: '#3333FF'
                 }
               )
             }

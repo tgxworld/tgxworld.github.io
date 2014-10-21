@@ -305,9 +305,8 @@
 
             var aCurrentSales = aProductionRate * 8 * 5 *50;
             var bCurrentSales = bProductionRate * 8 * 5 *50;
-            var aIsOvertime = (projectedSales > aCurrentSales);
 
-            if (aIsOvertime) { breakEvenPoints.push(aCurrentSales); }
+            if (drawOvertime) { breakEvenPoints.push(aCurrentSales); }
 
             var dBreakEven = this._setMethodABBreakEvenValueWithOvertime(
               0, aCostPerUnit, aCostPerUnitWithOvertime, aCurrentSales,
@@ -335,14 +334,21 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
 
-            if (!aIsOvertime && drawOvertime) {
+            if (!drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var aCostPointWithOvertime = calculateCost(0, aCostPerUnit, element);
-
                 aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+
+                var aCostPoint = calculateCost(0, aCostPerUnit, element);
+                aCostData.push({ x: element, y: aCostPoint });
               });
             } else {
               var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+
+              [lowerBound, aCurrentSales].forEach(function(element) {
+                var aCostPoint = calculateCost(0, aCostPerUnit, element);
+                aCostData.push({ x: element, y: aCostPoint });
+              })
 
               if (aCurrentSales < unitsMax) {
                 [lowerElement, unitsMax].forEach(function(element) {
@@ -359,12 +365,10 @@
             [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
-              var aCostPoint = calculateCost(0, aCostPerUnit, element);
               var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverHead, bCostPerUnit, element);
 
               aRevenueData.push({ x: element, y: aRevenuePoint });
               bRevenueData.push({ x: element, y: bRevenuePoint });
-              aCostData.push({ x: element, y: aCostPoint });
               bCostData.push({ x: element, y: bCostPoint });
             });
 
@@ -396,7 +400,7 @@
                 {
                   values: aCostDataWithOvertime,
                   key: 'Manual Labour Cost With Overtime',
-                  color: '#732C7B'
+                  color: '#3333FF'
                 }
               )
             }

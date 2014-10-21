@@ -327,11 +327,7 @@
       
             var aCurrentSales = aProductionRate * 8 * 5 *50;
             var bCurrentSales = bProductionRate * 8 * 5 *50;
-            var aIsOvertime = (projectedSales > aCurrentSales);
-            var bIsOvertime = (projectedSales > bCurrentSales);
-      
-            if (aIsOvertime) { breakEvenPoints.push(aCurrentSales); }
-            if (bIsOvertime) { breakEvenPoints.push(bCurrentSales); }
+            if (drawOvertime) { breakEvenPoints.push(aCurrentSales, bCurrentSales); }
       
             var dBreakEven = this._setMethodABBreakEvenValueWithOvertime(
               aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, aVariableCostOvertimeWithOverhead, aCurrentSales,
@@ -360,14 +356,21 @@
               if (!isSlider) { $slider.slider('option', 'values', [lowerBound, unitsMax]); }
             }
       
-            if (!aIsOvertime && drawOvertime) {
+            if (!drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var aCostPointWithOvertime = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
-      
                 aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
+      
+                var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
+                aCostData.push({ x: element, y: aCostPoint });
               });
             } else {
               var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
+      
+              [lowerBound, aCurrentSales].forEach(function(element) {
+                var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
+                aCostData.push({ x: element, y: aCostPoint });
+              });
       
               if (aCurrentSales < unitsMax) {
                 [lowerElement, unitsMax].forEach(function(element) {
@@ -381,14 +384,21 @@
               }
             }
       
-            if (!bIsOvertime && drawOvertime) {
+            if (!drawOvertime) {
               [lowerBound, unitsMax].forEach(function(element) {
                 var bCostPointWithOvertime = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
-      
                 bCostDataWithOvertime.push({ x: element, y: bCostPointWithOvertime });
+      
+                var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
+                bCostData.push({ x: element, y: bCostPoint });
               });
             } else {
               var lowerElement = (lowerBound > bCurrentSales) ? lowerBound : bCurrentSales;
+      
+              [lowerBound, bCurrentSales].forEach(function(element) {
+                var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
+                bCostData.push({ x: element, y: bCostPoint });
+              });
       
               if (bCurrentSales < unitsMax) {
                 [lowerElement, unitsMax].forEach(function(element) {
@@ -405,13 +415,9 @@
             [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               var bRevenuePoint = calculateRevenue(bRevenue, element);
-              var aCostPoint = calculateCost(aUniformAnnualCostWithMachineOverhead, aVariableCostWithOverhead, element);
-              var bCostPoint = calculateCost(bUniformAnnualCostWithMachineOverhead, bVariableCostWithOverhead, element);
       
               aRevenueData.push({ x: element, y: aRevenuePoint });
               bRevenueData.push({ x: element, y: bRevenuePoint });
-              aCostData.push({ x: element, y: aCostPoint });
-              bCostData.push({ x: element, y: bCostPoint });
             });
       
             results = [
@@ -442,12 +448,12 @@
                 {
                   values: aCostDataWithOvertime,
                   key: 'Production Machine A Cost With Overtime',
-                  color: '#732C7B'
+                  color: '#3333FF'
                 },
                 {
                   values: bCostDataWithOvertime,
                   key: 'Production Machine B Cost With Overtime',
-                  color: '#593E1A'
+                  color: '#CC0000'
                 }
               )
             }
