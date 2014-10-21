@@ -208,6 +208,7 @@
           },
 
           _generateLineData: function(isSlider) {
+            var projectedSales = parseFloat(d3.select('input[name=projected_sales]').property('value'));
             // Method A Start
             var aMachineCost =
               parseFloat(d3.select('input[name=a_number_machine]').property('value')) *
@@ -240,6 +241,8 @@
             var aUniformAnnualCost = calculateUniformAnnualCost(aMachineCost, aMaintenanceCost, aSalvageValue, aInterestRate, aServiceLife);
             var aRentPerAnnum = calculateRentPerAnnum(aMonthlyRent, aFactorySpace);
             var aUtilityPerAnnum = calculateUtilityPerAnnum(aUtilityConsumption);
+            var aTotalCost = aUniformAnnualCost + aRentPerAnnum + aUtilityPerAnnum + aLabourCostPerAnnum;
+            var aMaximumProductionCapacityPerAnnum = aMaximumProductionCapacity * 12;
             // Method A End
 
             // Grab field values of Method B
@@ -270,11 +273,27 @@
             var bUniformAnnualCost = calculateUniformAnnualCost(bMachineCost, bMaintenanceCost, bSalvageValue, bInterestRate, bServiceLife);
             var bRentPerAnnum = calculateRentPerAnnum(bMonthlyRent, bFactorySpace);
             var bUtilityPerAnnum = calculateUtilityPerAnnum(bUtilityConsumption);
+            var bTotalCost = bUniformAnnualCost + bRentPerAnnum + bUtilityPerAnnum + bLabourCostPerAnnum;
+            var bMaximumProductionCapacityPerAnnum = bMaximumProductionCapacity * 12;
             // Method B end
 
             var aBreakEven = this._setMethodABreakEvenValue(aRevenue , aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerAnnum, aRawMaterialCost);
             var bBreakEven = this._setMethodBBreakEvenValue(bRevenue , bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerAnnum, bRawMaterialCost);
             var cBreakEven = this._setMethodBreakEvenValue(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerAnnum, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerAnnum, bRawMaterialCost);
+
+            this._setMethodAProfit(
+              projectedSales,
+              aMaximumProductionCapacityPerAnnum,
+              aRevenue,
+              aTotalCost, aRawMaterialCost
+            );
+
+            this._setMethodBProfit(
+              projectedSales,
+              bMaximumProductionCapacityPerAnnum,
+              bRevenue,
+              bTotalCost, bRawMaterialCost
+            );
 
             var aRevenueData = [];
             var bRevenueData = [];
@@ -321,12 +340,12 @@
               {
                 values: aCostData,
                 key: 'Method A Cost',
-                color: '#8b0000'
+                color: '#3333FF'
               },
               {
                 values: bCostData,
                 key: 'Method B Cost',
-                color: '#8c766f'
+                color: '#CC0000'
               }
             ];
           },
@@ -341,6 +360,18 @@
             var units = ((uniformAnnualCost + rentPerAnnum + utilityPerAnnum + labourCostPerAnnum) / (revenue - rawMaterialCost));
             d3.select('input[name=b_cost_break_even]').property('value', units.toFixed(2));
             return units;
+          },
+
+          _setMethodAProfit: function(projectedSales, maximumProductionCapcity, revenue, cost, materialCost) {
+            projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
+            cost = cost + (materialCost * projectedSales);
+            d3.select('input[name=a_profit]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
+          },
+
+          _setMethodBProfit: function(projectedSales, maximumProductionCapcity, revenue, cost, materialCost) {
+            projectedSales = (projectedSales >= maximumProductionCapcity) ? maximumProductionCapcity : projectedSales;
+            cost = cost + (materialCost * projectedSales);
+            d3.select('input[name=b_profit]').property('value', ((projectedSales * revenue) - cost).toFixed(2));
           },
 
           _setMethodBreakEvenValue: function(aUniformAnnualCost, aRentPerAnnum, aUtilityPerAnnum, aLabourCostPerAnnum, aRawMaterialCost, bUniformAnnualCost, bRentPerAnnum, bUtilityPerAnnum, bLabourCostPerAnnum, bRawMaterialCost) {
@@ -752,9 +783,21 @@
                   %span.postfix
                     \%
 
+          %tr
+            %td Projected Sale
+
+            %td{ colspan: 2 }
+              .small-8.small-centered.columns
+                .row.collapse
+                  .small-8.columns
+                    %input{ type: 'text', name: 'projected_sales', value: 114000 }
+                  .small-4.columns
+                    %span.postfix
+                      units
+
         %table
           %tr
-            %td Method A Cost Break Even Point
+            %td Manual Cost Break Even Point
 
             %td{ colspan: 2 }
               .small-10.small-centered.columns
@@ -766,7 +809,7 @@
                       units
 
           %tr
-            %td Method B Cost Break Even Point
+            %td Automated Cost Break Even Point
 
             %td{ colspan: 2 }
               .small-10.small-centered.columns
@@ -777,8 +820,33 @@
                     %span.postfix
                       units
 
+
           %tr
-            %td Method A/B Cost Break Even Point
+            %td.a-profit-header Manual Profit Based on Projected Sales
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-4.columns
+                    %span.prefix
+                      $
+                  .small-8.columns
+                    %input{ type: 'text', name: 'a_profit', disabled: '' }
+
+          %tr
+            %td.b-profit-header Automated Profit Based on Projected Sales
+
+            %td{ colspan: 2 }
+              .small-10.small-centered.columns
+                .row.collapse
+                  .small-4.columns
+                    %span.prefix
+                      $
+                  .small-8.columns
+                    %input{ type: 'text', name: 'b_profit', disabled: '' }
+
+          %tr
+            %td Manual/Automated Cost Break Even Point
 
             %td{ colspan: 2 }
               .small-10.small-centered.columns
