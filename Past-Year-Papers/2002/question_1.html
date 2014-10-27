@@ -311,16 +311,9 @@
                 );
       
                 aCostDataWithOvertime.push({ x: element, y: aCostPointWithOvertime });
-                var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
-                aCostData.push({ x: element, y: aCostPoint });
               });
             } else {
               var lowerElement = (lowerBound > aCurrentSales) ? lowerBound : aCurrentSales;
-      
-              [lowerBound, aCurrentSales].forEach(function(element) {
-                var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
-                aCostData.push({ x: element, y: aCostPoint });
-              })
       
               if (aCurrentSales < unitsMax) {
                 [lowerElement, unitsMax].forEach(function(element) {
@@ -338,6 +331,9 @@
             [lowerBound, unitsMax].forEach(function(element) {
               var aRevenuePoint = calculateRevenue(aRevenue, element);
               aRevenueData.push({ x: element, y: aRevenuePoint });
+      
+              var aCostPoint = calculateCost(aUniformAnnualCostWithOverhead, aCostPerUnit, element)
+              aCostData.push({ x: element, y: aCostPoint });
             });
       
             results = [
@@ -358,7 +354,7 @@
                 {
                   values: aCostDataWithOvertime,
                   key: 'Cost With Overtime',
-                  color: '#3333FF'
+                  color: 'black'
                 }
               )
             }
