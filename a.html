@@ -1,0 +1,1953 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <style media="all" type="text/css">
+    table {
+      border-collapse: collapse;
+      border: 1px solid #CCC;
+      font-family: Verdana, Arial, Helvetica, sans-serif;
+      font-size: 9pt;
+      line-height: normal;
+      width: 100%;
+    }
+
+    th {
+      text-align: center;
+      border-top: 1px solid #FB7A31;
+      border-bottom: 1px solid #FB7A31;
+      background: #FFC;
+      padding: 0.3em;
+      border-left: 1px solid silver;
+    }
+
+    tr.break td {
+      border: 0;
+      border-top: 1px solid #FB7A31;
+      padding: 0;
+      margin: 0;
+    }
+
+    tr.method td {
+      font-weight: bold;
+    }
+
+    td {
+      padding: 0.3em;
+    }
+
+    td:first-child {
+      width: 190px;
+      }
+
+    td {
+      border-left: 1px solid #CCC;
+      text-align: center;
+    }
+
+    .method_name {
+      text-align: left;
+    }
+
+    tfoot td {
+      text-align: left;
+    }
+  </style>
+  </head>
+  <body>
+    <h1>Profile Report</h1>
+    <!-- Threads Table -->
+    <table>
+      <tr>
+        <th>Thread ID</th>
+        <th>Fiber ID</th>
+        <th>Total Time</th>
+      </tr>
+      
+      <tr>
+        <td>10793780</td>
+        <td><a href="#50121580">50121580</a></td>
+        <td>0.00018814500000008394</td>
+      </tr>
+      
+    </table>
+
+    <!-- Methods Tables -->
+    
+      <h2><a name="50121580">Thread 10793780, Fiber: 50121580</a></h2>
+      <table>
+        <thead>
+          <tr>
+            <th>  %Total</th>
+            <th>   %Self</th>
+            <th>     Total</th>
+            <th>      Self</th>
+            <th>      Wait</th>
+            <th>       Child</th>
+            <th>               Calls</th>
+            <th class="method_name">Name</th>
+            <th>Line</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          
+
+              <!-- Parents -->
+              
+
+              <tr class="method">
+                <td> 100.00%</td>
+                <td>  24.71%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="UserFlowTest_test_index_50121580">
+                     UserFlowTest#test_index
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/app/test/integration/user_flow_test.rb#8" title="/home/guoxiang/app/test/integration/user_flow_test.rb:8">8</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_all_50121580">ActiveRecord::Scoping::Named::ClassMethods#all</a></td>
+                  <td><a href="file:///home/guoxiang/app/test/integration/user_flow_test.rb#8" title="/home/guoxiang/app/test/integration/user_flow_test.rb:8">8</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#UserFlowTest_test_index_50121580">UserFlowTest#test_index</a></td>
+                  <td><a href="file:///home/guoxiang/app/test/integration/user_flow_test.rb#8" title="/home/guoxiang/app/test/integration/user_flow_test.rb:8">8</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  75.29%</td>
+                <td>   5.94%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__Named__ClassMethods_all_50121580">
+                     ActiveRecord::Scoping::Named::ClassMethods#all
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#24" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:24">24</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_default_scoped_50121580">ActiveRecord::Scoping::Named::ClassMethods#default_scoped</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#28" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:28">28</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#25" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:25">25</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_all_50121580">ActiveRecord::Scoping::Named::ClassMethods#all</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#28" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:28">28</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  48.14%</td>
+                <td>   4.57%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__Named__ClassMethods_default_scoped_50121580">
+                     ActiveRecord::Scoping::Named::ClassMethods#default_scoped
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#32" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:32">32</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Core__ClassMethods_relation_50121580">ActiveRecord::Core::ClassMethods#relation</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__SpawnMethods_merge_50121580">ActiveRecord::SpawnMethods#merge</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_default_scoped_50121580">ActiveRecord::Scoping::Named::ClassMethods#default_scoped</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  30.00%</td>
+                <td>   7.21%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Core__ClassMethods_relation_50121580">
+                     ActiveRecord::Core::ClassMethods#relation
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#244" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:244">244</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__ClassMethods_create_50121580">ActiveRecord::Delegation::ClassMethods#create</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#245" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:245">245</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_finder_needs_type_condition__50121580">ActiveRecord::Inheritance::ClassMethods#finder_needs_type_condition?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#247" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:247">247</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Core__ClassMethods_arel_table_50121580">ActiveRecord::Core::ClassMethods#arel_table</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#245" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:245">245</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_all_50121580">ActiveRecord::Scoping::Named::ClassMethods#all</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#25" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:25">25</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  21.21%</td>
+                <td>   6.52%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__ClassMethods_current_scope_50121580">
+                    *ActiveRecord::Scoping::ClassMethods#current_scope
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#13" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:13">13</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_base_class_50121580">ActiveRecord::Inheritance::ClassMethods#base_class</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Kernel_public_send_50121580">Kernel#public_send</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#47" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:47">47</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveSupport__PerThreadRegistry_instance_50121580">ActiveSupport::PerThreadRegistry#instance</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#47" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:47">47</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Module_to_s_50121580">Module#to_s</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Core__ClassMethods_relation_50121580">ActiveRecord::Core::ClassMethods#relation</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#245" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:245">245</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  12.57%</td>
+                <td>   2.16%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Delegation__ClassMethods_create_50121580">
+                     ActiveRecord::Delegation::ClassMethods#create
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#105" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:105">105</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__ClassMethods_relation_class_for_50121580">ActiveRecord::Delegation::ClassMethods#relation_class_for</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#106" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:106">106</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#Class_new_50121580">Class#new</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#106" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:106">106</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:101">101</a></td>
+                </tr>
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_default_scoped_50121580">ActiveRecord::Scoping::Named::ClassMethods#default_scoped</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>  11.36%</td>
+                <td>   6.08%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">
+                    *ActiveRecord::Scoping::Default::ClassMethods#build_default_scope
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#97" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:97">97</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Kernel_method_50121580">Kernel#method</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Enumerable_any__50121580">Enumerable#any?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:101">101</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Method_owner_50121580">Method#owner</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#Kernel_is_a__50121580">Kernel#is_a?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:101">101</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Core__ClassMethods_relation_50121580">ActiveRecord::Core::ClassMethods#relation</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#247" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:247">247</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   8.93%</td>
+                <td>   3.98%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Inheritance__ClassMethods_finder_needs_type_condition__50121580">
+                     ActiveRecord::Inheritance::ClassMethods#finder_needs_type_condition?
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#77" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:77">77</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_descends_from_active_record__50121580">ActiveRecord::Inheritance::ClassMethods#descends_from_active_record?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#79" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:79">79</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#Symbol____50121580">Symbol#==</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#79" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:79">79</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__ClassMethods_create_50121580">ActiveRecord::Delegation::ClassMethods#create</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#106" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:106">106</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   5.67%</td>
+                <td>   2.18%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Delegation__ClassMethods_relation_class_for_50121580">
+                     ActiveRecord::Delegation::ClassMethods#relation_class_for
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#111" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:111">111</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__DelegateCache_relation_delegate_class_50121580">ActiveRecord::Delegation::DelegateCache#relation_delegate_class</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#112" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:112">112</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__ClassMethods_create_50121580">ActiveRecord::Delegation::ClassMethods#create</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#106" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:106">106</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   4.74%</td>
+                <td>   1.98%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="Class_new_50121580">
+                     Class#new
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Relation_initialize_50121580">ActiveRecord::Relation#initialize</a></td>
+                  <td></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   4.73%</td>
+                <td>   3.26%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Inheritance__ClassMethods_base_class_50121580">
+                     ActiveRecord::Inheritance::ClassMethods#base_class
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#100" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:100">100</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/3</td>
+                  <td class="method_name"><a href="#Class_superclass_50121580">Class#superclass</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#105" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:105">105</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Module___50121580">Module#&lt;</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:101">101</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#47" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:47">47</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   4.30%</td>
+                <td>   0.91%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Kernel_public_send_50121580">
+                     Kernel#public_send
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ScopeRegistry_value_for_50121580">ActiveRecord::Scoping::ScopeRegistry#value_for</a></td>
+                  <td></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_finder_needs_type_condition__50121580">ActiveRecord::Inheritance::ClassMethods#finder_needs_type_condition?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#79" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:79">79</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   4.30%</td>
+                <td>   2.42%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Inheritance__ClassMethods_descends_from_active_record__50121580">
+                     ActiveRecord::Inheritance::ClassMethods#descends_from_active_record?
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#67" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:67">67</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/3</td>
+                  <td class="method_name"><a href="#Class_superclass_50121580">Class#superclass</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#73" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:73">73</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_abstract_class__50121580">ActiveRecord::Inheritance::ClassMethods#abstract_class?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#70" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:70">70</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__ClassMethods_relation_class_for_50121580">ActiveRecord::Delegation::ClassMethods#relation_class_for</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#112" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:112">112</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   3.49%</td>
+                <td>   2.83%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Delegation__DelegateCache_relation_delegate_class_50121580">
+                     ActiveRecord::Delegation::DelegateCache#relation_delegate_class
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#8" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:8">8</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#Kernel_hash_50121580">Kernel#hash</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#9" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:9">9</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Kernel_public_send_50121580">Kernel#public_send</a></td>
+                  <td></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   3.39%</td>
+                <td>   1.93%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__ScopeRegistry_value_for_50121580">
+                     ActiveRecord::Scoping::ScopeRegistry#value_for
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#67" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:67">67</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ScopeRegistry_raise_invalid_scope_type!_50121580">ActiveRecord::Scoping::ScopeRegistry#raise_invalid_scope_type!</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#68" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:68">68</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#Class_new_50121580">Class#new</a></td>
+                  <td></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   2.76%</td>
+                <td>   2.76%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Relation_initialize_50121580">
+                     ActiveRecord::Relation#initialize
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation.rb#23" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation.rb:23">23</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#47" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:47">47</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   2.47%</td>
+                <td>   1.22%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveSupport__PerThreadRegistry_instance_50121580">
+                     ActiveSupport::PerThreadRegistry#instance
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb#39" title="/home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb:39">39</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Thread_[]_50121580">Thread#[]</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb#40" title="/home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb:40">40</a></td>
+                </tr>
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#_Class__Thread__current_50121580">&lt;Class::Thread&gt;#current</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb#40" title="/home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb:40">40</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Named__ClassMethods_default_scoped_50121580">ActiveRecord::Scoping::Named::ClassMethods#default_scoped</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb#33" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/named.rb:33">33</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   2.21%</td>
+                <td>   1.89%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__SpawnMethods_merge_50121580">
+                     ActiveRecord::SpawnMethods#merge
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb#29" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb:29">29</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#Kernel_is_a__50121580">Kernel#is_a?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb#30" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb:30">30</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/3</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_base_class_50121580">ActiveRecord::Inheritance::ClassMethods#base_class</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#105" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:105">105</a></td>
+                </tr>
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/3</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_descends_from_active_record__50121580">ActiveRecord::Inheritance::ClassMethods#descends_from_active_record?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#73" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:73">73</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.92%</td>
+                <td>   1.92%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   3</td>
+                <td class="method_name">
+                  <a name="Class_superclass_50121580">
+                     Class#superclass
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.74%</td>
+                <td>   1.74%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Kernel_method_50121580">
+                     Kernel#method
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ScopeRegistry_value_for_50121580">ActiveRecord::Scoping::ScopeRegistry#value_for</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#68" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:68">68</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.47%</td>
+                <td>   1.02%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Scoping__ScopeRegistry_raise_invalid_scope_type!_50121580">
+                     ActiveRecord::Scoping::ScopeRegistry#raise_invalid_scope_type!
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#80" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:80">80</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Array_include__50121580">Array#include?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#81" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:81">81</a></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Core__ClassMethods_relation_50121580">ActiveRecord::Core::ClassMethods#relation</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#245" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:245">245</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.28%</td>
+                <td>   1.28%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Core__ClassMethods_arel_table_50121580">
+                     ActiveRecord::Core::ClassMethods#arel_table
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb#228" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/core.rb:228">228</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ClassMethods_current_scope_50121580">ActiveRecord::Scoping::ClassMethods#current_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#14" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:14">14</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.21%</td>
+                <td>   1.21%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Module_to_s_50121580">
+                     Module#to_s
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:101">101</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   1.20%</td>
+                <td>   0.77%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Enumerable_any__50121580">
+                     Enumerable#any?
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Array_each_50121580">Array#each</a></td>
+                  <td></td>
+                </tr>
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__SpawnMethods_merge_50121580">ActiveRecord::SpawnMethods#merge</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb#30" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/spawn_methods.rb:30">30</a></td>
+                </tr>
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.89%</td>
+                <td>   0.89%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="Kernel_is_a__50121580">
+                     Kernel#is_a?
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_descends_from_active_record__50121580">ActiveRecord::Inheritance::ClassMethods#descends_from_active_record?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#70" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:70">70</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.88%</td>
+                <td>   0.88%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="ActiveRecord__Inheritance__ClassMethods_abstract_class__50121580">
+                     ActiveRecord::Inheritance::ClassMethods#abstract_class?
+                  </a>
+                </td>
+                <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#130" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:130">130</a></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveSupport__PerThreadRegistry_instance_50121580">ActiveSupport::PerThreadRegistry#instance</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb#40" title="/home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb:40">40</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.83%</td>
+                <td>   0.83%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Thread_[]_50121580">
+                     Thread#[]
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Delegation__DelegateCache_relation_delegate_class_50121580">ActiveRecord::Delegation::DelegateCache#relation_delegate_class</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb#9" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/relation/delegation.rb:9">9</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.67%</td>
+                <td>   0.67%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="Kernel_hash_50121580">
+                     Kernel#hash
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 2/2</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_finder_needs_type_condition__50121580">ActiveRecord::Inheritance::ClassMethods#finder_needs_type_condition?</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#79" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:79">79</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.65%</td>
+                <td>   0.65%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   2</td>
+                <td class="method_name">
+                  <a name="Symbol____50121580">
+                     Symbol#==
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__Default__ClassMethods_build_default_scope_50121580">ActiveRecord::Scoping::Default::ClassMethods#build_default_scope</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb#98" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping/default.rb:98">98</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.63%</td>
+                <td>   0.63%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Method_owner_50121580">
+                     Method#owner
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Inheritance__ClassMethods_base_class_50121580">ActiveRecord::Inheritance::ClassMethods#base_class</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb#101" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/inheritance.rb:101">101</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.55%</td>
+                <td>   0.55%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Module___50121580">
+                     Module#&lt;
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveRecord__Scoping__ScopeRegistry_raise_invalid_scope_type!_50121580">ActiveRecord::Scoping::ScopeRegistry#raise_invalid_scope_type!</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb#81" title="/home/guoxiang/work/rails-dev-box/rails/activerecord/lib/active_record/scoping.rb:81">81</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.44%</td>
+                <td>   0.44%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Array_include__50121580">
+                     Array#include?
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#Enumerable_any__50121580">Enumerable#any?</a></td>
+                  <td></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.42%</td>
+                <td>   0.42%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="Array_each_50121580">
+                     Array#each
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+
+              <!-- Parents -->
+              
+                <tr>
+                  <td>&nbsp;</td>
+                  <td>&nbsp;</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  <td>      0.00</td>
+                  
+                  <td>                 1/1</td>
+                  <td class="method_name"><a href="#ActiveSupport__PerThreadRegistry_instance_50121580">ActiveSupport::PerThreadRegistry#instance</a></td>
+                  <td><a href="file:///home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb#40" title="/home/guoxiang/work/rails-dev-box/rails/activesupport/lib/active_support/per_thread_registry.rb:40">40</a></td>
+                </tr>
+              
+
+              <tr class="method">
+                <td>   0.41%</td>
+                <td>   0.41%</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>      0.00</td>
+                <td>                   1</td>
+                <td class="method_name">
+                  <a name="_Class__Thread__current_50121580">
+                     &lt;Class::Thread&gt;#current
+                  </a>
+                </td>
+                <td></td>
+              </tr>
+
+              <!-- Children -->
+              
+              <!-- Create divider row -->
+              <tr class="break"><td colspan="9"></td></tr>
+          
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="9">* indicates recursively called methods</td>
+          </tr>
+        </tfoot>
+      </table>
+    
+  </body>
+</html>
