@@ -1,8 +1,8 @@
 {
   "provenance": {
-    "generated_at": "2026-07-31T05:04:30Z",
+    "generated_at": "2026-07-31T05:10:51Z",
     "before_commit": "2bfb79d6aadb1b4a3559aa758ead031afedba634",
-    "after_commit": "bb0ea3a7f726e111c6eb93b7d204821629803dc0",
+    "after_commit": "5e94c650fa5fb5115aea91bfd059c421ccc52c43",
     "discourse_docker_merge": "a3028747c5b7774f49a3b110221d96ca2b3f340d",
     "image": "discourse/base:2.0.20260731-0206",
     "image_digest": "sha256:55d36eeb4d12f5b2dd01c9b0dad8293fe11af8d7b1755ad3d930e35bbccd5280",
