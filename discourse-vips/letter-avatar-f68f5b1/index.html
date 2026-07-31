@@ -54,19 +54,24 @@
       <h2>Character scope</h2>
       <p>A–Z plus the focused non-Latin and escaping cases below:</p>
       <ul class="scope"><li><code>A</code> — Latin</li><li><code>B</code> — Latin</li><li><code>C</code> — Latin</li><li><code>D</code> — Latin</li><li><code>E</code> — Latin</li><li><code>F</code> — Latin</li><li><code>G</code> — Latin</li><li><code>H</code> — Latin</li><li><code>I</code> — Latin</li><li><code>J</code> — Latin</li><li><code>K</code> — Latin</li><li><code>L</code> — Latin</li><li><code>M</code> — Latin</li><li><code>N</code> — Latin</li><li><code>O</code> — Latin</li><li><code>P</code> — Latin</li><li><code>Q</code> — Latin</li><li><code>R</code> — Latin</li><li><code>S</code> — Latin</li><li><code>T</code> — Latin</li><li><code>U</code> — Latin</li><li><code>V</code> — Latin</li><li><code>W</code> — Latin</li><li><code>X</code> — Latin</li><li><code>Y</code> — Latin</li><li><code>Z</code> — Latin</li><li><code>中</code> — Chinese</li><li><code>あ</code> — Japanese</li><li><code>한</code> — Korean / Hangul</li><li><code>Ж</code> — Cyrillic</li><li><code>ब</code> — Devanagari</li><li><code>é</code> — Combining sequence</li><li><code>🦄</code> — Emoji / fallback glyph</li><li><code>&lt;&amp;</code> — XML-sensitive text</li></ul>
-      <h2>Font-coverage finding</h2>
+      <h2>Non-Latin renderer probes</h2>
+      <p>
+        These cases exercise the internal renderer directly; they do not represent the normal
+        interface path for Unicode usernames. Discourse uses its external system-avatar service by
+        default, and prevents enabling Unicode usernames when that service is disabled because the
+        internal renderer does not support them. Emoji is not valid in a Discourse username.
+      </p>
       <p>
         In this exact published base image, no installed font covers <code>中</code>, <code>あ</code>,
-        <code>한</code>, <code>ब</code>, or <code>🦄</code>. The ImageMagick implementation therefore
-        produces a background-only avatar for those cases. The Vips SVG path produces a visible
-        missing-glyph box containing the Unicode code point, rather than the intended character.
+        <code>한</code>, <code>ब</code>, or <code>🦄</code>. When forced through the internal
+        renderer, ImageMagick therefore produces a background-only avatar while the Vips SVG path
+        produces a visible missing-glyph box containing the Unicode code point.
         Cyrillic <code>Ж</code>, the combining sequence <code>é</code>, and XML-sensitive
         <code>&lt;&amp;</code> render as glyphs on both sides.
       </p>
       <p>
-        This is a useful migration finding, but not evidence of CJK, Hangul, Devanagari, or emoji font
-        support. Rendering the intended characters requires adding fonts that cover those scripts to
-        the production image.
+        These differences are useful renderer diagnostics, but are not a user-interface regression
+        in the supported configuration.
       </p>
       <h2>Summary</h2>
       <table>
