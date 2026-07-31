@@ -1,0 +1,3383 @@
+{
+  "title": "Discourse stock libvips image-processing parity",
+  "generated_at": "2026-07-31T08:57:40Z",
+  "overall_pass": true,
+  "summary": {
+    "contracts": 60,
+    "passed": 60,
+    "failed": 0,
+    "visual_cases": 28
+  },
+  "provenance": {
+    "core_commit": "6a121b3626386753b90a0ac9572f8fbe72e01328",
+    "branch": "codex/vips-image-processing",
+    "source_archive_sha256": "43074cb1b34fcfb5747de64e6e667122c2d2132652b1b4934116d89051e416b0",
+    "test_image": "discourse/discourse_test@sha256:dc03056d784d55624d4ba8fd18aea9d536b56eb336a27f780589c8be5e7e0c74",
+    "test_image_id": "sha256:77ec5bfb90dd7d23915ffdd44d62ef7b9278ddd33ff34394d1b179c56007861a",
+    "base_image": "discourse/base@sha256:55d36eeb4d12f5b2dd01c9b0dad8293fe11af8d7b1755ad3d930e35bbccd5280",
+    "base_layer_verification": "test image first 37 RootFS layers exactly equal required base image layers",
+    "libvips": "8.18.4",
+    "imagemagick": "7.1.2-27 Q16-HDRI",
+    "ruby": "3.4.9",
+    "architecture": "aarch64",
+    "nproc": 14,
+    "cgroup_cpu_max": "max 100000",
+    "cgroup_memory_max": "max",
+    "processor_concurrency_overrides": [],
+    "entrypoint_contract": "same Rails/domain entrypoints; only use_vips_for_image_processing toggled per arm",
+    "command": "bin/rspec spec/image_processing_evidence_spec.rb",
+    "commands": [
+      "git rev-parse HEAD",
+      "git archive --format=tar --output=image-processing-6a121b3-source.tar 6a121b3626386753b90a0ac9572f8fbe72e01328",
+      "docker image inspect discourse/base:2.0.20260731-0206 discourse/discourse_test:release --format '{{json .RootFS.Layers}}'",
+      "docker run --name vips-image-processing-evidence-6a121b3 --entrypoint sleep -d discourse/discourse_test@sha256:dc03056d784d55624d4ba8fd18aea9d536b56eb336a27f780589c8be5e7e0c74 infinity",
+      "tar -xf /tmp/source.tar -C /work/discourse",
+      "RAILS_ENV=test LOAD_PLUGINS=0 bin/rake db:migrate",
+      "RAILS_ENV=test LOAD_PLUGINS=0 bin/rake test:prepare",
+      "RAILS_ENV=test LOAD_PLUGINS=0 bin/rspec spec/models/optimized_image_vips_spec.rb spec/lib/upload_creator_vips_spec.rb spec/models/upload_vips_spec.rb spec/lib/shrink_uploaded_image_spec.rb",
+      "RAILS_ENV=test LOAD_PLUGINS=0 EVIDENCE_DIR=/tmp/image-processing-evidence bin/rspec spec/image_processing_evidence_spec.rb"
+    ]
+  },
+  "settings": {
+    "avatar_sizes": "24|48|72|96|144|288",
+    "image_quality": 90,
+    "png_to_jpg_quality": 0,
+    "recompress_original_jpg_quality": 0,
+    "image_preview_jpg_quality": 0,
+    "strip_image_metadata": true,
+    "composer_media_optimization_image_enabled": true,
+    "authorized_extensions": "jpg|jpeg|png|gif|heic|heif|webp|avif|svg|jxl"
+  },
+  "thresholds": {
+    "normal_normalized_mean_rgba_error": 0.03,
+    "independently_reencoded_orientation_error": 0.1,
+    "vips_to_image_magick_size_ratio": [
+      0.5,
+      2.0
+    ]
+  },
+  "contracts": [
+    {
+      "id": "visual-resize-321x123",
+      "group": "Visual parity",
+      "description": "Representative non-square resize 321×123: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          321,
+          123
+        ],
+        "vips_dimensions": [
+          321,
+          123
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00540269,
+        "vips_to_image_magick_size_ratio": 1.024580335731415
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-north-crop-landscape-321x123",
+      "group": "Visual parity",
+      "description": "North crop landscape 321×123: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          321,
+          123
+        ],
+        "vips_dimensions": [
+          321,
+          123
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00780807,
+        "vips_to_image_magick_size_ratio": 1.087667731629393
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-north-crop-portrait-173x419",
+      "group": "Visual parity",
+      "description": "North crop portrait 173×419: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          173,
+          419
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          173,
+          419
+        ],
+        "vips_dimensions": [
+          173,
+          419
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00490861,
+        "vips_to_image_magick_size_ratio": 1.0273924801535375
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-north-crop-alpha-96x160",
+      "group": "Visual parity",
+      "description": "North crop with alpha 96×160: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          96,
+          160
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          96,
+          160
+        ],
+        "vips_dimensions": [
+          96,
+          160
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00449269,
+        "vips_to_image_magick_size_ratio": 0.8666361136571953
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-downsize-percentage",
+      "group": "Visual parity",
+      "description": "Downsize 50%: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          1016,
+          656
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          1016,
+          656
+        ],
+        "vips_dimensions": [
+          1016,
+          656
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.0030027,
+        "vips_to_image_magick_size_ratio": 1.216595314416023
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-downsize-area",
+      "group": "Visual parity",
+      "description": "Downsize to 500,000 pixels: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": "identical",
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          880,
+          568
+        ],
+        "vips_dimensions": [
+          880,
+          568
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00317895,
+        "vips_to_image_magick_size_ratio": 1.2171655467318265
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-downsize-shrink-only",
+      "group": "Visual parity",
+      "description": "Downsize shrink-only 333×222: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          333,
+          215
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          333,
+          215
+        ],
+        "vips_dimensions": [
+          333,
+          215
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00356156,
+        "vips_to_image_magick_size_ratio": 1.293974820143885
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-downsize-no-upscale-alpha",
+      "group": "Visual parity",
+      "description": "Downsize no-upscale with alpha: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          244,
+          66
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          244,
+          66
+        ],
+        "vips_dimensions": [
+          244,
+          66
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.0,
+        "vips_to_image_magick_size_ratio": 1.0004260758414998
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-24",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 24×24: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          24,
+          24
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          24,
+          24
+        ],
+        "vips_dimensions": [
+          24,
+          24
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.0231621,
+        "vips_to_image_magick_size_ratio": 0.9284403669724771
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-24",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "24×24 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          24,
+          24
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            24,
+            24
+          ],
+          "file_dimensions": [
+            24,
+            24
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            24,
+            24
+          ],
+          "file_dimensions": [
+            24,
+            24
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-48",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 48×48: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          48,
+          48
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          48,
+          48
+        ],
+        "vips_dimensions": [
+          48,
+          48
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.0168479,
+        "vips_to_image_magick_size_ratio": 0.9509299564701227
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-48",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "48×48 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          48,
+          48
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            48,
+            48
+          ],
+          "file_dimensions": [
+            48,
+            48
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            48,
+            48
+          ],
+          "file_dimensions": [
+            48,
+            48
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-72",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 72×72: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          72,
+          72
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          72,
+          72
+        ],
+        "vips_dimensions": [
+          72,
+          72
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.0150889,
+        "vips_to_image_magick_size_ratio": 0.9461623412479293
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-72",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "72×72 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          72,
+          72
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            72,
+            72
+          ],
+          "file_dimensions": [
+            72,
+            72
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            72,
+            72
+          ],
+          "file_dimensions": [
+            72,
+            72
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-96",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 96×96: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          96,
+          96
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          96,
+          96
+        ],
+        "vips_dimensions": [
+          96,
+          96
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.010708,
+        "vips_to_image_magick_size_ratio": 1.0343915343915344
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-96",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "96×96 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          96,
+          96
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            96,
+            96
+          ],
+          "file_dimensions": [
+            96,
+            96
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            96,
+            96
+          ],
+          "file_dimensions": [
+            96,
+            96
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-144",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 144×144: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          144,
+          144
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          144,
+          144
+        ],
+        "vips_dimensions": [
+          144,
+          144
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00828614,
+        "vips_to_image_magick_size_ratio": 0.9787583938604906
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-144",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "144×144 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          144,
+          144
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            144,
+            144
+          ],
+          "file_dimensions": [
+            144,
+            144
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            144,
+            144
+          ],
+          "file_dimensions": [
+            144,
+            144
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-uploaded-avatar-thumbnail-288",
+      "group": "Visual parity",
+      "description": "Uploaded-avatar thumbnail 288×288: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          288,
+          288
+        ],
+        "vips_dimensions": [
+          288,
+          288
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00540427,
+        "vips_to_image_magick_size_ratio": 1.0374063366570299
+      },
+      "passed": true
+    },
+    {
+      "id": "thumbnail-state-288",
+      "group": "Uploaded-avatar thumbnails",
+      "description": "288×288 thumbnail uses the processor-specific cache version",
+      "expected": {
+        "image_magick_version": 2,
+        "vips_version": 3,
+        "dimensions": [
+          288,
+          288
+        ]
+      },
+      "actual": {
+        "image_magick": {
+          "version": 2,
+          "requested_dimensions": [
+            288,
+            288
+          ],
+          "file_dimensions": [
+            288,
+            288
+          ]
+        },
+        "vips": {
+          "version": 3,
+          "requested_dimensions": [
+            288,
+            288
+          ],
+          "file_dimensions": [
+            288,
+            288
+          ]
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-avatar-original-normalization",
+      "group": "Visual parity",
+      "description": "Avatar original normalization: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          288,
+          288
+        ],
+        "vips_dimensions": [
+          288,
+          288
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00540427,
+        "vips_to_image_magick_size_ratio": 1.045252319816957
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-avatar-original-normalization",
+      "group": "Upload domain state",
+      "description": "Avatar original normalization: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          288,
+          288
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            288,
+            288
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            288,
+            288
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-png-to-jpeg",
+      "group": "Visual parity",
+      "description": "Pasted PNG to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          303,
+          231
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          303,
+          231
+        ],
+        "vips_dimensions": [
+          303,
+          231
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00910945,
+        "vips_to_image_magick_size_ratio": 0.8693325492502205
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-png-to-jpeg",
+      "group": "Upload domain state",
+      "description": "Pasted PNG to JPEG conversion: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          303,
+          231
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            303,
+            231
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            303,
+            231
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-heic-to-jpeg",
+      "group": "Visual parity",
+      "description": "HEIC to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          846,
+          1129
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          846,
+          1129
+        ],
+        "vips_dimensions": [
+          846,
+          1129
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00367289,
+        "vips_to_image_magick_size_ratio": 0.8478271504280472
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-heic-to-jpeg",
+      "group": "Upload domain state",
+      "description": "HEIC to JPEG conversion: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          846,
+          1129
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            846,
+            1129
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            846,
+            1129
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-heif-to-jpeg",
+      "group": "Visual parity",
+      "description": "Generated HEIF to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          2032,
+          1312
+        ],
+        "vips_dimensions": [
+          2032,
+          1312
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00106613,
+        "vips_to_image_magick_size_ratio": 1.0286307646931832
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-heif-to-jpeg",
+      "group": "Upload domain state",
+      "description": "Generated HEIF to JPEG conversion: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          2032,
+          1312
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-2",
+      "group": "Visual parity",
+      "description": "EXIF orientation 2: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          2032,
+          1312
+        ],
+        "vips_dimensions": [
+          2032,
+          1312
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.0023877,
+        "vips_to_image_magick_size_ratio": 1.6791735327671442
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-2",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 2: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          2032,
+          1312
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-2",
+      "group": "EXIF orientation",
+      "description": "Orientation 2 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-3",
+      "group": "Visual parity",
+      "description": "EXIF orientation 3: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          2032,
+          1312
+        ],
+        "vips_dimensions": [
+          2032,
+          1312
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.0023884,
+        "vips_to_image_magick_size_ratio": 1.678819835548547
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-3",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 3: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          2032,
+          1312
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-3",
+      "group": "EXIF orientation",
+      "description": "Orientation 3 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-4",
+      "group": "Visual parity",
+      "description": "EXIF orientation 4: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          2032,
+          1312
+        ],
+        "vips_dimensions": [
+          2032,
+          1312
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00238583,
+        "vips_to_image_magick_size_ratio": 1.6805773742013201
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-4",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 4: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          2032,
+          1312
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-4",
+      "group": "EXIF orientation",
+      "description": "Orientation 4 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            2032,
+            1312
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-5",
+      "group": "Visual parity",
+      "description": "EXIF orientation 5: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          1312,
+          2032
+        ],
+        "vips_dimensions": [
+          1312,
+          2032
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00229452,
+        "vips_to_image_magick_size_ratio": 1.7175247469999446
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-5",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 5: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          1312,
+          2032
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-5",
+      "group": "EXIF orientation",
+      "description": "Orientation 5 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-6",
+      "group": "Visual parity",
+      "description": "EXIF orientation 6: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          1312,
+          2032
+        ],
+        "vips_dimensions": [
+          1312,
+          2032
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00235571,
+        "vips_to_image_magick_size_ratio": 1.7196800221629671
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-6",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 6: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          1312,
+          2032
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-6",
+      "group": "EXIF orientation",
+      "description": "Orientation 6 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-7",
+      "group": "Visual parity",
+      "description": "EXIF orientation 7: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          1312,
+          2032
+        ],
+        "vips_dimensions": [
+          1312,
+          2032
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.00235578,
+        "vips_to_image_magick_size_ratio": 1.7206669068935887
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-7",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 7: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          1312,
+          2032
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-7",
+      "group": "EXIF orientation",
+      "description": "Orientation 7 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-orientation-8",
+      "group": "Visual parity",
+      "description": "EXIF orientation 8: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "normalized_mean_rgba_error_max": 0.1,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          1312,
+          2032
+        ],
+        "vips_dimensions": [
+          1312,
+          2032
+        ],
+        "image_magick_format": "jpeg",
+        "vips_format": "jpeg",
+        "normalized_mean_rgba_error": 0.0022943,
+        "vips_to_image_magick_size_ratio": 1.7166439790214139
+      },
+      "passed": true
+    },
+    {
+      "id": "upload-state-orientation-8",
+      "group": "Upload domain state",
+      "description": "EXIF orientation 8: persisted dimensions and content digest",
+      "expected": {
+        "upload_dimensions": [
+          1312,
+          2032
+        ],
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "orientation-reset-8",
+      "group": "EXIF orientation",
+      "description": "Orientation 8 is rewritten to upright pixels and tag 1",
+      "expected": {
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "orientation": 1,
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        },
+        "vips": {
+          "upload_dimensions": [
+            1312,
+            2032
+          ],
+          "orientation": 1,
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-metadata-preserved",
+      "group": "Visual parity",
+      "description": "Metadata preserved: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": "informational due to metadata optimizer behavior"
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          320,
+          200
+        ],
+        "vips_dimensions": [
+          320,
+          200
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00701998,
+        "vips_to_image_magick_size_ratio": 2.882082925728046
+      },
+      "passed": true
+    },
+    {
+      "id": "metadata-fields-preserve",
+      "group": "Expected divergence",
+      "description": "Stock libvips preserves exposed EXIF, XMP, and ICC while legacy ImageMagick plus pngquant loses them",
+      "expected": {
+        "image_magick": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        },
+        "vips": {
+          "exif-data": true,
+          "xmp-data": true,
+          "iptc-data": false,
+          "icc-profile-data": true
+        }
+      },
+      "actual": {
+        "image_magick": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        },
+        "vips": {
+          "exif-data": true,
+          "xmp-data": true,
+          "iptc-data": false,
+          "icc-profile-data": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-metadata-stripped",
+      "group": "Visual parity",
+      "description": "Metadata stripped: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          320,
+          200
+        ],
+        "vips_dimensions": [
+          320,
+          200
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00794017,
+        "vips_to_image_magick_size_ratio": 1.0385865150284321
+      },
+      "passed": true
+    },
+    {
+      "id": "metadata-fields-strip",
+      "group": "Metadata",
+      "description": "Both processors strip exposed metadata",
+      "expected": {
+        "image_magick": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        },
+        "vips": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        }
+      },
+      "actual": {
+        "image_magick": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        },
+        "vips": {
+          "exif-data": false,
+          "xmp-data": false,
+          "iptc-data": false,
+          "icc-profile-data": false
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "visual-shrink-uploaded-image",
+      "group": "Visual parity",
+      "description": "Stored original normalization to 10,000 pixels: dimensions, format, normalized RGBA MAE, and encoded-size ratio",
+      "expected": {
+        "dimensions": [
+          124,
+          80
+        ],
+        "format": "png",
+        "normalized_mean_rgba_error_max": 0.03,
+        "vips_to_image_magick_size_ratio": [
+          0.5,
+          2.0
+        ]
+      },
+      "actual": {
+        "image_magick_dimensions": [
+          124,
+          80
+        ],
+        "vips_dimensions": [
+          124,
+          80
+        ],
+        "image_magick_format": "png",
+        "vips_format": "png",
+        "normalized_mean_rgba_error": 0.00647563,
+        "vips_to_image_magick_size_ratio": 1.0822488287350338
+      },
+      "passed": true
+    },
+    {
+      "id": "shrink-uploaded-image-state",
+      "group": "Original normalization",
+      "description": "Both processors update stored bytes, dimensions, and digest through ShrinkUploadedImage",
+      "expected": {
+        "result": true,
+        "upload_dimensions": [
+          124,
+          80
+        ],
+        "file_dimensions": [
+          124,
+          80
+        ],
+        "format": "png",
+        "digest_matches": true
+      },
+      "actual": {
+        "image_magick": {
+          "result": true,
+          "upload_dimensions": [
+            124,
+            80
+          ],
+          "file_dimensions": [
+            124,
+            80
+          ],
+          "format": "png",
+          "digest_matches": true
+        },
+        "vips": {
+          "result": true,
+          "upload_dimensions": [
+            124,
+            80
+          ],
+          "file_dimensions": [
+            124,
+            80
+          ],
+          "format": "png",
+          "digest_matches": true
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "animation-frame-classification",
+      "group": "Animation",
+      "description": "Both processors classify GIF, WebP, AVIF, and static PNG when FastImage is inconclusive",
+      "expected": {
+        "animated.gif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 20
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 20
+          }
+        },
+        "animated.webp": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "animated.avif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "static.png": {
+          "ImageMagick": {
+            "animated": false,
+            "frames": 1
+          },
+          "Stock libvips": {
+            "animated": false,
+            "frames": 1
+          }
+        }
+      },
+      "actual": {
+        "animated.gif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 20
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 20
+          }
+        },
+        "animated.webp": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "animated.avif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "static.png": {
+          "ImageMagick": {
+            "animated": false,
+            "frames": 1
+          },
+          "Stock libvips": {
+            "animated": false,
+            "frames": 1
+          }
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "svg-dimensions-and-byte-copy",
+      "group": "SVG",
+      "description": "Both processors store, repair, and byte-copy SVGs with pixel, huge, and zero/viewBox dimensions",
+      "expected": {
+        "tiny.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "massive.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "zero_sized.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          }
+        }
+      },
+      "actual": {
+        "tiny.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "massive.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "zero_sized.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          }
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "jpeg-quality-selection",
+      "group": "Expected divergence",
+      "description": "jhead recognizes the Q50 source and avoids up-encoding it while ImageMagick reports an unavailable estimate",
+      "expected": {
+        "ImageMagick": {
+          "quality_50_target_70": 70,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        },
+        "Stock libvips": {
+          "quality_50_target_70": null,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        }
+      },
+      "actual": {
+        "ImageMagick": {
+          "quality_50_target_70": 70,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        },
+        "Stock libvips": {
+          "quality_50_target_70": null,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "format-eligibility",
+      "group": "Formats",
+      "description": "Upload allowlist and optimized-image eligibility remain processor-independent",
+      "expected": {
+        "upload_allowlist": {
+          "jpg": true,
+          "jpeg": true,
+          "png": true,
+          "gif": true,
+          "svg": true,
+          "ico": true,
+          "webp": true,
+          "avif": true,
+          "heic": true,
+          "heif": true,
+          "jxl": true,
+          "tiff": false,
+          "bmp": false
+        },
+        "jxl_returns_no_optimized_image": {
+          "ImageMagick": true,
+          "Stock libvips": true
+        }
+      },
+      "actual": {
+        "upload_allowlist": {
+          "jpg": true,
+          "jpeg": true,
+          "png": true,
+          "gif": true,
+          "svg": true,
+          "ico": true,
+          "webp": true,
+          "avif": true,
+          "heic": true,
+          "heif": true,
+          "jxl": true,
+          "tiff": false,
+          "bmp": false
+        },
+        "optimized_decoder_allowlist": "\\A(jpe?g|png|ico|gif|webp|avif|svg)\\z",
+        "jxl_returns_no_optimized_image": {
+          "ImageMagick": true,
+          "Stock libvips": true
+        },
+        "tiff_and_bmp_outside_upload_allowlist": true
+      },
+      "passed": true
+    },
+    {
+      "id": "ico-deliberate-enabled-failure",
+      "group": "Documented exception",
+      "description": "ICO succeeds through ImageMagick and deliberately raises through enabled stock libvips with no fallback",
+      "expected": {
+        "image_magick": {
+          "persisted": true,
+          "extension": "png",
+          "format": "png"
+        },
+        "vips_error": "Discourse::Utils::CommandError"
+      },
+      "actual": {
+        "image_magick": {
+          "persisted": true,
+          "extension": "png",
+          "format": "png"
+        },
+        "vips_error": "Discourse::Utils::CommandError"
+      },
+      "passed": true
+    }
+  ],
+  "visual_cases": [
+    {
+      "id": "resize-321x123",
+      "label": "Representative non-square resize 321×123",
+      "entrypoint": "OptimizedImage.resize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/resize-321x123/image-magick.png",
+        "view_path": "images/resize-321x123/image-magick-view.png",
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "bytes": 8340,
+        "sha256": "9c856292c84c732919977075815a47c348acf98a7b38878e90ecfbbbc9d6f0cd"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/resize-321x123/vips.png",
+        "view_path": "images/resize-321x123/vips-view.png",
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "bytes": 8545,
+        "sha256": "eff20215eccd7132f27cdcb68cff68c1062f9c35382aafd3355f984a0f1c7001"
+      },
+      "diff_path": "images/resize-321x123/diff.png",
+      "normalized_mean_rgba_error": 0.00540269,
+      "size_ratio": 1.024580335731415,
+      "passed": true
+    },
+    {
+      "id": "north-crop-landscape-321x123",
+      "label": "North crop landscape 321×123",
+      "entrypoint": "OptimizedImage.crop",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/north-crop-landscape-321x123/image-magick.png",
+        "view_path": "images/north-crop-landscape-321x123/image-magick-view.png",
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "bytes": 7825,
+        "sha256": "346c2722aa5b4c6df082f23e325355fbcedd4a2265d13eabf9df87659d91cd80"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/north-crop-landscape-321x123/vips.png",
+        "view_path": "images/north-crop-landscape-321x123/vips-view.png",
+        "dimensions": [
+          321,
+          123
+        ],
+        "format": "png",
+        "bytes": 8511,
+        "sha256": "14d018c52e0086bdee6a84894d87fe4fcab1461e545eba8f9cbdefaf09917a98"
+      },
+      "diff_path": "images/north-crop-landscape-321x123/diff.png",
+      "normalized_mean_rgba_error": 0.00780807,
+      "size_ratio": 1.087667731629393,
+      "passed": true
+    },
+    {
+      "id": "north-crop-portrait-173x419",
+      "label": "North crop portrait 173×419",
+      "entrypoint": "OptimizedImage.crop",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/north-crop-portrait-173x419/image-magick.png",
+        "view_path": "images/north-crop-portrait-173x419/image-magick-view.png",
+        "dimensions": [
+          173,
+          419
+        ],
+        "format": "png",
+        "bytes": 11463,
+        "sha256": "65fd788ce489c014f781d5588c7e74b3f992e1198ee480db5d1609794d4bec03"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/north-crop-portrait-173x419/vips.png",
+        "view_path": "images/north-crop-portrait-173x419/vips-view.png",
+        "dimensions": [
+          173,
+          419
+        ],
+        "format": "png",
+        "bytes": 11777,
+        "sha256": "69dddef57142518e2bd88910c116acd044546d1f316cbf4ee0570a34ba5d889a"
+      },
+      "diff_path": "images/north-crop-portrait-173x419/diff.png",
+      "normalized_mean_rgba_error": 0.00490861,
+      "size_ratio": 1.0273924801535375,
+      "passed": true
+    },
+    {
+      "id": "north-crop-alpha-96x160",
+      "label": "North crop with alpha 96×160",
+      "entrypoint": "OptimizedImage.crop",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/north-crop-alpha-96x160/image-magick.png",
+        "view_path": "images/north-crop-alpha-96x160/image-magick-view.png",
+        "dimensions": [
+          96,
+          160
+        ],
+        "format": "png",
+        "bytes": 4364,
+        "sha256": "1b3bd1f3e054c5e06f1c4b4ddc8b50146a2b20e324056d5b0cf181827a3367b9"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/north-crop-alpha-96x160/vips.png",
+        "view_path": "images/north-crop-alpha-96x160/vips-view.png",
+        "dimensions": [
+          96,
+          160
+        ],
+        "format": "png",
+        "bytes": 3782,
+        "sha256": "902ccb7f10173ad4fed1670a9ea494a0fdab31542bb3fa782f7b585a69288ac2"
+      },
+      "diff_path": "images/north-crop-alpha-96x160/diff.png",
+      "normalized_mean_rgba_error": 0.00449269,
+      "size_ratio": 0.8666361136571953,
+      "passed": true
+    },
+    {
+      "id": "downsize-percentage",
+      "label": "Downsize 50%",
+      "entrypoint": "OptimizedImage.downsize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/downsize-percentage/image-magick.png",
+        "view_path": "images/downsize-percentage/image-magick-view.png",
+        "dimensions": [
+          1016,
+          656
+        ],
+        "format": "png",
+        "bytes": 46483,
+        "sha256": "1863064318b067865243439591833405f5009e165307dcc8449639167eb00e33"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/downsize-percentage/vips.png",
+        "view_path": "images/downsize-percentage/vips-view.png",
+        "dimensions": [
+          1016,
+          656
+        ],
+        "format": "png",
+        "bytes": 56551,
+        "sha256": "fcdb15520b4cd6c7f3598327a40444eef626c566f5c04393168519d83fedbcf5"
+      },
+      "diff_path": "images/downsize-percentage/diff.png",
+      "normalized_mean_rgba_error": 0.0030027,
+      "size_ratio": 1.216595314416023,
+      "passed": true
+    },
+    {
+      "id": "downsize-area",
+      "label": "Downsize to 500,000 pixels",
+      "entrypoint": "OptimizedImage.downsize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/downsize-area/image-magick.png",
+        "view_path": "images/downsize-area/image-magick-view.png",
+        "dimensions": [
+          880,
+          568
+        ],
+        "format": "png",
+        "bytes": 42562,
+        "sha256": "ee1316732ec80c307f446471f3cc20e8b9aae36b4647dc40264a329c745609b1"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/downsize-area/vips.png",
+        "view_path": "images/downsize-area/vips-view.png",
+        "dimensions": [
+          880,
+          568
+        ],
+        "format": "png",
+        "bytes": 51805,
+        "sha256": "60a7127d117830fa3fd2e3769e100f7262f5b06c503eea366d5487b49c35be4e"
+      },
+      "diff_path": "images/downsize-area/diff.png",
+      "normalized_mean_rgba_error": 0.00317895,
+      "size_ratio": 1.2171655467318265,
+      "passed": true
+    },
+    {
+      "id": "downsize-shrink-only",
+      "label": "Downsize shrink-only 333×222",
+      "entrypoint": "OptimizedImage.downsize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/downsize-shrink-only/image-magick.png",
+        "view_path": "images/downsize-shrink-only/image-magick-view.png",
+        "dimensions": [
+          333,
+          215
+        ],
+        "format": "png",
+        "bytes": 11120,
+        "sha256": "1303a3aa43238cb73ea3fcb0004035feab0d3387a77cae54f7811ba4d02e1c79"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/downsize-shrink-only/vips.png",
+        "view_path": "images/downsize-shrink-only/vips-view.png",
+        "dimensions": [
+          333,
+          215
+        ],
+        "format": "png",
+        "bytes": 14389,
+        "sha256": "64c65b049eaf689de2d5426d68c505697f7c8f2e7fb0eade68469e246527835b"
+      },
+      "diff_path": "images/downsize-shrink-only/diff.png",
+      "normalized_mean_rgba_error": 0.00356156,
+      "size_ratio": 1.293974820143885,
+      "passed": true
+    },
+    {
+      "id": "downsize-no-upscale-alpha",
+      "label": "Downsize no-upscale with alpha",
+      "entrypoint": "OptimizedImage.downsize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/downsize-no-upscale-alpha/image-magick.png",
+        "view_path": "images/downsize-no-upscale-alpha/image-magick-view.png",
+        "dimensions": [
+          244,
+          66
+        ],
+        "format": "png",
+        "bytes": 2347,
+        "sha256": "84b182b18bd18d819357365a68f079fccad65b56e64da9764562cbd980a75198"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/downsize-no-upscale-alpha/vips.png",
+        "view_path": "images/downsize-no-upscale-alpha/vips-view.png",
+        "dimensions": [
+          244,
+          66
+        ],
+        "format": "png",
+        "bytes": 2348,
+        "sha256": "6cad067c903a543e74ac9044b0cf397abfdfc394703de542449699d429ccd7da"
+      },
+      "diff_path": "images/downsize-no-upscale-alpha/diff.png",
+      "normalized_mean_rgba_error": 0.0,
+      "size_ratio": 1.0004260758414998,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-24",
+      "label": "Uploaded-avatar thumbnail 24×24",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-24/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-24/image-magick-view.png",
+        "dimensions": [
+          24,
+          24
+        ],
+        "format": "png",
+        "bytes": 1090,
+        "sha256": "d0336a0813925dd5e256b74eba8774d6f835f2709f9f731bc614a2df783fb0a3"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-24/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-24/vips-view.png",
+        "dimensions": [
+          24,
+          24
+        ],
+        "format": "png",
+        "bytes": 1012,
+        "sha256": "90ea2bbe0ed2244a4562ec0a9b95153a5a45c4d0ebf3a4513a124d15e72a3b2d"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-24/diff.png",
+      "normalized_mean_rgba_error": 0.0231621,
+      "size_ratio": 0.9284403669724771,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-48",
+      "label": "Uploaded-avatar thumbnail 48×48",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-48/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-48/image-magick-view.png",
+        "dimensions": [
+          48,
+          48
+        ],
+        "format": "png",
+        "bytes": 2527,
+        "sha256": "61e8f65c29c7c28b03b92f815f5d4938b6d992341ce301f8a8b62a699608ecd2"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-48/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-48/vips-view.png",
+        "dimensions": [
+          48,
+          48
+        ],
+        "format": "png",
+        "bytes": 2403,
+        "sha256": "37e24b3a1e3f89cea4efb4278b9540a0dfe023911537e71e16dddbeed9ed0ff4"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-48/diff.png",
+      "normalized_mean_rgba_error": 0.0168479,
+      "size_ratio": 0.9509299564701227,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-72",
+      "label": "Uploaded-avatar thumbnail 72×72",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-72/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-72/image-magick-view.png",
+        "dimensions": [
+          72,
+          72
+        ],
+        "format": "png",
+        "bytes": 3622,
+        "sha256": "69af719635c708d679e1806873fc66d6a6740a2ed69e4f97cbf1e7f2ad0889ab"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-72/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-72/vips-view.png",
+        "dimensions": [
+          72,
+          72
+        ],
+        "format": "png",
+        "bytes": 3427,
+        "sha256": "d913dd6d0af454ca8a85978edbde298ab23969fd0a7be116ead8d450463b86c9"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-72/diff.png",
+      "normalized_mean_rgba_error": 0.0150889,
+      "size_ratio": 0.9461623412479293,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-96",
+      "label": "Uploaded-avatar thumbnail 96×96",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-96/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-96/image-magick-view.png",
+        "dimensions": [
+          96,
+          96
+        ],
+        "format": "png",
+        "bytes": 4536,
+        "sha256": "4c01c19ce04f288667602c6ef9d3f5ecf34675aecd8905c37c109a23bb24e0ed"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-96/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-96/vips-view.png",
+        "dimensions": [
+          96,
+          96
+        ],
+        "format": "png",
+        "bytes": 4692,
+        "sha256": "5c9a3aa43f3c323dc0c05abf739552b7868429336ec7ec16ef4d40245d541bd6"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-96/diff.png",
+      "normalized_mean_rgba_error": 0.010708,
+      "size_ratio": 1.0343915343915344,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-144",
+      "label": "Uploaded-avatar thumbnail 144×144",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-144/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-144/image-magick-view.png",
+        "dimensions": [
+          144,
+          144
+        ],
+        "format": "png",
+        "bytes": 7297,
+        "sha256": "c622c145e0136325b36c54b177dce21f5d400fcb983586c1c65fac6f2148ff83"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-144/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-144/vips-view.png",
+        "dimensions": [
+          144,
+          144
+        ],
+        "format": "png",
+        "bytes": 7142,
+        "sha256": "4f1ac2a8f0559fbea5cf6bb97613cec664b5173324ef659a19f57576ff8c63a5"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-144/diff.png",
+      "normalized_mean_rgba_error": 0.00828614,
+      "size_ratio": 0.9787583938604906,
+      "passed": true
+    },
+    {
+      "id": "uploaded-avatar-thumbnail-288",
+      "label": "Uploaded-avatar thumbnail 288×288",
+      "entrypoint": "Upload#create_thumbnail!",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/uploaded-avatar-thumbnail-288/image-magick.png",
+        "view_path": "images/uploaded-avatar-thumbnail-288/image-magick-view.png",
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "bytes": 16949,
+        "sha256": "e0a0b3a58016c6378e6be98b1d76048390b9d5e945f40545fe75d58e7355b0ad"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/uploaded-avatar-thumbnail-288/vips.png",
+        "view_path": "images/uploaded-avatar-thumbnail-288/vips-view.png",
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "bytes": 17583,
+        "sha256": "32d23e117f5b763c54e3239b9f01c1e3a370712205b977838d3707d69318d7e5"
+      },
+      "diff_path": "images/uploaded-avatar-thumbnail-288/diff.png",
+      "normalized_mean_rgba_error": 0.00540427,
+      "size_ratio": 1.0374063366570299,
+      "passed": true
+    },
+    {
+      "id": "avatar-original-normalization",
+      "label": "Avatar original normalization",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/avatar-original-normalization/image-magick.png",
+        "view_path": "images/avatar-original-normalization/image-magick-view.png",
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "bytes": 15734,
+        "sha256": "7aa9523514d4babd93a83cbaf91685e67e7e10e212b2df6ff8577c41f8b0c173"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/avatar-original-normalization/vips.png",
+        "view_path": "images/avatar-original-normalization/vips-view.png",
+        "dimensions": [
+          288,
+          288
+        ],
+        "format": "png",
+        "bytes": 16446,
+        "sha256": "ff250848b39a313936f4e6d7bb86904f17f7312d62fec7ae54a7b23af05e8323"
+      },
+      "diff_path": "images/avatar-original-normalization/diff.png",
+      "normalized_mean_rgba_error": 0.00540427,
+      "size_ratio": 1.045252319816957,
+      "passed": true
+    },
+    {
+      "id": "png-to-jpeg",
+      "label": "Pasted PNG to JPEG conversion",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/png-to-jpeg/image-magick.jpg",
+        "view_path": "images/png-to-jpeg/image-magick-view.png",
+        "dimensions": [
+          303,
+          231
+        ],
+        "format": "jpeg",
+        "bytes": 17005,
+        "sha256": "b2fd093cecc0061f07bfdb86b17f86a408b913af4d825bd6d7c63eec782baa97"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/png-to-jpeg/vips.jpg",
+        "view_path": "images/png-to-jpeg/vips-view.png",
+        "dimensions": [
+          303,
+          231
+        ],
+        "format": "jpeg",
+        "bytes": 14783,
+        "sha256": "af5a5590c29f41cfa2a3a615e492181d2422a21f27a38255a5a7fe35f2a75211"
+      },
+      "diff_path": "images/png-to-jpeg/diff.png",
+      "normalized_mean_rgba_error": 0.00910945,
+      "size_ratio": 0.8693325492502205,
+      "passed": true
+    },
+    {
+      "id": "heic-to-jpeg",
+      "label": "HEIC to JPEG conversion",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/heic-to-jpeg/image-magick.jpg",
+        "view_path": "images/heic-to-jpeg/image-magick-view.png",
+        "dimensions": [
+          846,
+          1129
+        ],
+        "format": "jpeg",
+        "bytes": 245300,
+        "sha256": "4930c0e67a6a2b0b63c7186db8246b9a583547f9bc215f9080526b7e701d3ec4"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/heic-to-jpeg/vips.jpg",
+        "view_path": "images/heic-to-jpeg/vips-view.png",
+        "dimensions": [
+          846,
+          1129
+        ],
+        "format": "jpeg",
+        "bytes": 207972,
+        "sha256": "c84d231266a8893f61f2b199057e8df697af121e75a33a4ef6d4721d5e5bfdfb"
+      },
+      "diff_path": "images/heic-to-jpeg/diff.png",
+      "normalized_mean_rgba_error": 0.00367289,
+      "size_ratio": 0.8478271504280472,
+      "passed": true
+    },
+    {
+      "id": "heif-to-jpeg",
+      "label": "Generated HEIF to JPEG conversion",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/heif-to-jpeg/image-magick.jpg",
+        "view_path": "images/heif-to-jpeg/image-magick-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 328877,
+        "sha256": "f0191475ffa94d61d267fa8c2512714fb90badd22263c85b0ea0f825023e5c08"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/heif-to-jpeg/vips.jpg",
+        "view_path": "images/heif-to-jpeg/vips-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 338293,
+        "sha256": "81bd536870fcf4f08860423da2d0aa812834d6a5cff237ab1b75d6ce284bed1a"
+      },
+      "diff_path": "images/heif-to-jpeg/diff.png",
+      "normalized_mean_rgba_error": 0.00106613,
+      "size_ratio": 1.0286307646931832,
+      "passed": true
+    },
+    {
+      "id": "orientation-2",
+      "label": "EXIF orientation 2",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-2/image-magick.jpg",
+        "view_path": "images/orientation-2/image-magick-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 142002,
+        "sha256": "0e9e4bd0c5f931c41f2c9ef1d2d90ccf2c5c2579e358af5430f10565fa8c78a5"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-2/vips.jpg",
+        "view_path": "images/orientation-2/vips-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 238446,
+        "sha256": "479fb19dc55b3853334bf0be080190eba81138e41b5ea85f2616402cf9509ae8"
+      },
+      "diff_path": "images/orientation-2/diff.png",
+      "normalized_mean_rgba_error": 0.0023877,
+      "size_ratio": 1.6791735327671442,
+      "passed": true
+    },
+    {
+      "id": "orientation-3",
+      "label": "EXIF orientation 3",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-3/image-magick.jpg",
+        "view_path": "images/orientation-3/image-magick-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 142048,
+        "sha256": "3810f6869889626c2e46e1eeb6faabe4d448254e853abe225b44b03ea4c50041"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-3/vips.jpg",
+        "view_path": "images/orientation-3/vips-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 238473,
+        "sha256": "9e51fd840b58224e9f89a3efeb750ef869eba282092cb8a6eef8e24e4a982931"
+      },
+      "diff_path": "images/orientation-3/diff.png",
+      "normalized_mean_rgba_error": 0.0023884,
+      "size_ratio": 1.678819835548547,
+      "passed": true
+    },
+    {
+      "id": "orientation-4",
+      "label": "EXIF orientation 4",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-4/image-magick.jpg",
+        "view_path": "images/orientation-4/image-magick-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 141953,
+        "sha256": "a078a3930064ad2ea04a89c9000e7dcecbac7b7ca21e474f0c6675c7f20bdda6"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-4/vips.jpg",
+        "view_path": "images/orientation-4/vips-view.png",
+        "dimensions": [
+          2032,
+          1312
+        ],
+        "format": "jpeg",
+        "bytes": 238563,
+        "sha256": "7419ff53c0797396dcbef6876277ecb9c1090b278c9cbd20744cc5db3b79804c"
+      },
+      "diff_path": "images/orientation-4/diff.png",
+      "normalized_mean_rgba_error": 0.00238583,
+      "size_ratio": 1.6805773742013201,
+      "passed": true
+    },
+    {
+      "id": "orientation-5",
+      "label": "EXIF orientation 5",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-5/image-magick.jpg",
+        "view_path": "images/orientation-5/image-magick-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 144664,
+        "sha256": "3aa53a3bdb05c114a5f4565116f4c1b74a6fdb63599f7cb7d69b90376d8057d8"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-5/vips.jpg",
+        "view_path": "images/orientation-5/vips-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 248464,
+        "sha256": "1978943617f44ada520d9f45c6d3e6a2034b24223f1531e277a3d7e2f40b2b03"
+      },
+      "diff_path": "images/orientation-5/diff.png",
+      "normalized_mean_rgba_error": 0.00229452,
+      "size_ratio": 1.7175247469999446,
+      "passed": true
+    },
+    {
+      "id": "orientation-6",
+      "label": "EXIF orientation 6",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-6/image-magick.jpg",
+        "view_path": "images/orientation-6/image-magick-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 144385,
+        "sha256": "a72f9a5122e799b397d9502f2c73329231fcaed4b1edd8fdd2cebc35f33fcf34"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-6/vips.jpg",
+        "view_path": "images/orientation-6/vips-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 248296,
+        "sha256": "37479411de3d46cfafaa3edf17800f932ea0b4c27bd8defbfd28cbd2b4ea91ba"
+      },
+      "diff_path": "images/orientation-6/diff.png",
+      "normalized_mean_rgba_error": 0.00235571,
+      "size_ratio": 1.7196800221629671,
+      "passed": true
+    },
+    {
+      "id": "orientation-7",
+      "label": "EXIF orientation 7",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-7/image-magick.jpg",
+        "view_path": "images/orientation-7/image-magick-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 144308,
+        "sha256": "12a86d96903e0e5c0e178e1f390ef6e16d68dfca4d1bd77df328a5c49563673c"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-7/vips.jpg",
+        "view_path": "images/orientation-7/vips-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 248306,
+        "sha256": "1c58bd0d28a47090ddb19216d08150362ba3baba185b3a5b1aed7a2ea2870eae"
+      },
+      "diff_path": "images/orientation-7/diff.png",
+      "normalized_mean_rgba_error": 0.00235578,
+      "size_ratio": 1.7206669068935887,
+      "passed": true
+    },
+    {
+      "id": "orientation-8",
+      "label": "EXIF orientation 8",
+      "entrypoint": "UploadCreator#create_for",
+      "threshold": 0.1,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/orientation-8/image-magick.jpg",
+        "view_path": "images/orientation-8/image-magick-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 144719,
+        "sha256": "5e87b4aaa6dea7a1672d76a1e839e97c69278b7aa74222d13e32853a67fd0f32"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/orientation-8/vips.jpg",
+        "view_path": "images/orientation-8/vips-view.png",
+        "dimensions": [
+          1312,
+          2032
+        ],
+        "format": "jpeg",
+        "bytes": 248431,
+        "sha256": "f50bb96a7ca0930344a2146d438b334b525223ec82f4c9fa563d36a3b1cb79d8"
+      },
+      "diff_path": "images/orientation-8/diff.png",
+      "normalized_mean_rgba_error": 0.0022943,
+      "size_ratio": 1.7166439790214139,
+      "passed": true
+    },
+    {
+      "id": "metadata-preserved",
+      "label": "Metadata preserved",
+      "entrypoint": "OptimizedImage.resize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/metadata-preserved/image-magick.png",
+        "view_path": "images/metadata-preserved/image-magick-view.png",
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "bytes": 13289,
+        "sha256": "16730cb7e671d38e887dba528138445c88feccf093b2c8f5d6e67fb16efbaabd"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/metadata-preserved/vips.png",
+        "view_path": "images/metadata-preserved/vips-view.png",
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "bytes": 38300,
+        "sha256": "a8e034a25aa06c451e28c25c4e2179eca9b97c5b30ff8c979a64f67673538b16"
+      },
+      "diff_path": "images/metadata-preserved/diff.png",
+      "normalized_mean_rgba_error": 0.00701998,
+      "size_ratio": 2.882082925728046,
+      "passed": true
+    },
+    {
+      "id": "metadata-stripped",
+      "label": "Metadata stripped",
+      "entrypoint": "OptimizedImage.resize",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/metadata-stripped/image-magick.png",
+        "view_path": "images/metadata-stripped/image-magick-view.png",
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "bytes": 12310,
+        "sha256": "a5fb2add1a3612f6863e3e002b9688a41808d97da6e84805ee4352fc602ab27f"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/metadata-stripped/vips.png",
+        "view_path": "images/metadata-stripped/vips-view.png",
+        "dimensions": [
+          320,
+          200
+        ],
+        "format": "png",
+        "bytes": 12785,
+        "sha256": "69b51fd1becbd7a0b9511af4460c26a521ea68128fd5e54a07e02aecd20a33aa"
+      },
+      "diff_path": "images/metadata-stripped/diff.png",
+      "normalized_mean_rgba_error": 0.00794017,
+      "size_ratio": 1.0385865150284321,
+      "passed": true
+    },
+    {
+      "id": "shrink-uploaded-image",
+      "label": "Stored original normalization to 10,000 pixels",
+      "entrypoint": "ShrinkUploadedImage#perform",
+      "threshold": 0.03,
+      "before": {
+        "processor": "ImageMagick",
+        "path": "images/shrink-uploaded-image/image-magick.png",
+        "view_path": "images/shrink-uploaded-image/image-magick-view.png",
+        "dimensions": [
+          124,
+          80
+        ],
+        "format": "png",
+        "bytes": 3842,
+        "sha256": "c5fd9840f171bc0a10ea682483b1d99cfc86353898a874147a33d10adba79a21"
+      },
+      "after": {
+        "processor": "Stock libvips",
+        "path": "images/shrink-uploaded-image/vips.png",
+        "view_path": "images/shrink-uploaded-image/vips-view.png",
+        "dimensions": [
+          124,
+          80
+        ],
+        "format": "png",
+        "bytes": 4158,
+        "sha256": "9b97ff9aa2b1efae86298557aa9bd410f6f90591935c0bb776dd7479753b30c2"
+      },
+      "diff_path": "images/shrink-uploaded-image/diff.png",
+      "normalized_mean_rgba_error": 0.00647563,
+      "size_ratio": 1.0822488287350338,
+      "passed": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "metadata-preservation-divergence",
+      "group": "Expected divergence",
+      "label": "Metadata preservation improves with stock libvips",
+      "details": {
+        "behavior": {
+          "image_magick": {
+            "exif-data": false,
+            "xmp-data": false,
+            "iptc-data": false,
+            "icc-profile-data": false
+          },
+          "vips": {
+            "exif-data": true,
+            "xmp-data": true,
+            "iptc-data": false,
+            "icc-profile-data": true
+          }
+        },
+        "encoded_size_ratio": 2.882082925728046,
+        "explanation": "The stock-libvips path disables pngquant when metadata must be preserved; the legacy ImageMagick path does not."
+      },
+      "passed": true
+    },
+    {
+      "id": "animation",
+      "group": "Animation",
+      "label": "Animation and frame classification",
+      "details": {
+        "animated.gif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 20
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 20
+          }
+        },
+        "animated.webp": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "animated.avif": {
+          "ImageMagick": {
+            "animated": true,
+            "frames": 67
+          },
+          "Stock libvips": {
+            "animated": true,
+            "frames": 67
+          }
+        },
+        "static.png": {
+          "ImageMagick": {
+            "animated": false,
+            "frames": 1
+          },
+          "Stock libvips": {
+            "animated": false,
+            "frames": 1
+          }
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "svg",
+      "group": "SVG",
+      "label": "SVG dimensions and optimized byte-copy",
+      "details": {
+        "tiny.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              115,
+              86
+            ],
+            "thumbnail_dimensions": [
+              115,
+              86
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "massive.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              11520,
+              11615
+            ],
+            "thumbnail_dimensions": [
+              495,
+              500
+            ],
+            "optimized_byte_copy": true
+          }
+        },
+        "zero_sized.svg": {
+          "ImageMagick": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          },
+          "Stock libvips": {
+            "dimensions": [
+              120,
+              90
+            ],
+            "thumbnail_dimensions": [
+              120,
+              90
+            ],
+            "optimized_byte_copy": true
+          }
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "jpeg-quality-divergence",
+      "group": "Expected divergence",
+      "label": "Source-quality estimation avoids a needless Q50 to Q70 re-encode",
+      "details": {
+        "behavior": {
+          "ImageMagick": {
+            "quality_50_target_70": 70,
+            "quality_90_target_70": 70,
+            "malformed_target_70": 70
+          },
+          "Stock libvips": {
+            "quality_50_target_70": null,
+            "quality_90_target_70": 70,
+            "malformed_target_70": 70
+          }
+        },
+        "explanation": "The immutable source is Vips-encoded. ImageMagick percent-Q reports it as unavailable while jhead estimates Q50; Q90 and malformed inputs retain the intended target-70 behavior."
+      },
+      "passed": true
+    },
+    {
+      "id": "jpeg-quality",
+      "group": "JPEG quality",
+      "label": "JPEG quality selection",
+      "details": {
+        "ImageMagick": {
+          "quality_50_target_70": 70,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        },
+        "Stock libvips": {
+          "quality_50_target_70": null,
+          "quality_90_target_70": 70,
+          "malformed_target_70": 70
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "formats",
+      "group": "Formats",
+      "label": "Format eligibility",
+      "details": {
+        "upload_allowlist": {
+          "jpg": true,
+          "jpeg": true,
+          "png": true,
+          "gif": true,
+          "svg": true,
+          "ico": true,
+          "webp": true,
+          "avif": true,
+          "heic": true,
+          "heif": true,
+          "jxl": true,
+          "tiff": false,
+          "bmp": false
+        },
+        "optimized_decoder_allowlist": "\\A(jpe?g|png|ico|gif|webp|avif|svg)\\z",
+        "jxl_returns_no_optimized_image": {
+          "ImageMagick": true,
+          "Stock libvips": true
+        },
+        "tiff_and_bmp_outside_upload_allowlist": true
+      },
+      "passed": true
+    },
+    {
+      "id": "ico",
+      "group": "Documented exception",
+      "label": "ICO enabled-path failure",
+      "details": {
+        "image_magick": {
+          "persisted": true,
+          "extension": "png",
+          "format": "png"
+        },
+        "vips_error": "Discourse::Utils::CommandError"
+      },
+      "passed": true
+    }
+  ],
+  "notes": [
+    "This is end-to-end production-entrypoint parity, not a raw-library microbenchmark.",
+    "No VIPS_CONCURRENCY, MAGICK_THREAD_LIMIT, or processor-specific concurrency override was set.",
+    "Uploaded-avatar thumbnail rows are not LetterAvatar generation; LetterAvatar is unconditional stock libvips at this commit.",
+    "With metadata preservation enabled, the stock-libvips path deliberately disables pngquant while ImageMagick does not; encoded-size differences include that production behavior.",
+    "All transformations use fresh Upload, UploadCreator, and tempfile instances per processor arm.",
+    "PNG32 report views, RGBA MAE, and difference images are generated after domain processing with the same ImageMagick decoder for both outputs.",
+    "JPEG quality values reported by identify and jhead are estimates used by production selection logic.",
+    "The enabled stock-libvips ICO failure is a deliberate documented exception and has no ImageMagick fallback."
+  ]
+}

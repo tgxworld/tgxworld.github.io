@@ -1,0 +1,3050 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Discourse stock libvips image-processing parity</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: #f5f7fb;
+        --surface: #ffffff;
+        --surface-muted: #eef2f7;
+        --border: #d8dee9;
+        --text: #172033;
+        --muted: #5c667a;
+        --pass: #087443;
+        --pass-soft: #e7f7ef;
+        --fail: #b42318;
+        --fail-soft: #fff0ee;
+        --accent: #3157d5;
+        --code: #222a3a;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        background: var(--background);
+        color: var(--text);
+        font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+      }
+      a { color: var(--accent); }
+      a:focus-visible, button:focus-visible { outline: 3px solid #8aa2ff; outline-offset: 2px; }
+      main { margin: 0 auto; max-width: 1540px; padding: 32px 24px 64px; }
+      h1, h2, h3, h4 { line-height: 1.2; }
+      h1 { font-size: clamp(2rem, 5vw, 3.75rem); letter-spacing: -0.04em; margin: 0 0 12px; max-width: 1100px; }
+      h2 { font-size: 1.65rem; letter-spacing: -0.02em; margin: 0 0 16px; }
+      h3 { font-size: 1.15rem; margin: 0; }
+      p { margin: 0 0 12px; }
+      code, pre {
+        background: var(--code);
+        border-radius: 5px;
+        color: #f5f7fa;
+        font: 0.86rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+        overflow-wrap: anywhere;
+      }
+      code { padding: 2px 5px; }
+      pre { margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
+      .hero {
+        background: linear-gradient(135deg, #172033, #293958);
+        border-radius: 18px;
+        color: white;
+        margin-bottom: 24px;
+        overflow: hidden;
+        padding: clamp(24px, 5vw, 52px);
+      }
+      .hero__meta { color: #cdd6e8; margin-bottom: 20px; }
+      .hero__summary { color: #e5eaf4; font-size: 1.05rem; max-width: 980px; }
+      .status {
+        align-items: center;
+        border: 1px solid;
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 0.78rem;
+        font-weight: 750;
+        gap: 7px;
+        letter-spacing: 0.08em;
+        padding: 6px 11px;
+        text-transform: uppercase;
+      }
+      .status--pass { background: var(--pass-soft); border-color: #8ed6b5; color: var(--pass); }
+      .status--fail { background: var(--fail-soft); border-color: #f2a49b; color: var(--fail); }
+      .status--unknown { background: var(--surface-muted); border-color: var(--border); color: var(--muted); }
+      .hero .status { margin-bottom: 18px; }
+      .downloads { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+      .downloads a {
+        background: white;
+        border-radius: 8px;
+        color: #172033;
+        font-weight: 700;
+        padding: 9px 13px;
+        text-decoration: none;
+      }
+      .downloads a:hover { text-decoration: underline; }
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        margin-top: 20px;
+        padding: clamp(18px, 3vw, 30px);
+      }
+      .section__intro { color: var(--muted); max-width: 980px; }
+      .overview-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      }
+      .data-card {
+        background: var(--surface-muted);
+        border-radius: 10px;
+        min-width: 0;
+        padding: 18px;
+      }
+      .data-card h3 { margin-bottom: 12px; }
+      .key-values { display: grid; gap: 8px 14px; grid-template-columns: minmax(130px, max-content) minmax(0, 1fr); margin: 0; }
+      .key-values dt { color: var(--muted); font-weight: 650; }
+      .key-values dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+      .key-values .key-values { grid-column: 1 / -1; margin: 6px 0 6px 14px; }
+      .value-list { margin: 4px 0 0; padding-left: 20px; }
+      .table-wrap { overflow-x: auto; }
+      table { border-collapse: collapse; min-width: 800px; width: 100%; }
+      th, td { border-bottom: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
+      th { background: var(--surface-muted); color: #3f4a5e; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
+      tbody tr:last-child td { border-bottom: 0; }
+      td code { display: inline-block; max-width: 560px; }
+      .result-cell { white-space: nowrap; }
+      .visual-list { display: grid; gap: 20px; }
+      .visual-case {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .visual-case--fail { border-color: #ee9a91; }
+      .visual-case__header {
+        align-items: flex-start;
+        background: var(--surface-muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 16px 18px;
+      }
+      .visual-case__header p { color: var(--muted); margin: 5px 0 0; }
+      .metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .metric {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 6px 9px;
+      }
+      .visual-case__body { padding: 18px; }
+      .images {
+        align-items: start;
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+      }
+      figure { margin: 0; min-width: 0; overflow: auto; }
+      figcaption { font-weight: 750; margin-bottom: 8px; }
+      figure img {
+        background: repeating-conic-gradient(#e8ebf0 0 25%, white 0 50%) 0 / 20px 20px;
+        border: 1px solid var(--border);
+        display: block;
+        height: auto;
+        max-width: 100%;
+        object-fit: contain;
+        width: auto;
+      }
+      .asset-table { margin-top: 18px; }
+      .asset-table table { font-size: 0.85rem; min-width: 900px; }
+      .sha { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+      .findings { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+      .finding {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        min-width: 0;
+        padding: 16px;
+      }
+      .finding__header { align-items: center; display: flex; gap: 10px; justify-content: space-between; margin-bottom: 10px; }
+      .finding__group { color: var(--muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 4px; text-transform: uppercase; }
+      .notes { margin-bottom: 0; }
+      .empty { color: var(--muted); font-style: italic; }
+      .filters { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 16px; }
+      button {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        color: var(--text);
+        cursor: pointer;
+        font: inherit;
+        font-weight: 650;
+        padding: 7px 10px;
+      }
+      button[aria-pressed="true"] { background: #dfe7ff; border-color: #9cb0ef; }
+      [hidden] { display: none !important; }
+      @media (max-width: 640px) {
+        main { padding: 14px 10px 40px; }
+        .hero, .section { border-radius: 10px; }
+        .key-values { grid-template-columns: 1fr; }
+        .key-values dd { margin-bottom: 5px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+  <span class="status status--pass">Pass</span>
+  <h1>Discourse stock libvips image-processing parity</h1>
+  <p class="hero__meta">Generated 2026-07-31T08:57:40Z</p>
+  <p class="hero__summary">{&quot;contracts&quot; =&gt; 60, &quot;passed&quot; =&gt; 60, &quot;failed&quot; =&gt; 0, &quot;visual_cases&quot; =&gt; 28}</p>
+  <nav class="downloads" aria-label="Evidence downloads">
+    <a href="manifest.json" download>Download manifest.json</a>
+    <a href="artifacts.sha256" download>Download artifacts.sha256</a>
+  </nav>
+</header>
+
+      <section class="section" id="methodology">
+  <h2>Methodology and provenance</h2>
+  <p class="section__intro">Both processors were exercised through the same Discourse Rails/domain entrypoints. Every visual contract compares equal-sized decoded RGBA outputs and records exact artifact metadata.</p>
+  <div class="overview-grid">
+    <article class="data-card">
+  <h3>Provenance and commands</h3>
+  <dl class="key-values"><dt>Core Commit</dt><dd>6a121b3626386753b90a0ac9572f8fbe72e01328</dd><dt>Branch</dt><dd>codex/vips-image-processing</dd><dt>Source Archive Sha256</dt><dd>43074cb1b34fcfb5747de64e6e667122c2d2132652b1b4934116d89051e416b0</dd><dt>Test Image</dt><dd>discourse/discourse_test@sha256:dc03056d784d55624d4ba8fd18aea9d536b56eb336a27f780589c8be5e7e0c74</dd><dt>Test Image Id</dt><dd>sha256:77ec5bfb90dd7d23915ffdd44d62ef7b9278ddd33ff34394d1b179c56007861a</dd><dt>Base Image</dt><dd>discourse/base@sha256:55d36eeb4d12f5b2dd01c9b0dad8293fe11af8d7b1755ad3d930e35bbccd5280</dd><dt>Base Layer Verification</dt><dd>test image first 37 RootFS layers exactly equal required base image layers</dd><dt>Libvips</dt><dd>8.18.4</dd><dt>Imagemagick</dt><dd>7.1.2-27 Q16-HDRI</dd><dt>Ruby</dt><dd>3.4.9</dd><dt>Architecture</dt><dd>aarch64</dd><dt>Nproc</dt><dd>14</dd><dt>Cgroup Cpu Max</dt><dd>max 100000</dd><dt>Cgroup Memory Max</dt><dd>max</dd><dt>Processor Concurrency Overrides</dt><dd><span class="empty">None</span></dd><dt>Entrypoint Contract</dt><dd>same Rails/domain entrypoints; only use_vips_for_image_processing toggled per arm</dd><dt>Command</dt><dd>bin/rspec spec/image_processing_evidence_spec.rb</dd><dt>Commands</dt><dd><ul class="value-list"><li>git rev-parse HEAD</li><li>git archive --format=tar --output=image-processing-6a121b3-source.tar 6a121b3626386753b90a0ac9572f8fbe72e01328</li><li>docker image inspect discourse/base:2.0.20260731-0206 discourse/discourse_test:release --format &#39;{{json .RootFS.Layers}}&#39;</li><li>docker run --name vips-image-processing-evidence-6a121b3 --entrypoint sleep -d discourse/discourse_test@sha256:dc03056d784d55624d4ba8fd18aea9d536b56eb336a27f780589c8be5e7e0c74 infinity</li><li>tar -xf /tmp/source.tar -C /work/discourse</li><li>RAILS_ENV=test LOAD_PLUGINS=0 bin/rake db:migrate</li><li>RAILS_ENV=test LOAD_PLUGINS=0 bin/rake test:prepare</li><li>RAILS_ENV=test LOAD_PLUGINS=0 bin/rspec spec/models/optimized_image_vips_spec.rb spec/lib/upload_creator_vips_spec.rb spec/models/upload_vips_spec.rb spec/lib/shrink_uploaded_image_spec.rb</li><li>RAILS_ENV=test LOAD_PLUGINS=0 EVIDENCE_DIR=/tmp/image-processing-evidence bin/rspec spec/image_processing_evidence_spec.rb</li></ul></dd></dl>
+</article>
+<article class="data-card">
+  <h3>Fixed settings</h3>
+  <dl class="key-values"><dt>Avatar Sizes</dt><dd>24|48|72|96|144|288</dd><dt>Image Quality</dt><dd>90</dd><dt>Png To Jpg Quality</dt><dd>0</dd><dt>Recompress Original Jpg Quality</dt><dd>0</dd><dt>Image Preview Jpg Quality</dt><dd>0</dd><dt>Strip Image Metadata</dt><dd>true</dd><dt>Composer Media Optimization Image Enabled</dt><dd>true</dd><dt>Authorized Extensions</dt><dd>jpg|jpeg|png|gif|heic|heif|webp|avif|svg|jxl</dd></dl>
+</article>
+<article class="data-card">
+  <h3>Acceptance thresholds</h3>
+  <dl class="key-values"><dt>Normal Normalized Mean Rgba Error</dt><dd>0.03</dd><dt>Independently Reencoded Orientation Error</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl>
+</article>
+
+  </div>
+</section>
+
+      <section class="section" id="contracts" data-filter-container>
+  <h2>Textual pass/fail contracts</h2>
+  <p class="section__intro">The expected and observed behavior is retained verbatim from the evidence manifest.</p>
+  <div class="filters">
+  <button type="button" data-filter="all" aria-pressed="true">All contracts</button>
+  <button type="button" data-filter="failed" aria-pressed="false">Failures only</button>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Group</th>
+        <th>ID</th>
+        <th>Contract</th>
+        <th>Expected</th>
+        <th>Actual</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody><tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-resize-321x123</code></td>
+  <td>Representative non-square resize 321×123: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00540269</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.024580335731415</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-north-crop-landscape-321x123</code></td>
+  <td>North crop landscape 321×123: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>321</li><li>123</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00780807</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.087667731629393</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-north-crop-portrait-173x419</code></td>
+  <td>North crop portrait 173×419: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>173</li><li>419</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>173</li><li>419</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>173</li><li>419</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00490861</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0273924801535375</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-north-crop-alpha-96x160</code></td>
+  <td>North crop with alpha 96×160: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>96</li><li>160</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>96</li><li>160</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>96</li><li>160</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00449269</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.8666361136571953</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-downsize-percentage</code></td>
+  <td>Downsize 50%: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1016</li><li>656</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>1016</li><li>656</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>1016</li><li>656</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0030027</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.216595314416023</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-downsize-area</code></td>
+  <td>Downsize to 500,000 pixels: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd>identical</dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>880</li><li>568</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>880</li><li>568</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00317895</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.2171655467318265</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-downsize-shrink-only</code></td>
+  <td>Downsize shrink-only 333×222: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>333</li><li>215</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>333</li><li>215</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>333</li><li>215</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00356156</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.293974820143885</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-downsize-no-upscale-alpha</code></td>
+  <td>Downsize no-upscale with alpha: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>244</li><li>66</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>244</li><li>66</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>244</li><li>66</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0004260758414998</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-24</code></td>
+  <td>Uploaded-avatar thumbnail 24×24: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0231621</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.9284403669724771</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-24</code></td>
+  <td>24×24 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>24</li><li>24</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-48</code></td>
+  <td>Uploaded-avatar thumbnail 48×48: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0168479</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.9509299564701227</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-48</code></td>
+  <td>48×48 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>48</li><li>48</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-72</code></td>
+  <td>Uploaded-avatar thumbnail 72×72: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0150889</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.9461623412479293</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-72</code></td>
+  <td>72×72 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>72</li><li>72</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-96</code></td>
+  <td>Uploaded-avatar thumbnail 96×96: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.010708</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0343915343915344</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-96</code></td>
+  <td>96×96 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>96</li><li>96</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-144</code></td>
+  <td>Uploaded-avatar thumbnail 144×144: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00828614</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.9787583938604906</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-144</code></td>
+  <td>144×144 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>144</li><li>144</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-uploaded-avatar-thumbnail-288</code></td>
+  <td>Uploaded-avatar thumbnail 288×288: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00540427</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0374063366570299</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Uploaded-avatar thumbnails</td>
+  <td><code>thumbnail-state-288</code></td>
+  <td>288×288 thumbnail uses the processor-specific cache version</td>
+  <td><dl class="key-values"><dt>Image Magick Version</dt><dd>2</dd><dt>Vips Version</dt><dd>3</dd><dt>Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Version</dt><dd>2</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Version</dt><dd>3</dd><dt>Requested Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-avatar-original-normalization</code></td>
+  <td>Avatar original normalization: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00540427</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.045252319816957</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-avatar-original-normalization</code></td>
+  <td>Avatar original normalization: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>288</li><li>288</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-png-to-jpeg</code></td>
+  <td>Pasted PNG to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00910945</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.8693325492502205</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-png-to-jpeg</code></td>
+  <td>Pasted PNG to JPEG conversion: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>303</li><li>231</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-heic-to-jpeg</code></td>
+  <td>HEIC to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00367289</dd><dt>Vips To Image Magick Size Ratio</dt><dd>0.8478271504280472</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-heic-to-jpeg</code></td>
+  <td>HEIC to JPEG conversion: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>846</li><li>1129</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-heif-to-jpeg</code></td>
+  <td>Generated HEIF to JPEG conversion: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00106613</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0286307646931832</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-heif-to-jpeg</code></td>
+  <td>Generated HEIF to JPEG conversion: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-2</code></td>
+  <td>EXIF orientation 2: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0023877</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.6791735327671442</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-2</code></td>
+  <td>EXIF orientation 2: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-2</code></td>
+  <td>Orientation 2 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-3</code></td>
+  <td>EXIF orientation 3: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0023884</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.678819835548547</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-3</code></td>
+  <td>EXIF orientation 3: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-3</code></td>
+  <td>Orientation 3 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-4</code></td>
+  <td>EXIF orientation 4: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00238583</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.6805773742013201</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-4</code></td>
+  <td>EXIF orientation 4: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-4</code></td>
+  <td>Orientation 4 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>2032</li><li>1312</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-5</code></td>
+  <td>EXIF orientation 5: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00229452</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.7175247469999446</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-5</code></td>
+  <td>EXIF orientation 5: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-5</code></td>
+  <td>Orientation 5 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-6</code></td>
+  <td>EXIF orientation 6: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00235571</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.7196800221629671</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-6</code></td>
+  <td>EXIF orientation 6: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-6</code></td>
+  <td>Orientation 6 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-7</code></td>
+  <td>EXIF orientation 7: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00235578</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.7206669068935887</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-7</code></td>
+  <td>EXIF orientation 7: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-7</code></td>
+  <td>Orientation 7 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-orientation-8</code></td>
+  <td>EXIF orientation 8: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.1</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Image Magick Format</dt><dd>jpeg</dd><dt>Vips Format</dt><dd>jpeg</dd><dt>Normalized Mean Rgba Error</dt><dd>0.0022943</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.7166439790214139</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Upload domain state</td>
+  <td><code>upload-state-orientation-8</code></td>
+  <td>EXIF orientation 8: persisted dimensions and content digest</td>
+  <td><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>EXIF orientation</td>
+  <td><code>orientation-reset-8</code></td>
+  <td>Orientation 8 is rewritten to upright pixels and tag 1</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>1312</li><li>2032</li></ul></dd><dt>Orientation</dt><dd>1</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-metadata-preserved</code></td>
+  <td>Metadata preserved: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd>informational due to metadata optimizer behavior</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00701998</dd><dt>Vips To Image Magick Size Ratio</dt><dd>2.882082925728046</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Expected divergence</td>
+  <td><code>metadata-fields-preserve</code></td>
+  <td>Stock libvips preserves exposed EXIF, XMP, and ICC while legacy ImageMagick plus pngquant loses them</td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>true</dd><dt>Xmp-data</dt><dd>true</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>true</dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>true</dd><dt>Xmp-data</dt><dd>true</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-metadata-stripped</code></td>
+  <td>Metadata stripped: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>320</li><li>200</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00794017</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0385865150284321</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Metadata</td>
+  <td><code>metadata-fields-strip</code></td>
+  <td>Both processors strip exposed metadata</td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Visual parity</td>
+  <td><code>visual-shrink-uploaded-image</code></td>
+  <td>Stored original normalization to 10,000 pixels: dimensions, format, normalized RGBA MAE, and encoded-size ratio</td>
+  <td><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error Max</dt><dd>0.03</dd><dt>Vips To Image Magick Size Ratio</dt><dd><ul class="value-list"><li>0.5</li><li>2.0</li></ul></dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Vips Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Image Magick Format</dt><dd>png</dd><dt>Vips Format</dt><dd>png</dd><dt>Normalized Mean Rgba Error</dt><dd>0.00647563</dd><dt>Vips To Image Magick Size Ratio</dt><dd>1.0822488287350338</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Original normalization</td>
+  <td><code>shrink-uploaded-image-state</code></td>
+  <td>Both processors update stored bytes, dimensions, and digest through ShrinkUploadedImage</td>
+  <td><dl class="key-values"><dt>Result</dt><dd>true</dd><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Digest Matches</dt><dd>true</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Result</dt><dd>true</dd><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Result</dt><dd>true</dd><dt>Upload Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>File Dimensions</dt><dd><ul class="value-list"><li>124</li><li>80</li></ul></dd><dt>Format</dt><dd>png</dd><dt>Digest Matches</dt><dd>true</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Animation</td>
+  <td><code>animation-frame-classification</code></td>
+  <td>Both processors classify GIF, WebP, AVIF, and static PNG when FastImage is inconclusive</td>
+  <td><dl class="key-values"><dt>Animated.gif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd></dl></dd><dt>Animated.webp</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Animated.avif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Static.png</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Animated.gif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd></dl></dd><dt>Animated.webp</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Animated.avif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Static.png</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>SVG</td>
+  <td><code>svg-dimensions-and-byte-copy</code></td>
+  <td>Both processors store, repair, and byte-copy SVGs with pixel, huge, and zero/viewBox dimensions</td>
+  <td><dl class="key-values"><dt>Tiny.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Massive.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Zero Sized.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Tiny.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Massive.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Zero Sized.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Expected divergence</td>
+  <td><code>jpeg-quality-selection</code></td>
+  <td>jhead recognizes the Q50 source and avoids up-encoding it while ImageMagick reports an unavailable estimate</td>
+  <td><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd>70</dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd><span class="empty">Not recorded</span></dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd>70</dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd><span class="empty">Not recorded</span></dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Formats</td>
+  <td><code>format-eligibility</code></td>
+  <td>Upload allowlist and optimized-image eligibility remain processor-independent</td>
+  <td><dl class="key-values"><dt>Upload Allowlist</dt><dd><dl class="key-values"><dt>Jpg</dt><dd>true</dd><dt>Jpeg</dt><dd>true</dd><dt>Png</dt><dd>true</dd><dt>Gif</dt><dd>true</dd><dt>Svg</dt><dd>true</dd><dt>Ico</dt><dd>true</dd><dt>Webp</dt><dd>true</dd><dt>Avif</dt><dd>true</dd><dt>Heic</dt><dd>true</dd><dt>Heif</dt><dd>true</dd><dt>Jxl</dt><dd>true</dd><dt>Tiff</dt><dd>false</dd><dt>Bmp</dt><dd>false</dd></dl></dd><dt>Jxl Returns No Optimized Image</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd>true</dd><dt>Stock Libvips</dt><dd>true</dd></dl></dd></dl></td>
+  <td><dl class="key-values"><dt>Upload Allowlist</dt><dd><dl class="key-values"><dt>Jpg</dt><dd>true</dd><dt>Jpeg</dt><dd>true</dd><dt>Png</dt><dd>true</dd><dt>Gif</dt><dd>true</dd><dt>Svg</dt><dd>true</dd><dt>Ico</dt><dd>true</dd><dt>Webp</dt><dd>true</dd><dt>Avif</dt><dd>true</dd><dt>Heic</dt><dd>true</dd><dt>Heif</dt><dd>true</dd><dt>Jxl</dt><dd>true</dd><dt>Tiff</dt><dd>false</dd><dt>Bmp</dt><dd>false</dd></dl></dd><dt>Optimized Decoder Allowlist</dt><dd>\A(jpe?g|png|ico|gif|webp|avif|svg)\z</dd><dt>Jxl Returns No Optimized Image</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd>true</dd><dt>Stock Libvips</dt><dd>true</dd></dl></dd><dt>Tiff And Bmp Outside Upload Allowlist</dt><dd>true</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+<tr data-filter-result data-passed="true">
+  <td>Documented exception</td>
+  <td><code>ico-deliberate-enabled-failure</code></td>
+  <td>ICO succeeds through ImageMagick and deliberately raises through enabled stock libvips with no fallback</td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Persisted</dt><dd>true</dd><dt>Extension</dt><dd>png</dd><dt>Format</dt><dd>png</dd></dl></dd><dt>Vips Error</dt><dd>Discourse::Utils::CommandError</dd></dl></td>
+  <td><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Persisted</dt><dd>true</dd><dt>Extension</dt><dd>png</dd><dt>Format</dt><dd>png</dd></dl></dd><dt>Vips Error</dt><dd>Discourse::Utils::CommandError</dd></dl></td>
+  <td class="result-cell"><span class="status status--pass">Pass</span></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+</section>
+
+      <section class="section" id="visual-cases" data-filter-container>
+  <h2>Native-size visual comparisons</h2>
+  <p class="section__intro">
+    Images are shown at intrinsic size and are never magnified. They may shrink to fit a narrow viewport.
+    The diff is generated from the decoded RGBA pixels used by the numerical comparison.
+  </p>
+  <div class="filters">
+  <button type="button" data-filter="all" aria-pressed="true">All visual cases</button>
+  <button type="button" data-filter="failed" aria-pressed="false">Failures only</button>
+</div>
+<div class="visual-list"><article class="visual-case" data-filter-result data-passed="true" id="visual-resize-321x123">
+  <header class="visual-case__header">
+    <div>
+      <h3>Representative non-square resize 321×123</h3>
+      <p><code>resize-321x123</code> via OptimizedImage.resize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.005403</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.024580</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/resize-321x123/image-magick-view.png">
+    <img src="images/resize-321x123/image-magick-view.png" width="321" height="123" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/resize-321x123/vips-view.png">
+    <img src="images/resize-321x123/vips-view.png" width="321" height="123" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/resize-321x123/diff.png">
+    <img src="images/resize-321x123/diff.png" width="321" height="123" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>321×123</td>
+  <td>png</td>
+  <td>8340 B</td>
+  <td class="sha">9c856292c84c732919977075815a47c348acf98a7b38878e90ecfbbbc9d6f0cd</td>
+  <td><a href="images/resize-321x123/image-magick.png">images/resize-321x123/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>321×123</td>
+  <td>png</td>
+  <td>8545 B</td>
+  <td class="sha">eff20215eccd7132f27cdcb68cff68c1062f9c35382aafd3355f984a0f1c7001</td>
+  <td><a href="images/resize-321x123/vips.png">images/resize-321x123/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>321×123</td>
+  <td>PNG</td>
+  <td>21021 B</td>
+  <td class="sha">f13e121f674cacc7b5fae34c28c4941ff6d79d2c757f98bddead08aea86871cd</td>
+  <td><a href="images/resize-321x123/diff.png">images/resize-321x123/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-north-crop-landscape-321x123">
+  <header class="visual-case__header">
+    <div>
+      <h3>North crop landscape 321×123</h3>
+      <p><code>north-crop-landscape-321x123</code> via OptimizedImage.crop</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.007808</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.087668</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/north-crop-landscape-321x123/image-magick-view.png">
+    <img src="images/north-crop-landscape-321x123/image-magick-view.png" width="321" height="123" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/north-crop-landscape-321x123/vips-view.png">
+    <img src="images/north-crop-landscape-321x123/vips-view.png" width="321" height="123" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/north-crop-landscape-321x123/diff.png">
+    <img src="images/north-crop-landscape-321x123/diff.png" width="321" height="123" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>321×123</td>
+  <td>png</td>
+  <td>7825 B</td>
+  <td class="sha">346c2722aa5b4c6df082f23e325355fbcedd4a2265d13eabf9df87659d91cd80</td>
+  <td><a href="images/north-crop-landscape-321x123/image-magick.png">images/north-crop-landscape-321x123/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>321×123</td>
+  <td>png</td>
+  <td>8511 B</td>
+  <td class="sha">14d018c52e0086bdee6a84894d87fe4fcab1461e545eba8f9cbdefaf09917a98</td>
+  <td><a href="images/north-crop-landscape-321x123/vips.png">images/north-crop-landscape-321x123/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>321×123</td>
+  <td>PNG</td>
+  <td>21720 B</td>
+  <td class="sha">5852ece11bd2efb9b9ef47b3761bb9a6079236ac4f45247ab72fb5efe624c684</td>
+  <td><a href="images/north-crop-landscape-321x123/diff.png">images/north-crop-landscape-321x123/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-north-crop-portrait-173x419">
+  <header class="visual-case__header">
+    <div>
+      <h3>North crop portrait 173×419</h3>
+      <p><code>north-crop-portrait-173x419</code> via OptimizedImage.crop</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.004909</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.027392</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/north-crop-portrait-173x419/image-magick-view.png">
+    <img src="images/north-crop-portrait-173x419/image-magick-view.png" width="173" height="419" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/north-crop-portrait-173x419/vips-view.png">
+    <img src="images/north-crop-portrait-173x419/vips-view.png" width="173" height="419" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/north-crop-portrait-173x419/diff.png">
+    <img src="images/north-crop-portrait-173x419/diff.png" width="173" height="419" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>173×419</td>
+  <td>png</td>
+  <td>11463 B</td>
+  <td class="sha">65fd788ce489c014f781d5588c7e74b3f992e1198ee480db5d1609794d4bec03</td>
+  <td><a href="images/north-crop-portrait-173x419/image-magick.png">images/north-crop-portrait-173x419/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>173×419</td>
+  <td>png</td>
+  <td>11777 B</td>
+  <td class="sha">69dddef57142518e2bd88910c116acd044546d1f316cbf4ee0570a34ba5d889a</td>
+  <td><a href="images/north-crop-portrait-173x419/vips.png">images/north-crop-portrait-173x419/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>173×419</td>
+  <td>PNG</td>
+  <td>26149 B</td>
+  <td class="sha">4ca4a6abe682f1917e88dab9cde6bcec202a993a249a24d3e444a3a41d836ffd</td>
+  <td><a href="images/north-crop-portrait-173x419/diff.png">images/north-crop-portrait-173x419/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-north-crop-alpha-96x160">
+  <header class="visual-case__header">
+    <div>
+      <h3>North crop with alpha 96×160</h3>
+      <p><code>north-crop-alpha-96x160</code> via OptimizedImage.crop</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.004493</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.866636</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/north-crop-alpha-96x160/image-magick-view.png">
+    <img src="images/north-crop-alpha-96x160/image-magick-view.png" width="96" height="160" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/north-crop-alpha-96x160/vips-view.png">
+    <img src="images/north-crop-alpha-96x160/vips-view.png" width="96" height="160" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/north-crop-alpha-96x160/diff.png">
+    <img src="images/north-crop-alpha-96x160/diff.png" width="96" height="160" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>96×160</td>
+  <td>png</td>
+  <td>4364 B</td>
+  <td class="sha">1b3bd1f3e054c5e06f1c4b4ddc8b50146a2b20e324056d5b0cf181827a3367b9</td>
+  <td><a href="images/north-crop-alpha-96x160/image-magick.png">images/north-crop-alpha-96x160/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>96×160</td>
+  <td>png</td>
+  <td>3782 B</td>
+  <td class="sha">902ccb7f10173ad4fed1670a9ea494a0fdab31542bb3fa782f7b585a69288ac2</td>
+  <td><a href="images/north-crop-alpha-96x160/vips.png">images/north-crop-alpha-96x160/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>96×160</td>
+  <td>PNG</td>
+  <td>8241 B</td>
+  <td class="sha">982029cb28427a5e4ba007e72c772cd6849e9d8274dac6940c85841c9f65f5b5</td>
+  <td><a href="images/north-crop-alpha-96x160/diff.png">images/north-crop-alpha-96x160/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-downsize-percentage">
+  <header class="visual-case__header">
+    <div>
+      <h3>Downsize 50%</h3>
+      <p><code>downsize-percentage</code> via OptimizedImage.downsize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.003003</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.216595</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/downsize-percentage/image-magick-view.png">
+    <img src="images/downsize-percentage/image-magick-view.png" width="1016" height="656" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/downsize-percentage/vips-view.png">
+    <img src="images/downsize-percentage/vips-view.png" width="1016" height="656" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/downsize-percentage/diff.png">
+    <img src="images/downsize-percentage/diff.png" width="1016" height="656" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>1016×656</td>
+  <td>png</td>
+  <td>46483 B</td>
+  <td class="sha">1863064318b067865243439591833405f5009e165307dcc8449639167eb00e33</td>
+  <td><a href="images/downsize-percentage/image-magick.png">images/downsize-percentage/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>1016×656</td>
+  <td>png</td>
+  <td>56551 B</td>
+  <td class="sha">fcdb15520b4cd6c7f3598327a40444eef626c566f5c04393168519d83fedbcf5</td>
+  <td><a href="images/downsize-percentage/vips.png">images/downsize-percentage/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>1016×656</td>
+  <td>PNG</td>
+  <td>155981 B</td>
+  <td class="sha">55377d1190191add1c07dbb3e94d385ac07a0ac6c02c7758b0d6944e14eb72e9</td>
+  <td><a href="images/downsize-percentage/diff.png">images/downsize-percentage/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-downsize-area">
+  <header class="visual-case__header">
+    <div>
+      <h3>Downsize to 500,000 pixels</h3>
+      <p><code>downsize-area</code> via OptimizedImage.downsize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.003179</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.217166</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/downsize-area/image-magick-view.png">
+    <img src="images/downsize-area/image-magick-view.png" width="880" height="568" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/downsize-area/vips-view.png">
+    <img src="images/downsize-area/vips-view.png" width="880" height="568" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/downsize-area/diff.png">
+    <img src="images/downsize-area/diff.png" width="880" height="568" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>880×568</td>
+  <td>png</td>
+  <td>42562 B</td>
+  <td class="sha">ee1316732ec80c307f446471f3cc20e8b9aae36b4647dc40264a329c745609b1</td>
+  <td><a href="images/downsize-area/image-magick.png">images/downsize-area/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>880×568</td>
+  <td>png</td>
+  <td>51805 B</td>
+  <td class="sha">60a7127d117830fa3fd2e3769e100f7262f5b06c503eea366d5487b49c35be4e</td>
+  <td><a href="images/downsize-area/vips.png">images/downsize-area/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>880×568</td>
+  <td>PNG</td>
+  <td>132578 B</td>
+  <td class="sha">6a31ac30ac9cd3c4e72850fdfc551d789904df0904ca4e88ccd754de135e2f7e</td>
+  <td><a href="images/downsize-area/diff.png">images/downsize-area/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-downsize-shrink-only">
+  <header class="visual-case__header">
+    <div>
+      <h3>Downsize shrink-only 333×222</h3>
+      <p><code>downsize-shrink-only</code> via OptimizedImage.downsize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.003562</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.293975</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/downsize-shrink-only/image-magick-view.png">
+    <img src="images/downsize-shrink-only/image-magick-view.png" width="333" height="215" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/downsize-shrink-only/vips-view.png">
+    <img src="images/downsize-shrink-only/vips-view.png" width="333" height="215" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/downsize-shrink-only/diff.png">
+    <img src="images/downsize-shrink-only/diff.png" width="333" height="215" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>333×215</td>
+  <td>png</td>
+  <td>11120 B</td>
+  <td class="sha">1303a3aa43238cb73ea3fcb0004035feab0d3387a77cae54f7811ba4d02e1c79</td>
+  <td><a href="images/downsize-shrink-only/image-magick.png">images/downsize-shrink-only/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>333×215</td>
+  <td>png</td>
+  <td>14389 B</td>
+  <td class="sha">64c65b049eaf689de2d5426d68c505697f7c8f2e7fb0eade68469e246527835b</td>
+  <td><a href="images/downsize-shrink-only/vips.png">images/downsize-shrink-only/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>333×215</td>
+  <td>PNG</td>
+  <td>31435 B</td>
+  <td class="sha">8d0db3e171e3d6a9d6aafdaebfb703d4e68939675301b3d88ccf4280029d1b4b</td>
+  <td><a href="images/downsize-shrink-only/diff.png">images/downsize-shrink-only/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-downsize-no-upscale-alpha">
+  <header class="visual-case__header">
+    <div>
+      <h3>Downsize no-upscale with alpha</h3>
+      <p><code>downsize-no-upscale-alpha</code> via OptimizedImage.downsize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.000000</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.000426</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/downsize-no-upscale-alpha/image-magick-view.png">
+    <img src="images/downsize-no-upscale-alpha/image-magick-view.png" width="244" height="66" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/downsize-no-upscale-alpha/vips-view.png">
+    <img src="images/downsize-no-upscale-alpha/vips-view.png" width="244" height="66" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/downsize-no-upscale-alpha/diff.png">
+    <img src="images/downsize-no-upscale-alpha/diff.png" width="244" height="66" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>244×66</td>
+  <td>png</td>
+  <td>2347 B</td>
+  <td class="sha">84b182b18bd18d819357365a68f079fccad65b56e64da9764562cbd980a75198</td>
+  <td><a href="images/downsize-no-upscale-alpha/image-magick.png">images/downsize-no-upscale-alpha/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>244×66</td>
+  <td>png</td>
+  <td>2348 B</td>
+  <td class="sha">6cad067c903a543e74ac9044b0cf397abfdfc394703de542449699d429ccd7da</td>
+  <td><a href="images/downsize-no-upscale-alpha/vips.png">images/downsize-no-upscale-alpha/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>244×66</td>
+  <td>PNG</td>
+  <td>323 B</td>
+  <td class="sha">441a1b21427819b1a377bc7dd91cc32d8f4f53daa7a4384a5d7bff0dc97285f8</td>
+  <td><a href="images/downsize-no-upscale-alpha/diff.png">images/downsize-no-upscale-alpha/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-24">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 24×24</h3>
+      <p><code>uploaded-avatar-thumbnail-24</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.023162</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.928440</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-24/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-24/image-magick-view.png" width="24" height="24" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-24/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-24/vips-view.png" width="24" height="24" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-24/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-24/diff.png" width="24" height="24" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>24×24</td>
+  <td>png</td>
+  <td>1090 B</td>
+  <td class="sha">d0336a0813925dd5e256b74eba8774d6f835f2709f9f731bc614a2df783fb0a3</td>
+  <td><a href="images/uploaded-avatar-thumbnail-24/image-magick.png">images/uploaded-avatar-thumbnail-24/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>24×24</td>
+  <td>png</td>
+  <td>1012 B</td>
+  <td class="sha">90ea2bbe0ed2244a4562ec0a9b95153a5a45c4d0ebf3a4513a124d15e72a3b2d</td>
+  <td><a href="images/uploaded-avatar-thumbnail-24/vips.png">images/uploaded-avatar-thumbnail-24/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>24×24</td>
+  <td>PNG</td>
+  <td>1415 B</td>
+  <td class="sha">1e8d9ed4ee302f2736824d77ff6bf3a2bde62dbfe901ff1f0d600329a9357e42</td>
+  <td><a href="images/uploaded-avatar-thumbnail-24/diff.png">images/uploaded-avatar-thumbnail-24/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-48">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 48×48</h3>
+      <p><code>uploaded-avatar-thumbnail-48</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.016848</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.950930</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-48/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-48/image-magick-view.png" width="48" height="48" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-48/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-48/vips-view.png" width="48" height="48" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-48/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-48/diff.png" width="48" height="48" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>48×48</td>
+  <td>png</td>
+  <td>2527 B</td>
+  <td class="sha">61e8f65c29c7c28b03b92f815f5d4938b6d992341ce301f8a8b62a699608ecd2</td>
+  <td><a href="images/uploaded-avatar-thumbnail-48/image-magick.png">images/uploaded-avatar-thumbnail-48/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>48×48</td>
+  <td>png</td>
+  <td>2403 B</td>
+  <td class="sha">37e24b3a1e3f89cea4efb4278b9540a0dfe023911537e71e16dddbeed9ed0ff4</td>
+  <td><a href="images/uploaded-avatar-thumbnail-48/vips.png">images/uploaded-avatar-thumbnail-48/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>48×48</td>
+  <td>PNG</td>
+  <td>3757 B</td>
+  <td class="sha">a99cc0f0385f0b27de5d0c5a25fa9d465f77b7b4ae12d047f00c5754b556dba3</td>
+  <td><a href="images/uploaded-avatar-thumbnail-48/diff.png">images/uploaded-avatar-thumbnail-48/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-72">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 72×72</h3>
+      <p><code>uploaded-avatar-thumbnail-72</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.015089</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.946162</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-72/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-72/image-magick-view.png" width="72" height="72" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-72/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-72/vips-view.png" width="72" height="72" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-72/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-72/diff.png" width="72" height="72" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>72×72</td>
+  <td>png</td>
+  <td>3622 B</td>
+  <td class="sha">69af719635c708d679e1806873fc66d6a6740a2ed69e4f97cbf1e7f2ad0889ab</td>
+  <td><a href="images/uploaded-avatar-thumbnail-72/image-magick.png">images/uploaded-avatar-thumbnail-72/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>72×72</td>
+  <td>png</td>
+  <td>3427 B</td>
+  <td class="sha">d913dd6d0af454ca8a85978edbde298ab23969fd0a7be116ead8d450463b86c9</td>
+  <td><a href="images/uploaded-avatar-thumbnail-72/vips.png">images/uploaded-avatar-thumbnail-72/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>72×72</td>
+  <td>PNG</td>
+  <td>6627 B</td>
+  <td class="sha">ad997127180aed43161e7b3b3c782a0a318e391fefb4a4f0678d045b8c90043e</td>
+  <td><a href="images/uploaded-avatar-thumbnail-72/diff.png">images/uploaded-avatar-thumbnail-72/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-96">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 96×96</h3>
+      <p><code>uploaded-avatar-thumbnail-96</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.010708</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.034392</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-96/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-96/image-magick-view.png" width="96" height="96" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-96/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-96/vips-view.png" width="96" height="96" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-96/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-96/diff.png" width="96" height="96" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>96×96</td>
+  <td>png</td>
+  <td>4536 B</td>
+  <td class="sha">4c01c19ce04f288667602c6ef9d3f5ecf34675aecd8905c37c109a23bb24e0ed</td>
+  <td><a href="images/uploaded-avatar-thumbnail-96/image-magick.png">images/uploaded-avatar-thumbnail-96/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>96×96</td>
+  <td>png</td>
+  <td>4692 B</td>
+  <td class="sha">5c9a3aa43f3c323dc0c05abf739552b7868429336ec7ec16ef4d40245d541bd6</td>
+  <td><a href="images/uploaded-avatar-thumbnail-96/vips.png">images/uploaded-avatar-thumbnail-96/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>96×96</td>
+  <td>PNG</td>
+  <td>9347 B</td>
+  <td class="sha">f93612ba35b5b5bd6c3410ad112aee8d0772e7f3f48ef43a6c77edafd1c0c86d</td>
+  <td><a href="images/uploaded-avatar-thumbnail-96/diff.png">images/uploaded-avatar-thumbnail-96/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-144">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 144×144</h3>
+      <p><code>uploaded-avatar-thumbnail-144</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.008286</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.978758</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-144/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-144/image-magick-view.png" width="144" height="144" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-144/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-144/vips-view.png" width="144" height="144" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-144/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-144/diff.png" width="144" height="144" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>144×144</td>
+  <td>png</td>
+  <td>7297 B</td>
+  <td class="sha">c622c145e0136325b36c54b177dce21f5d400fcb983586c1c65fac6f2148ff83</td>
+  <td><a href="images/uploaded-avatar-thumbnail-144/image-magick.png">images/uploaded-avatar-thumbnail-144/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>144×144</td>
+  <td>png</td>
+  <td>7142 B</td>
+  <td class="sha">4f1ac2a8f0559fbea5cf6bb97613cec664b5173324ef659a19f57576ff8c63a5</td>
+  <td><a href="images/uploaded-avatar-thumbnail-144/vips.png">images/uploaded-avatar-thumbnail-144/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>144×144</td>
+  <td>PNG</td>
+  <td>15269 B</td>
+  <td class="sha">8fb159c724c7bba40a55a1010554955ededfd5a56e03e3b70b88bc28266a5ce7</td>
+  <td><a href="images/uploaded-avatar-thumbnail-144/diff.png">images/uploaded-avatar-thumbnail-144/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-uploaded-avatar-thumbnail-288">
+  <header class="visual-case__header">
+    <div>
+      <h3>Uploaded-avatar thumbnail 288×288</h3>
+      <p><code>uploaded-avatar-thumbnail-288</code> via Upload#create_thumbnail!</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.005404</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.037406</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-288/image-magick-view.png">
+    <img src="images/uploaded-avatar-thumbnail-288/image-magick-view.png" width="288" height="288" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-288/vips-view.png">
+    <img src="images/uploaded-avatar-thumbnail-288/vips-view.png" width="288" height="288" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/uploaded-avatar-thumbnail-288/diff.png">
+    <img src="images/uploaded-avatar-thumbnail-288/diff.png" width="288" height="288" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>288×288</td>
+  <td>png</td>
+  <td>16949 B</td>
+  <td class="sha">e0a0b3a58016c6378e6be98b1d76048390b9d5e945f40545fe75d58e7355b0ad</td>
+  <td><a href="images/uploaded-avatar-thumbnail-288/image-magick.png">images/uploaded-avatar-thumbnail-288/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>288×288</td>
+  <td>png</td>
+  <td>17583 B</td>
+  <td class="sha">32d23e117f5b763c54e3239b9f01c1e3a370712205b977838d3707d69318d7e5</td>
+  <td><a href="images/uploaded-avatar-thumbnail-288/vips.png">images/uploaded-avatar-thumbnail-288/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>288×288</td>
+  <td>PNG</td>
+  <td>39353 B</td>
+  <td class="sha">26c6edadf6cc59d28eaa2bac59401c9f5c55eb83dc53bb6f609b507e096cc56b</td>
+  <td><a href="images/uploaded-avatar-thumbnail-288/diff.png">images/uploaded-avatar-thumbnail-288/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-avatar-original-normalization">
+  <header class="visual-case__header">
+    <div>
+      <h3>Avatar original normalization</h3>
+      <p><code>avatar-original-normalization</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.005404</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.045252</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/avatar-original-normalization/image-magick-view.png">
+    <img src="images/avatar-original-normalization/image-magick-view.png" width="288" height="288" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/avatar-original-normalization/vips-view.png">
+    <img src="images/avatar-original-normalization/vips-view.png" width="288" height="288" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/avatar-original-normalization/diff.png">
+    <img src="images/avatar-original-normalization/diff.png" width="288" height="288" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>288×288</td>
+  <td>png</td>
+  <td>15734 B</td>
+  <td class="sha">7aa9523514d4babd93a83cbaf91685e67e7e10e212b2df6ff8577c41f8b0c173</td>
+  <td><a href="images/avatar-original-normalization/image-magick.png">images/avatar-original-normalization/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>288×288</td>
+  <td>png</td>
+  <td>16446 B</td>
+  <td class="sha">ff250848b39a313936f4e6d7bb86904f17f7312d62fec7ae54a7b23af05e8323</td>
+  <td><a href="images/avatar-original-normalization/vips.png">images/avatar-original-normalization/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>288×288</td>
+  <td>PNG</td>
+  <td>39353 B</td>
+  <td class="sha">d19f582e175b076172aa05a9c8330211ec6220c54990752f3d809b3543738c46</td>
+  <td><a href="images/avatar-original-normalization/diff.png">images/avatar-original-normalization/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-png-to-jpeg">
+  <header class="visual-case__header">
+    <div>
+      <h3>Pasted PNG to JPEG conversion</h3>
+      <p><code>png-to-jpeg</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.009109</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.869333</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/png-to-jpeg/image-magick-view.png">
+    <img src="images/png-to-jpeg/image-magick-view.png" width="303" height="231" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/png-to-jpeg/vips-view.png">
+    <img src="images/png-to-jpeg/vips-view.png" width="303" height="231" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/png-to-jpeg/diff.png">
+    <img src="images/png-to-jpeg/diff.png" width="303" height="231" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>303×231</td>
+  <td>jpeg</td>
+  <td>17005 B</td>
+  <td class="sha">b2fd093cecc0061f07bfdb86b17f86a408b913af4d825bd6d7c63eec782baa97</td>
+  <td><a href="images/png-to-jpeg/image-magick.jpg">images/png-to-jpeg/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>303×231</td>
+  <td>jpeg</td>
+  <td>14783 B</td>
+  <td class="sha">af5a5590c29f41cfa2a3a615e492181d2422a21f27a38255a5a7fe35f2a75211</td>
+  <td><a href="images/png-to-jpeg/vips.jpg">images/png-to-jpeg/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>303×231</td>
+  <td>PNG</td>
+  <td>108340 B</td>
+  <td class="sha">2732b550bd24e658cd8772c567db752e5c1083cfdea4914c33590373078516ee</td>
+  <td><a href="images/png-to-jpeg/diff.png">images/png-to-jpeg/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-heic-to-jpeg">
+  <header class="visual-case__header">
+    <div>
+      <h3>HEIC to JPEG conversion</h3>
+      <p><code>heic-to-jpeg</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.003673</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>0.847827</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/heic-to-jpeg/image-magick-view.png">
+    <img src="images/heic-to-jpeg/image-magick-view.png" width="846" height="1129" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/heic-to-jpeg/vips-view.png">
+    <img src="images/heic-to-jpeg/vips-view.png" width="846" height="1129" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/heic-to-jpeg/diff.png">
+    <img src="images/heic-to-jpeg/diff.png" width="846" height="1129" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>846×1129</td>
+  <td>jpeg</td>
+  <td>245300 B</td>
+  <td class="sha">4930c0e67a6a2b0b63c7186db8246b9a583547f9bc215f9080526b7e701d3ec4</td>
+  <td><a href="images/heic-to-jpeg/image-magick.jpg">images/heic-to-jpeg/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>846×1129</td>
+  <td>jpeg</td>
+  <td>207972 B</td>
+  <td class="sha">c84d231266a8893f61f2b199057e8df697af121e75a33a4ef6d4721d5e5bfdfb</td>
+  <td><a href="images/heic-to-jpeg/vips.jpg">images/heic-to-jpeg/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>846×1129</td>
+  <td>PNG</td>
+  <td>820324 B</td>
+  <td class="sha">381b43ac9d52af59cb2c8b2dff4c51dec76af6ce5b6ea4a15a1598cedb6e85aa</td>
+  <td><a href="images/heic-to-jpeg/diff.png">images/heic-to-jpeg/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-heif-to-jpeg">
+  <header class="visual-case__header">
+    <div>
+      <h3>Generated HEIF to JPEG conversion</h3>
+      <p><code>heif-to-jpeg</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.001066</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.028631</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/heif-to-jpeg/image-magick-view.png">
+    <img src="images/heif-to-jpeg/image-magick-view.png" width="2032" height="1312" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/heif-to-jpeg/vips-view.png">
+    <img src="images/heif-to-jpeg/vips-view.png" width="2032" height="1312" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/heif-to-jpeg/diff.png">
+    <img src="images/heif-to-jpeg/diff.png" width="2032" height="1312" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>328877 B</td>
+  <td class="sha">f0191475ffa94d61d267fa8c2512714fb90badd22263c85b0ea0f825023e5c08</td>
+  <td><a href="images/heif-to-jpeg/image-magick.jpg">images/heif-to-jpeg/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>338293 B</td>
+  <td class="sha">81bd536870fcf4f08860423da2d0aa812834d6a5cff237ab1b75d6ce284bed1a</td>
+  <td><a href="images/heif-to-jpeg/vips.jpg">images/heif-to-jpeg/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>2032×1312</td>
+  <td>PNG</td>
+  <td>522488 B</td>
+  <td class="sha">4189166e9d07883b0424b4dae78d55ab873d035dfa65b25613f5d90d178ae2b9</td>
+  <td><a href="images/heif-to-jpeg/diff.png">images/heif-to-jpeg/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-2">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 2</h3>
+      <p><code>orientation-2</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002388</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.679174</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-2/image-magick-view.png">
+    <img src="images/orientation-2/image-magick-view.png" width="2032" height="1312" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-2/vips-view.png">
+    <img src="images/orientation-2/vips-view.png" width="2032" height="1312" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-2/diff.png">
+    <img src="images/orientation-2/diff.png" width="2032" height="1312" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>142002 B</td>
+  <td class="sha">0e9e4bd0c5f931c41f2c9ef1d2d90ccf2c5c2579e358af5430f10565fa8c78a5</td>
+  <td><a href="images/orientation-2/image-magick.jpg">images/orientation-2/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>238446 B</td>
+  <td class="sha">479fb19dc55b3853334bf0be080190eba81138e41b5ea85f2616402cf9509ae8</td>
+  <td><a href="images/orientation-2/vips.jpg">images/orientation-2/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>2032×1312</td>
+  <td>PNG</td>
+  <td>663700 B</td>
+  <td class="sha">123b560552c2024b47859356a28656d3a4b0eb6e5a27ae77600bbbd01a4ea78a</td>
+  <td><a href="images/orientation-2/diff.png">images/orientation-2/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-3">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 3</h3>
+      <p><code>orientation-3</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002388</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.678820</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-3/image-magick-view.png">
+    <img src="images/orientation-3/image-magick-view.png" width="2032" height="1312" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-3/vips-view.png">
+    <img src="images/orientation-3/vips-view.png" width="2032" height="1312" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-3/diff.png">
+    <img src="images/orientation-3/diff.png" width="2032" height="1312" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>142048 B</td>
+  <td class="sha">3810f6869889626c2e46e1eeb6faabe4d448254e853abe225b44b03ea4c50041</td>
+  <td><a href="images/orientation-3/image-magick.jpg">images/orientation-3/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>238473 B</td>
+  <td class="sha">9e51fd840b58224e9f89a3efeb750ef869eba282092cb8a6eef8e24e4a982931</td>
+  <td><a href="images/orientation-3/vips.jpg">images/orientation-3/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>2032×1312</td>
+  <td>PNG</td>
+  <td>663860 B</td>
+  <td class="sha">40964248b272fd79d7f9943a8b4d54a0f00d6dba0314faf8ca9633b371e3bcb4</td>
+  <td><a href="images/orientation-3/diff.png">images/orientation-3/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-4">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 4</h3>
+      <p><code>orientation-4</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002386</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.680577</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-4/image-magick-view.png">
+    <img src="images/orientation-4/image-magick-view.png" width="2032" height="1312" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-4/vips-view.png">
+    <img src="images/orientation-4/vips-view.png" width="2032" height="1312" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-4/diff.png">
+    <img src="images/orientation-4/diff.png" width="2032" height="1312" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>141953 B</td>
+  <td class="sha">a078a3930064ad2ea04a89c9000e7dcecbac7b7ca21e474f0c6675c7f20bdda6</td>
+  <td><a href="images/orientation-4/image-magick.jpg">images/orientation-4/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>2032×1312</td>
+  <td>jpeg</td>
+  <td>238563 B</td>
+  <td class="sha">7419ff53c0797396dcbef6876277ecb9c1090b278c9cbd20744cc5db3b79804c</td>
+  <td><a href="images/orientation-4/vips.jpg">images/orientation-4/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>2032×1312</td>
+  <td>PNG</td>
+  <td>663232 B</td>
+  <td class="sha">db2e0a30938b96f5ec27831744f8f463b129807062ffeda69ab3e86b09ff8787</td>
+  <td><a href="images/orientation-4/diff.png">images/orientation-4/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-5">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 5</h3>
+      <p><code>orientation-5</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002295</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.717525</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-5/image-magick-view.png">
+    <img src="images/orientation-5/image-magick-view.png" width="1312" height="2032" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-5/vips-view.png">
+    <img src="images/orientation-5/vips-view.png" width="1312" height="2032" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-5/diff.png">
+    <img src="images/orientation-5/diff.png" width="1312" height="2032" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>144664 B</td>
+  <td class="sha">3aa53a3bdb05c114a5f4565116f4c1b74a6fdb63599f7cb7d69b90376d8057d8</td>
+  <td><a href="images/orientation-5/image-magick.jpg">images/orientation-5/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>248464 B</td>
+  <td class="sha">1978943617f44ada520d9f45c6d3e6a2034b24223f1531e277a3d7e2f40b2b03</td>
+  <td><a href="images/orientation-5/vips.jpg">images/orientation-5/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>1312×2032</td>
+  <td>PNG</td>
+  <td>685509 B</td>
+  <td class="sha">1294736e7d74420f1efc7607ce5ae2ba392b99e27acd49362787f6f181577174</td>
+  <td><a href="images/orientation-5/diff.png">images/orientation-5/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-6">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 6</h3>
+      <p><code>orientation-6</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002356</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.719680</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-6/image-magick-view.png">
+    <img src="images/orientation-6/image-magick-view.png" width="1312" height="2032" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-6/vips-view.png">
+    <img src="images/orientation-6/vips-view.png" width="1312" height="2032" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-6/diff.png">
+    <img src="images/orientation-6/diff.png" width="1312" height="2032" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>144385 B</td>
+  <td class="sha">a72f9a5122e799b397d9502f2c73329231fcaed4b1edd8fdd2cebc35f33fcf34</td>
+  <td><a href="images/orientation-6/image-magick.jpg">images/orientation-6/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>248296 B</td>
+  <td class="sha">37479411de3d46cfafaa3edf17800f932ea0b4c27bd8defbfd28cbd2b4ea91ba</td>
+  <td><a href="images/orientation-6/vips.jpg">images/orientation-6/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>1312×2032</td>
+  <td>PNG</td>
+  <td>685573 B</td>
+  <td class="sha">be0ff4f55e56a28c2ebae245cb4c14b484719ed6aedba495d7d6bc3425bbbd95</td>
+  <td><a href="images/orientation-6/diff.png">images/orientation-6/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-7">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 7</h3>
+      <p><code>orientation-7</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002356</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.720667</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-7/image-magick-view.png">
+    <img src="images/orientation-7/image-magick-view.png" width="1312" height="2032" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-7/vips-view.png">
+    <img src="images/orientation-7/vips-view.png" width="1312" height="2032" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-7/diff.png">
+    <img src="images/orientation-7/diff.png" width="1312" height="2032" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>144308 B</td>
+  <td class="sha">12a86d96903e0e5c0e178e1f390ef6e16d68dfca4d1bd77df328a5c49563673c</td>
+  <td><a href="images/orientation-7/image-magick.jpg">images/orientation-7/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>248306 B</td>
+  <td class="sha">1c58bd0d28a47090ddb19216d08150362ba3baba185b3a5b1aed7a2ea2870eae</td>
+  <td><a href="images/orientation-7/vips.jpg">images/orientation-7/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>1312×2032</td>
+  <td>PNG</td>
+  <td>683119 B</td>
+  <td class="sha">51fb9a2a307c99ee2e42a3fee216d2d38f992a1dd80db194938bd49733e4022a</td>
+  <td><a href="images/orientation-7/diff.png">images/orientation-7/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-orientation-8">
+  <header class="visual-case__header">
+    <div>
+      <h3>EXIF orientation 8</h3>
+      <p><code>orientation-8</code> via UploadCreator#create_for</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.002294</strong></span>
+        <span class="metric">Threshold: <strong>0.100000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.716644</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/orientation-8/image-magick-view.png">
+    <img src="images/orientation-8/image-magick-view.png" width="1312" height="2032" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/orientation-8/vips-view.png">
+    <img src="images/orientation-8/vips-view.png" width="1312" height="2032" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/orientation-8/diff.png">
+    <img src="images/orientation-8/diff.png" width="1312" height="2032" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>144719 B</td>
+  <td class="sha">5e87b4aaa6dea7a1672d76a1e839e97c69278b7aa74222d13e32853a67fd0f32</td>
+  <td><a href="images/orientation-8/image-magick.jpg">images/orientation-8/image-magick.jpg</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>1312×2032</td>
+  <td>jpeg</td>
+  <td>248431 B</td>
+  <td class="sha">f50bb96a7ca0930344a2146d438b334b525223ec82f4c9fa563d36a3b1cb79d8</td>
+  <td><a href="images/orientation-8/vips.jpg">images/orientation-8/vips.jpg</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>1312×2032</td>
+  <td>PNG</td>
+  <td>682051 B</td>
+  <td class="sha">8659adee441c7d71a21bb5f6df664cd7d2831181840ef4b0e594fa0e4cab0145</td>
+  <td><a href="images/orientation-8/diff.png">images/orientation-8/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-metadata-preserved">
+  <header class="visual-case__header">
+    <div>
+      <h3>Metadata preserved</h3>
+      <p><code>metadata-preserved</code> via OptimizedImage.resize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.007020</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>2.882083</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/metadata-preserved/image-magick-view.png">
+    <img src="images/metadata-preserved/image-magick-view.png" width="320" height="200" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/metadata-preserved/vips-view.png">
+    <img src="images/metadata-preserved/vips-view.png" width="320" height="200" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/metadata-preserved/diff.png">
+    <img src="images/metadata-preserved/diff.png" width="320" height="200" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>320×200</td>
+  <td>png</td>
+  <td>13289 B</td>
+  <td class="sha">16730cb7e671d38e887dba528138445c88feccf093b2c8f5d6e67fb16efbaabd</td>
+  <td><a href="images/metadata-preserved/image-magick.png">images/metadata-preserved/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>320×200</td>
+  <td>png</td>
+  <td>38300 B</td>
+  <td class="sha">a8e034a25aa06c451e28c25c4e2179eca9b97c5b30ff8c979a64f67673538b16</td>
+  <td><a href="images/metadata-preserved/vips.png">images/metadata-preserved/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>320×200</td>
+  <td>PNG</td>
+  <td>38269 B</td>
+  <td class="sha">8a9926045a591243b3813bd05b4c1d9148debe3d5851bd24bf6c012e40c78f7a</td>
+  <td><a href="images/metadata-preserved/diff.png">images/metadata-preserved/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-metadata-stripped">
+  <header class="visual-case__header">
+    <div>
+      <h3>Metadata stripped</h3>
+      <p><code>metadata-stripped</code> via OptimizedImage.resize</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.007940</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.038587</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/metadata-stripped/image-magick-view.png">
+    <img src="images/metadata-stripped/image-magick-view.png" width="320" height="200" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/metadata-stripped/vips-view.png">
+    <img src="images/metadata-stripped/vips-view.png" width="320" height="200" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/metadata-stripped/diff.png">
+    <img src="images/metadata-stripped/diff.png" width="320" height="200" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>320×200</td>
+  <td>png</td>
+  <td>12310 B</td>
+  <td class="sha">a5fb2add1a3612f6863e3e002b9688a41808d97da6e84805ee4352fc602ab27f</td>
+  <td><a href="images/metadata-stripped/image-magick.png">images/metadata-stripped/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>320×200</td>
+  <td>png</td>
+  <td>12785 B</td>
+  <td class="sha">69b51fd1becbd7a0b9511af4460c26a521ea68128fd5e54a07e02aecd20a33aa</td>
+  <td><a href="images/metadata-stripped/vips.png">images/metadata-stripped/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>320×200</td>
+  <td>PNG</td>
+  <td>33603 B</td>
+  <td class="sha">de6faa5c491eb57e5871406b36d2392c372f18fb56017d642107becc3c334c3a</td>
+  <td><a href="images/metadata-stripped/diff.png">images/metadata-stripped/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+<article class="visual-case" data-filter-result data-passed="true" id="visual-shrink-uploaded-image">
+  <header class="visual-case__header">
+    <div>
+      <h3>Stored original normalization to 10,000 pixels</h3>
+      <p><code>shrink-uploaded-image</code> via ShrinkUploadedImage#perform</p>
+      <div class="metrics">
+        <span class="metric">RGBA error: <strong>0.006476</strong></span>
+        <span class="metric">Threshold: <strong>0.030000</strong></span>
+        <span class="metric">Vips/IM size ratio: <strong>1.082249</strong></span>
+      </div>
+    </div>
+    <span class="status status--pass">Pass</span>
+  </header>
+  <div class="visual-case__body">
+    <div class="images">
+      <figure>
+  <figcaption>ImageMagick</figcaption>
+  <a href="images/shrink-uploaded-image/image-magick-view.png">
+    <img src="images/shrink-uploaded-image/image-magick-view.png" width="124" height="80" alt="ImageMagick output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>Stock libvips</figcaption>
+  <a href="images/shrink-uploaded-image/vips-view.png">
+    <img src="images/shrink-uploaded-image/vips-view.png" width="124" height="80" alt="Stock libvips output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+      <figure>
+  <figcaption>RGBA difference</figcaption>
+  <a href="images/shrink-uploaded-image/diff.png">
+    <img src="images/shrink-uploaded-image/diff.png" width="124" height="80" alt="RGBA difference output for this comparison" loading="lazy">
+  </a>
+</figure>
+
+    </div>
+    <div class="table-wrap asset-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Artifact</th>
+        <th>Dimensions</th>
+        <th>Format</th>
+        <th>File size</th>
+        <th>SHA-256</th>
+        <th>File</th>
+      </tr>
+    </thead>
+    <tbody><tr>
+  <td>ImageMagick</td>
+  <td>124×80</td>
+  <td>png</td>
+  <td>3842 B</td>
+  <td class="sha">c5fd9840f171bc0a10ea682483b1d99cfc86353898a874147a33d10adba79a21</td>
+  <td><a href="images/shrink-uploaded-image/image-magick.png">images/shrink-uploaded-image/image-magick.png</a></td>
+</tr>
+<tr>
+  <td>Stock libvips</td>
+  <td>124×80</td>
+  <td>png</td>
+  <td>4158 B</td>
+  <td class="sha">9b97ff9aa2b1efae86298557aa9bd410f6f90591935c0bb776dd7479753b30c2</td>
+  <td><a href="images/shrink-uploaded-image/vips.png">images/shrink-uploaded-image/vips.png</a></td>
+</tr>
+<tr>
+  <td>RGBA difference</td>
+  <td>124×80</td>
+  <td>PNG</td>
+  <td>7449 B</td>
+  <td class="sha">af4a5b9085c4afbc8cc03cd5a2a7193cfaa107755e6121d9c57db625b4c6918a</td>
+  <td><a href="images/shrink-uploaded-image/diff.png">images/shrink-uploaded-image/diff.png</a></td>
+</tr>
+</tbody>
+  </table>
+</div>
+
+  </div>
+</article>
+</div>
+
+</section>
+
+      <section class="section" id="findings">
+  <h2>Behavioral findings</h2>
+  <p class="section__intro">
+    Animation and frame classification, SVG dimensions, JPEG quality selection, format eligibility,
+    metadata handling, and the deliberate Vips-enabled ICO failure are reported here.
+  </p>
+  <div class="findings"><article class="finding">
+  <p class="finding__group">Expected divergence</p>
+  <div class="finding__header">
+    <h3>Metadata preservation improves with stock libvips</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Behavior</dt><dd><dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>false</dd><dt>Xmp-data</dt><dd>false</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>false</dd></dl></dd><dt>Vips</dt><dd><dl class="key-values"><dt>Exif-data</dt><dd>true</dd><dt>Xmp-data</dt><dd>true</dd><dt>Iptc-data</dt><dd>false</dd><dt>Icc-profile-data</dt><dd>true</dd></dl></dd></dl></dd><dt>Encoded Size Ratio</dt><dd>2.882082925728046</dd><dt>Explanation</dt><dd>The stock-libvips path disables pngquant when metadata must be preserved; the legacy ImageMagick path does not.</dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">Animation</p>
+  <div class="finding__header">
+    <h3>Animation and frame classification</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Animated.gif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>20</dd></dl></dd></dl></dd><dt>Animated.webp</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Animated.avif</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>true</dd><dt>Frames</dt><dd>67</dd></dl></dd></dl></dd><dt>Static.png</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Animated</dt><dd>false</dd><dt>Frames</dt><dd>1</dd></dl></dd></dl></dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">SVG</p>
+  <div class="finding__header">
+    <h3>SVG dimensions and optimized byte-copy</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Tiny.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>115</li><li>86</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Massive.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>11520</li><li>11615</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>495</li><li>500</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd><dt>Zero Sized.svg</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Thumbnail Dimensions</dt><dd><ul class="value-list"><li>120</li><li>90</li></ul></dd><dt>Optimized Byte Copy</dt><dd>true</dd></dl></dd></dl></dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">Expected divergence</p>
+  <div class="finding__header">
+    <h3>Source-quality estimation avoids a needless Q50 to Q70 re-encode</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Behavior</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd>70</dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd><span class="empty">Not recorded</span></dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd></dl></dd><dt>Explanation</dt><dd>The immutable source is Vips-encoded. ImageMagick percent-Q reports it as unavailable while jhead estimates Q50; Q90 and malformed inputs retain the intended target-70 behavior.</dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">JPEG quality</p>
+  <div class="finding__header">
+    <h3>JPEG quality selection</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Imagemagick</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd>70</dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd><dt>Stock Libvips</dt><dd><dl class="key-values"><dt>Quality 50 Target 70</dt><dd><span class="empty">Not recorded</span></dd><dt>Quality 90 Target 70</dt><dd>70</dd><dt>Malformed Target 70</dt><dd>70</dd></dl></dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">Formats</p>
+  <div class="finding__header">
+    <h3>Format eligibility</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Upload Allowlist</dt><dd><dl class="key-values"><dt>Jpg</dt><dd>true</dd><dt>Jpeg</dt><dd>true</dd><dt>Png</dt><dd>true</dd><dt>Gif</dt><dd>true</dd><dt>Svg</dt><dd>true</dd><dt>Ico</dt><dd>true</dd><dt>Webp</dt><dd>true</dd><dt>Avif</dt><dd>true</dd><dt>Heic</dt><dd>true</dd><dt>Heif</dt><dd>true</dd><dt>Jxl</dt><dd>true</dd><dt>Tiff</dt><dd>false</dd><dt>Bmp</dt><dd>false</dd></dl></dd><dt>Optimized Decoder Allowlist</dt><dd>\A(jpe?g|png|ico|gif|webp|avif|svg)\z</dd><dt>Jxl Returns No Optimized Image</dt><dd><dl class="key-values"><dt>Imagemagick</dt><dd>true</dd><dt>Stock Libvips</dt><dd>true</dd></dl></dd><dt>Tiff And Bmp Outside Upload Allowlist</dt><dd>true</dd></dl>
+</article>
+<article class="finding">
+  <p class="finding__group">Documented exception</p>
+  <div class="finding__header">
+    <h3>ICO enabled-path failure</h3>
+    <span class="status status--pass">Pass</span>
+  </div>
+  <dl class="key-values"><dt>Image Magick</dt><dd><dl class="key-values"><dt>Persisted</dt><dd>true</dd><dt>Extension</dt><dd>png</dd><dt>Format</dt><dd>png</dd></dl></dd><dt>Vips Error</dt><dd>Discourse::Utils::CommandError</dd></dl>
+</article>
+</div>
+</section>
+
+      <section class="section" id="notes">
+  <h2>Notes</h2>
+  <ul class="notes"><li>This is end-to-end production-entrypoint parity, not a raw-library microbenchmark.</li><li>No VIPS_CONCURRENCY, MAGICK_THREAD_LIMIT, or processor-specific concurrency override was set.</li><li>Uploaded-avatar thumbnail rows are not LetterAvatar generation; LetterAvatar is unconditional stock libvips at this commit.</li><li>With metadata preservation enabled, the stock-libvips path deliberately disables pngquant while ImageMagick does not; encoded-size differences include that production behavior.</li><li>All transformations use fresh Upload, UploadCreator, and tempfile instances per processor arm.</li><li>PNG32 report views, RGBA MAE, and difference images are generated after domain processing with the same ImageMagick decoder for both outputs.</li><li>JPEG quality values reported by identify and jhead are estimates used by production selection logic.</li><li>The enabled stock-libvips ICO failure is a deliberate documented exception and has no ImageMagick fallback.</li></ul>
+</section>
+
+    </main>
+    <script>
+      (() => {
+        document.querySelectorAll("[data-filter]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const container = button.closest("[data-filter-container]");
+            const filter = button.dataset.filter;
+            container.querySelectorAll("[data-filter]").forEach((candidate) => {
+              candidate.setAttribute("aria-pressed", String(candidate === button));
+            });
+            container.querySelectorAll("[data-filter-result]").forEach((result) => {
+              result.hidden = filter === "failed" && result.dataset.passed === "true";
+            });
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
