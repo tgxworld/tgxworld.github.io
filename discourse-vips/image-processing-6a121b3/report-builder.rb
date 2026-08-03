@@ -1,7 +1,4 @@
-require "cgi"
-require "digest"
 require "json"
-require "pathname"
 
 class ImageProcessingReport
   def initialize(manifest_path:)
@@ -11,6 +8,8 @@ class ImageProcessingReport
   end
 
   def write
+    raise "The report has no image comparisons." if visual_cases.empty?
+
     File.write(File.join(@report_directory, "index.html"), html)
   end
 
@@ -23,221 +22,546 @@ class ImageProcessingReport
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>#{h(title)}</title>
+          <meta name="description" content="Compare ImageMagick and stock libvips output one change at a time.">
+          <title>ImageMagick and stock libvips comparison</title>
           <style>
             :root {
               color-scheme: light;
-              --background: #f5f7fb;
+              --background: #f3f5f8;
               --surface: #ffffff;
-              --surface-muted: #eef2f7;
-              --border: #d8dee9;
+              --surface-muted: #f7f8fa;
+              --border: #d9dee7;
               --text: #172033;
-              --muted: #5c667a;
+              --muted: #5f6878;
+              --accent: #3157d5;
+              --accent-dark: #2445b0;
               --pass: #087443;
               --pass-soft: #e7f7ef;
               --fail: #b42318;
               --fail-soft: #fff0ee;
-              --accent: #3157d5;
-              --code: #222a3a;
+              --shadow: 0 18px 45px rgb(23 32 51 / 9%);
             }
+
             * { box-sizing: border-box; }
-            html { scroll-behavior: smooth; }
+
             body {
               background: var(--background);
               color: var(--text);
-              font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
               margin: 0;
             }
-            a { color: var(--accent); }
-            a:focus-visible, button:focus-visible { outline: 3px solid #8aa2ff; outline-offset: 2px; }
-            main { margin: 0 auto; max-width: 1540px; padding: 32px 24px 64px; }
-            h1, h2, h3, h4 { line-height: 1.2; }
-            h1 { font-size: clamp(2rem, 5vw, 3.75rem); letter-spacing: -0.04em; margin: 0 0 12px; max-width: 1100px; }
-            h2 { font-size: 1.65rem; letter-spacing: -0.02em; margin: 0 0 16px; }
-            h3 { font-size: 1.15rem; margin: 0; }
-            p { margin: 0 0 12px; }
-            code, pre {
-              background: var(--code);
-              border-radius: 5px;
-              color: #f5f7fa;
-              font: 0.86rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
-              overflow-wrap: anywhere;
+
+            button, select { font: inherit; }
+
+            button:focus-visible,
+            select:focus-visible,
+            summary:focus-visible,
+            a:focus-visible {
+              outline: 3px solid #9aaff8;
+              outline-offset: 3px;
             }
-            code { padding: 2px 5px; }
-            pre { margin: 8px 0 0; overflow-x: auto; padding: 12px; white-space: pre-wrap; }
-            .hero {
-              background: linear-gradient(135deg, #172033, #293958);
-              border-radius: 18px;
-              color: white;
-              margin-bottom: 24px;
-              overflow: hidden;
-              padding: clamp(24px, 5vw, 52px);
+
+            main {
+              margin: 0 auto;
+              max-width: 1240px;
+              padding: 32px 20px 56px;
             }
-            .hero__meta { color: #cdd6e8; margin-bottom: 20px; }
-            .hero__summary { color: #e5eaf4; font-size: 1.05rem; max-width: 980px; }
-            .status {
-              align-items: center;
-              border: 1px solid;
-              border-radius: 999px;
-              display: inline-flex;
+
+            .page-header {
+              align-items: end;
+              display: flex;
+              gap: 24px;
+              justify-content: space-between;
+              margin-bottom: 22px;
+            }
+
+            .eyebrow {
+              color: var(--accent-dark);
               font-size: 0.78rem;
-              font-weight: 750;
-              gap: 7px;
-              letter-spacing: 0.08em;
-              padding: 6px 11px;
+              font-weight: 800;
+              letter-spacing: 0.09em;
+              margin: 0 0 8px;
               text-transform: uppercase;
             }
-            .status--pass { background: var(--pass-soft); border-color: #8ed6b5; color: var(--pass); }
-            .status--fail { background: var(--fail-soft); border-color: #f2a49b; color: var(--fail); }
-            .status--unknown { background: var(--surface-muted); border-color: var(--border); color: var(--muted); }
-            .hero .status { margin-bottom: 18px; }
-            .downloads { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-            .downloads a {
-              background: white;
-              border-radius: 8px;
-              color: #172033;
-              font-weight: 700;
-              padding: 9px 13px;
-              text-decoration: none;
+
+            h1 {
+              font-size: clamp(1.8rem, 4vw, 3rem);
+              letter-spacing: -0.035em;
+              line-height: 1.08;
+              margin: 0 0 10px;
             }
-            .downloads a:hover { text-decoration: underline; }
-            .section {
+
+            .intro {
+              color: var(--muted);
+              margin: 0;
+              max-width: 700px;
+            }
+
+            .overall-status {
+              background: var(--pass-soft);
+              border: 1px solid #8ed6b5;
+              border-radius: 999px;
+              color: var(--pass);
+              flex: 0 0 auto;
+              font-size: 0.9rem;
+              font-weight: 750;
+              padding: 8px 13px;
+            }
+
+            .viewer {
               background: var(--surface);
               border: 1px solid var(--border);
-              border-radius: 14px;
-              margin-top: 20px;
-              padding: clamp(18px, 3vw, 30px);
-            }
-            .section__intro { color: var(--muted); max-width: 980px; }
-            .overview-grid {
-              display: grid;
-              gap: 16px;
-              grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-            }
-            .data-card {
-              background: var(--surface-muted);
-              border-radius: 10px;
-              min-width: 0;
-              padding: 18px;
-            }
-            .data-card h3 { margin-bottom: 12px; }
-            .key-values { display: grid; gap: 8px 14px; grid-template-columns: minmax(130px, max-content) minmax(0, 1fr); margin: 0; }
-            .key-values dt { color: var(--muted); font-weight: 650; }
-            .key-values dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-            .key-values .key-values { grid-column: 1 / -1; margin: 6px 0 6px 14px; }
-            .value-list { margin: 4px 0 0; padding-left: 20px; }
-            .table-wrap { overflow-x: auto; }
-            table { border-collapse: collapse; min-width: 800px; width: 100%; }
-            th, td { border-bottom: 1px solid var(--border); padding: 10px 12px; text-align: left; vertical-align: top; }
-            th { background: var(--surface-muted); color: #3f4a5e; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; }
-            tbody tr:last-child td { border-bottom: 0; }
-            td code { display: inline-block; max-width: 560px; }
-            .result-cell { white-space: nowrap; }
-            .visual-list { display: grid; gap: 20px; }
-            .visual-case {
-              border: 1px solid var(--border);
-              border-radius: 12px;
+              border-radius: 18px;
+              box-shadow: var(--shadow);
               overflow: hidden;
             }
-            .visual-case--fail { border-color: #ee9a91; }
-            .visual-case__header {
-              align-items: flex-start;
-              background: var(--surface-muted);
+
+            .viewer__top {
+              border-bottom: 1px solid var(--border);
+              padding: 22px 24px 20px;
+            }
+
+            .step-row {
+              align-items: center;
               display: flex;
-              flex-wrap: wrap;
-              gap: 12px;
+              gap: 16px;
               justify-content: space-between;
-              padding: 16px 18px;
+              margin-bottom: 14px;
             }
-            .visual-case__header p { color: var(--muted); margin: 5px 0 0; }
-            .metrics {
+
+            .step-label {
+              color: var(--muted);
+              font-size: 0.9rem;
+              font-weight: 700;
+              margin: 0;
+            }
+
+            .jump-label {
+              align-items: center;
+              color: var(--muted);
               display: flex;
-              flex-wrap: wrap;
+              font-size: 0.85rem;
               gap: 8px;
-              margin-top: 12px;
             }
-            .metric {
+
+            select {
               background: white;
               border: 1px solid var(--border);
-              border-radius: 7px;
-              padding: 6px 9px;
+              border-radius: 8px;
+              color: var(--text);
+              max-width: min(420px, 55vw);
+              padding: 7px 32px 7px 10px;
             }
-            .visual-case__body { padding: 18px; }
-            .images {
-              align-items: start;
-              display: grid;
-              gap: 18px;
-              grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
-            }
-            figure { margin: 0; min-width: 0; overflow: auto; }
-            figcaption { font-weight: 750; margin-bottom: 8px; }
-            figure img {
-              background: repeating-conic-gradient(#e8ebf0 0 25%, white 0 50%) 0 / 20px 20px;
-              border: 1px solid var(--border);
+
+            progress {
+              accent-color: var(--accent);
               display: block;
+              height: 7px;
+              width: 100%;
+            }
+
+            .title-row {
+              align-items: start;
+              display: flex;
+              gap: 16px;
+              justify-content: space-between;
+              margin-top: 20px;
+            }
+
+            h2 {
+              font-size: clamp(1.35rem, 3vw, 2rem);
+              letter-spacing: -0.025em;
+              line-height: 1.2;
+              margin: 0;
+            }
+
+            .result-badge {
+              border: 1px solid;
+              border-radius: 999px;
+              flex: 0 0 auto;
+              font-size: 0.8rem;
+              font-weight: 800;
+              letter-spacing: 0.06em;
+              padding: 6px 10px;
+              text-transform: uppercase;
+            }
+
+            .result-badge--pass {
+              background: var(--pass-soft);
+              border-color: #8ed6b5;
+              color: var(--pass);
+            }
+
+            .result-badge--fail {
+              background: var(--fail-soft);
+              border-color: #f2a49b;
+              color: var(--fail);
+            }
+
+            .viewer__body { padding: 24px; }
+
+            .images {
+              align-items: stretch;
+              display: grid;
+              gap: 16px;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            figure {
+              background: var(--surface-muted);
+              border: 1px solid var(--border);
+              border-radius: 12px;
+              margin: 0;
+              min-width: 0;
+              overflow: hidden;
+            }
+
+            figcaption {
+              border-bottom: 1px solid var(--border);
+              font-weight: 750;
+              padding: 11px 13px;
+            }
+
+            .image-frame {
+              align-items: center;
+              background: repeating-conic-gradient(#e7eaf0 0 25%, white 0 50%) 0 / 18px 18px;
+              display: flex;
+              justify-content: center;
+              min-height: 240px;
+              overflow: auto;
+              padding: 16px;
+            }
+
+            .image-frame img {
+              display: block;
+              flex: 0 0 auto;
               height: auto;
               max-width: 100%;
               object-fit: contain;
               width: auto;
             }
-            .asset-table { margin-top: 18px; }
-            .asset-table table { font-size: 0.85rem; min-width: 900px; }
-            .sha { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
-            .findings { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
-            .finding {
-              border: 1px solid var(--border);
-              border-radius: 10px;
-              min-width: 0;
+
+            .image-note {
+              color: var(--muted);
+              font-size: 0.78rem;
+              margin: 8px 0 0;
+              text-align: center;
+            }
+
+            .result-summary {
+              background: #f1f5ff;
+              border: 1px solid #cdd8f9;
+              border-radius: 12px;
+              display: grid;
+              gap: 8px;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              margin-top: 20px;
               padding: 16px;
             }
-            .finding__header { align-items: center; display: flex; gap: 10px; justify-content: space-between; margin-bottom: 10px; }
-            .finding__group { color: var(--muted); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 4px; text-transform: uppercase; }
-            .notes { margin-bottom: 0; }
-            .empty { color: var(--muted); font-style: italic; }
-            .filters { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 16px; }
-            button {
+
+            .result-summary p { margin: 0; }
+
+            .result-summary strong {
+              display: block;
+              font-size: 0.78rem;
+              letter-spacing: 0.05em;
+              margin-bottom: 3px;
+              text-transform: uppercase;
+            }
+
+            details {
+              border-top: 1px solid var(--border);
+              margin-top: 22px;
+              padding-top: 18px;
+            }
+
+            summary {
+              color: var(--accent-dark);
+              cursor: pointer;
+              font-weight: 750;
+            }
+
+            .details-grid {
+              display: grid;
+              gap: 10px 18px;
+              grid-template-columns: max-content minmax(0, 1fr);
+              margin: 16px 0 0;
+            }
+
+            .details-grid dt { color: var(--muted); }
+            .details-grid dd { margin: 0; overflow-wrap: anywhere; }
+            .details-grid a { color: var(--accent-dark); }
+
+            .viewer__controls {
+              align-items: center;
+              background: var(--surface-muted);
+              border-top: 1px solid var(--border);
+              display: flex;
+              gap: 16px;
+              justify-content: space-between;
+              padding: 16px 24px;
+            }
+
+            .nav-button {
               background: white;
-              border: 1px solid var(--border);
-              border-radius: 7px;
+              border: 1px solid #b7c2d4;
+              border-radius: 9px;
               color: var(--text);
               cursor: pointer;
-              font: inherit;
-              font-weight: 650;
-              padding: 7px 10px;
+              font-weight: 750;
+              min-width: 128px;
+              padding: 10px 14px;
             }
-            button[aria-pressed="true"] { background: #dfe7ff; border-color: #9cb0ef; }
-            [hidden] { display: none !important; }
-            @media (max-width: 640px) {
-              main { padding: 14px 10px 40px; }
-              .hero, .section { border-radius: 10px; }
-              .key-values { grid-template-columns: 1fr; }
-              .key-values dd { margin-bottom: 5px; }
+
+            .nav-button--next {
+              background: var(--accent);
+              border-color: var(--accent);
+              color: white;
+            }
+
+            .nav-button:disabled {
+              cursor: not-allowed;
+              opacity: 0.42;
+            }
+
+            .keyboard-note {
+              color: var(--muted);
+              font-size: 0.82rem;
+              margin: 0;
+              text-align: center;
+            }
+
+            .evidence-link {
+              color: var(--muted);
+              font-size: 0.85rem;
+              margin: 18px 0 0;
+              text-align: center;
+            }
+
+            .evidence-link a { color: var(--accent-dark); }
+
+            .sr-only {
+              height: 1px;
+              margin: -1px;
+              overflow: hidden;
+              padding: 0;
+              position: absolute;
+              width: 1px;
+              clip: rect(0, 0, 0, 0);
+              white-space: nowrap;
+            }
+
+            @media (max-width: 840px) {
+              .images { grid-template-columns: 1fr; }
+              .image-frame { min-height: 180px; }
+              .result-summary { grid-template-columns: 1fr; }
+            }
+
+            @media (max-width: 620px) {
+              main { padding: 18px 10px 36px; }
+              .page-header { align-items: start; flex-direction: column; gap: 14px; }
+              .viewer { border-radius: 12px; }
+              .viewer__top, .viewer__body { padding: 18px 14px; }
+              .step-row { align-items: stretch; flex-direction: column; gap: 10px; }
+              .jump-label { align-items: stretch; flex-direction: column; }
+              select { max-width: none; width: 100%; }
+              .title-row { align-items: start; flex-direction: column; }
+              .viewer__controls { padding: 14px; }
+              .keyboard-note { display: none; }
+              .nav-button { min-width: 0; }
+              .details-grid { grid-template-columns: 1fr; }
+              .details-grid dd { margin-bottom: 6px; }
             }
           </style>
         </head>
         <body>
           <main>
-            #{hero_html}
-            #{methodology_html}
-            #{contracts_html}
-            #{visual_cases_html}
-            #{findings_html}
-            #{notes_html}
+            <header class="page-header">
+              <div>
+                <p class="eyebrow">Image processor change</p>
+                <h1>ImageMagick and stock libvips</h1>
+                <p class="intro">Review one output change at a time. The images stay at native size.</p>
+              </div>
+              <div class="overall-status" id="overall-status"></div>
+            </header>
+
+            <section class="viewer" aria-labelledby="case-title">
+              <div class="viewer__top">
+                <div class="step-row">
+                  <p class="step-label" id="step-label"></p>
+                  <label class="jump-label">
+                    Jump to a change
+                    <select id="case-select"></select>
+                  </label>
+                </div>
+                <progress id="progress" max="1" value="0"></progress>
+                <div class="title-row">
+                  <h2 id="case-title"></h2>
+                  <span class="result-badge" id="result-badge"></span>
+                </div>
+              </div>
+
+              <div class="viewer__body">
+                <div class="images">
+                  <figure>
+                    <figcaption>Before: ImageMagick</figcaption>
+                    <a class="image-frame" id="before-link">
+                      <img id="before-image" alt="">
+                    </a>
+                  </figure>
+                  <figure>
+                    <figcaption>After: stock libvips</figcaption>
+                    <a class="image-frame" id="after-link">
+                      <img id="after-image" alt="">
+                    </a>
+                  </figure>
+                  <figure>
+                    <figcaption>Pixel difference</figcaption>
+                    <a class="image-frame" id="diff-link">
+                      <img id="diff-image" alt="">
+                    </a>
+                  </figure>
+                </div>
+                <p class="image-note">Small images remain small. Select an image to open its source file.</p>
+
+                <div class="result-summary" aria-label="Comparison result">
+                  <p><strong>Dimensions</strong><span id="dimensions-result"></span></p>
+                  <p><strong>Pixel difference</strong><span id="pixel-result"></span></p>
+                  <p><strong>File size</strong><span id="size-result"></span></p>
+                </div>
+
+                <details>
+                  <summary>Show technical details for this change</summary>
+                  <dl class="details-grid">
+                    <dt>Discourse entry point</dt><dd><code id="entrypoint"></code></dd>
+                    <dt>Comparison ID</dt><dd><code id="case-id"></code></dd>
+                    <dt>Allowed pixel difference</dt><dd id="threshold"></dd>
+                    <dt>ImageMagick file</dt><dd id="before-file"></dd>
+                    <dt>Stock libvips file</dt><dd id="after-file"></dd>
+                    <dt>Difference file</dt><dd id="diff-file"></dd>
+                  </dl>
+                </details>
+              </div>
+
+              <footer class="viewer__controls">
+                <button class="nav-button" id="previous" type="button">Previous change</button>
+                <p class="keyboard-note">Use the left and right arrow keys to move.</p>
+                <button class="nav-button nav-button--next" id="next" type="button">Next change</button>
+              </footer>
+            </section>
+
+            <p class="evidence-link">Need the full test data? <a href="manifest.json">Open the evidence manifest</a>.</p>
+            <p class="sr-only" id="change-announcement" aria-live="polite"></p>
           </main>
+
+          <script id="report-data" type="application/json">#{report_json}</script>
           <script>
             (() => {
-              document.querySelectorAll("[data-filter]").forEach((button) => {
-                button.addEventListener("click", () => {
-                  const container = button.closest("[data-filter-container]");
-                  const filter = button.dataset.filter;
-                  container.querySelectorAll("[data-filter]").forEach((candidate) => {
-                    candidate.setAttribute("aria-pressed", String(candidate === button));
-                  });
-                  container.querySelectorAll("[data-filter-result]").forEach((result) => {
-                    result.hidden = filter === "failed" && result.dataset.passed === "true";
-                  });
-                });
+              const report = JSON.parse(document.getElementById("report-data").textContent);
+              const cases = report.visualCases;
+              const select = document.getElementById("case-select");
+              let currentIndex = Math.max(0, cases.findIndex((item) => `#${item.id}` === window.location.hash));
+
+              const formatBytes = (bytes) => `${new Intl.NumberFormat("en-US").format(bytes)} B`;
+              const formatPercent = (value, digits = 2) => `${value.toFixed(digits)}%`;
+              const dimensions = (asset) => asset.dimensions.join("×");
+
+              const setImage = (name, asset, source, label) => {
+                const image = document.getElementById(`${name}-image`);
+                const link = document.getElementById(`${name}-link`);
+                image.src = source;
+                image.alt = `${label} for ${cases[currentIndex].label}`;
+                image.width = asset.dimensions[0];
+                image.height = asset.dimensions[1];
+                link.href = source;
+              };
+
+              const fileLink = (path, bytes) => {
+                const link = document.createElement("a");
+                link.href = path;
+                link.textContent = `${path} (${formatBytes(bytes)})`;
+                return link;
+              };
+
+              const replaceWithLink = (id, path, bytes) => {
+                const container = document.getElementById(id);
+                container.replaceChildren(fileLink(path, bytes));
+              };
+
+              const render = () => {
+                const item = cases[currentIndex];
+                const pixelPercent = item.normalizedMeanRgbaError * 100;
+                const sizeChange = (item.sizeRatio - 1) * 100;
+                const sameDimensions = dimensions(item.before) === dimensions(item.after);
+
+                document.getElementById("step-label").textContent = `Change ${currentIndex + 1} of ${cases.length}`;
+                document.getElementById("progress").max = cases.length;
+                document.getElementById("progress").value = currentIndex + 1;
+                document.getElementById("case-title").textContent = item.label;
+                document.getElementById("case-id").textContent = item.id;
+                document.getElementById("entrypoint").textContent = item.entrypoint;
+                document.getElementById("threshold").textContent = formatPercent(item.threshold * 100);
+                document.getElementById("dimensions-result").textContent = sameDimensions
+                  ? `Both outputs are ${dimensions(item.before)}.`
+                  : `ImageMagick is ${dimensions(item.before)}. Stock libvips is ${dimensions(item.after)}.`;
+                document.getElementById("pixel-result").textContent = pixelPercent === 0
+                  ? "The decoded pixels match exactly."
+                  : `The average channel difference is ${formatPercent(pixelPercent, 3)}.`;
+                document.getElementById("size-result").textContent = Math.abs(sizeChange) < 0.5
+                  ? "The file sizes are almost equal."
+                  : `The stock libvips file is ${formatPercent(Math.abs(sizeChange), 1)} ${sizeChange < 0 ? "smaller" : "larger"}.`;
+
+                const badge = document.getElementById("result-badge");
+                badge.textContent = item.passed ? "Pass" : "Fail";
+                badge.className = `result-badge result-badge--${item.passed ? "pass" : "fail"}`;
+
+                setImage("before", item.before, item.before.viewPath, "ImageMagick output");
+                setImage("after", item.after, item.after.viewPath, "Stock libvips output");
+                setImage("diff", item.before, item.diffPath, "Pixel difference");
+                replaceWithLink("before-file", item.before.path, item.before.bytes);
+                replaceWithLink("after-file", item.after.path, item.after.bytes);
+                replaceWithLink("diff-file", item.diffPath, item.diffBytes);
+
+                document.getElementById("previous").disabled = currentIndex === 0;
+                document.getElementById("next").disabled = currentIndex === cases.length - 1;
+                select.value = String(currentIndex);
+                window.history.replaceState(null, "", `#${item.id}`);
+                document.getElementById("change-announcement").textContent = `Change ${currentIndex + 1}: ${item.label}`;
+              };
+
+              cases.forEach((item, index) => {
+                const option = document.createElement("option");
+                option.value = String(index);
+                option.textContent = `${index + 1}. ${item.label}`;
+                select.append(option);
               });
+
+              document.getElementById("overall-status").textContent = `${report.passedCount} of ${report.totalCount} comparisons pass`;
+              document.getElementById("previous").addEventListener("click", () => {
+                currentIndex = Math.max(0, currentIndex - 1);
+                render();
+              });
+              document.getElementById("next").addEventListener("click", () => {
+                currentIndex = Math.min(cases.length - 1, currentIndex + 1);
+                render();
+              });
+              select.addEventListener("change", () => {
+                currentIndex = Number(select.value);
+                render();
+              });
+              window.addEventListener("keydown", (event) => {
+                if (event.target.matches("select, button, summary, a")) return;
+                if (event.key === "ArrowLeft" && currentIndex > 0) {
+                  currentIndex -= 1;
+                  render();
+                }
+                if (event.key === "ArrowRight" && currentIndex < cases.length - 1) {
+                  currentIndex += 1;
+                  render();
+                }
+              });
+
+              render();
             })();
           </script>
         </body>
@@ -245,407 +569,48 @@ class ImageProcessingReport
     HTML
   end
 
-  def title
-    @manifest["title"].to_s.empty? ? "Discourse image-processing parity evidence" : @manifest["title"]
-  end
+  def report_json
+    data = {
+      totalCount: visual_cases.length,
+      passedCount: visual_cases.count { |item| item["passed"] },
+      visualCases:
+        visual_cases.map do |item|
+          before = asset_data(item.fetch("before"))
+          after = asset_data(item.fetch("after"))
+          diff_path = item.fetch("diff_path")
+          {
+            id: item.fetch("id"),
+            label: item.fetch("label"),
+            entrypoint: item.fetch("entrypoint"),
+            threshold: item.fetch("threshold"),
+            normalizedMeanRgbaError: item.fetch("normalized_mean_rgba_error"),
+            sizeRatio: item.fetch("size_ratio"),
+            passed: item.fetch("passed"),
+            before:,
+            after:,
+            diffPath: diff_path,
+            diffBytes: File.size(File.join(@report_directory, diff_path))
+          }
+        end
+    }
 
-  def overall_pass
-    return @manifest["overall_pass"] unless @manifest["overall_pass"].nil?
-
-    results = contracts.map { |contract| contract["passed"] }.compact
-    results += visual_cases.map { |visual_case| visual_case["passed"] }.compact
-    results += findings.map { |finding| finding["passed"] }.compact
-    results.empty? ? nil : results.all?
-  end
-
-  def hero_html
-    generated_at = @manifest["generated_at"]
-    summary = @manifest["summary"]
-    meta = generated_at.to_s.empty? ? "" : "<p class=\"hero__meta\">Generated #{h(generated_at)}</p>"
-    summary_html = summary.to_s.empty? ? "" : "<p class=\"hero__summary\">#{h(summary)}</p>"
-    <<~HTML
-      <header class="hero">
-        #{status_badge(overall_pass)}
-        <h1>#{h(title)}</h1>
-        #{meta}
-        #{summary_html}
-        <nav class="downloads" aria-label="Evidence downloads">
-          <a href="manifest.json" download>Download manifest.json</a>
-          <a href="artifacts.sha256" download>Download artifacts.sha256</a>
-        </nav>
-      </header>
-    HTML
-  end
-
-  def methodology_html
-    cards = [
-      ["Provenance and commands", @manifest["provenance"]],
-      ["Fixed settings", @manifest["settings"]],
-      ["Acceptance thresholds", @manifest["thresholds"]],
-    ]
-    populated_cards =
-      cards.filter_map do |heading, value|
-        next if blank_value?(value)
-
-        <<~HTML
-          <article class="data-card">
-            <h3>#{h(heading)}</h3>
-            #{render_value(value)}
-          </article>
-        HTML
-      end
-    methodology = @manifest["methodology"]
-    methodology_copy =
-      if blank_value?(methodology)
-        "Both processors were exercised through the same Discourse Rails/domain entrypoints. Every visual contract compares equal-sized decoded RGBA outputs and records exact artifact metadata."
-      else
-        methodology
-      end
-    <<~HTML
-      <section class="section" id="methodology">
-        <h2>Methodology and provenance</h2>
-        <p class="section__intro">#{h(methodology_copy)}</p>
-        <div class="overview-grid">
-          #{populated_cards.join}
-        </div>
-      </section>
-    HTML
-  end
-
-  def contracts
-    Array(@manifest["contracts"])
-  end
-
-  def contracts_html
-    rows =
-      contracts.map do |contract|
-        <<~HTML
-          <tr data-filter-result data-passed="#{contract["passed"] == true}">
-            <td>#{h(contract["group"])}</td>
-            <td><code>#{h(contract["id"])}</code></td>
-            <td>#{h(contract["description"])}</td>
-            <td>#{render_compact_value(contract["expected"])}</td>
-            <td>#{render_compact_value(contract["actual"])}</td>
-            <td class="result-cell">#{status_badge(contract["passed"])}</td>
-          </tr>
-        HTML
-      end.join
-    body = rows.empty? ? "<p class=\"empty\">No textual contracts were recorded.</p>" : <<~HTML
-      <div class="filters">
-        <button type="button" data-filter="all" aria-pressed="true">All contracts</button>
-        <button type="button" data-filter="failed" aria-pressed="false">Failures only</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Group</th>
-              <th>ID</th>
-              <th>Contract</th>
-              <th>Expected</th>
-              <th>Actual</th>
-              <th>Result</th>
-            </tr>
-          </thead>
-          <tbody>#{rows}</tbody>
-        </table>
-      </div>
-    HTML
-    <<~HTML
-      <section class="section" id="contracts" data-filter-container>
-        <h2>Textual pass/fail contracts</h2>
-        <p class="section__intro">The expected and observed behavior is retained verbatim from the evidence manifest.</p>
-        #{body}
-      </section>
-    HTML
+    JSON.generate(data).gsub("<", "\\u003c")
   end
 
   def visual_cases
     Array(@manifest["visual_cases"])
   end
 
-  def visual_cases_html
-    cards = visual_cases.map { |visual_case| visual_case_html(visual_case) }.join
-    body = cards.empty? ? "<p class=\"empty\">No visual comparisons were recorded.</p>" : <<~HTML
-      <div class="filters">
-        <button type="button" data-filter="all" aria-pressed="true">All visual cases</button>
-        <button type="button" data-filter="failed" aria-pressed="false">Failures only</button>
-      </div>
-      <div class="visual-list">#{cards}</div>
-    HTML
-    <<~HTML
-      <section class="section" id="visual-cases" data-filter-container>
-        <h2>Native-size visual comparisons</h2>
-        <p class="section__intro">
-          Images are shown at intrinsic size and are never magnified. They may shrink to fit a narrow viewport.
-          The diff is generated from the decoded RGBA pixels used by the numerical comparison.
-        </p>
-        #{body}
-      </section>
-    HTML
-  end
-
-  def visual_case_html(visual_case)
-    before = visual_case["before"] || {}
-    after = visual_case["after"] || {}
-    diff = {
-      "processor" => "RGBA difference",
-      "path" => visual_case["diff_path"],
-      "view_path" => visual_case["diff_path"],
-      "dimensions" => before["dimensions"] || after["dimensions"],
-      "format" => "PNG",
-      "bytes" => file_bytes(visual_case["diff_path"]),
-      "sha256" => visual_case["diff_sha256"] || file_sha256(visual_case["diff_path"]),
+  def asset_data(asset)
+    {
+      path: asset.fetch("path"),
+      viewPath: asset.fetch("view_path", asset.fetch("path")),
+      dimensions: asset.fetch("dimensions"),
+      bytes: asset.fetch("bytes")
     }
-    passed = visual_case["passed"]
-    css_class = passed == false ? " visual-case--fail" : ""
-    <<~HTML
-      <article class="visual-case#{css_class}" data-filter-result data-passed="#{passed == true}" id="visual-#{anchor(visual_case["id"])}">
-        <header class="visual-case__header">
-          <div>
-            <h3>#{h(visual_case["label"] || visual_case["id"])}</h3>
-            <p><code>#{h(visual_case["id"])}</code> via #{h(visual_case["entrypoint"])}</p>
-            <div class="metrics">
-              <span class="metric">RGBA error: <strong>#{number(visual_case["normalized_mean_rgba_error"])}</strong></span>
-              <span class="metric">Threshold: <strong>#{number(visual_case["threshold"])}</strong></span>
-              <span class="metric">Vips/IM size ratio: <strong>#{number(visual_case["size_ratio"])}</strong></span>
-            </div>
-          </div>
-          #{status_badge(passed)}
-        </header>
-        <div class="visual-case__body">
-          <div class="images">
-            #{figure_html(asset: before, fallback_label: "ImageMagick")}
-            #{figure_html(asset: after, fallback_label: "Vips")}
-            #{figure_html(asset: diff, fallback_label: "RGBA difference")}
-          </div>
-          #{asset_table_html(before: before, after: after, diff: diff)}
-        </div>
-      </article>
-    HTML
-  end
-
-  def figure_html(asset:, fallback_label:)
-    source = local_asset_url(asset["view_path"] || asset["path"])
-    label = asset["processor"].to_s.empty? ? fallback_label : asset["processor"]
-    return "<figure><figcaption>#{h(label)}</figcaption><p class=\"empty\">No view asset recorded.</p></figure>" unless source
-
-    dimensions = dimensions_value(asset["dimensions"])
-    width, height = dimensions.is_a?(Array) ? dimensions : [nil, nil]
-    size_attributes =
-      if width && height
-        " width=\"#{h(width)}\" height=\"#{h(height)}\""
-      else
-        ""
-      end
-    <<~HTML
-      <figure>
-        <figcaption>#{h(label)}</figcaption>
-        <a href="#{h(source)}">
-          <img src="#{h(source)}"#{size_attributes} alt="#{h(label)} output for this comparison" loading="lazy">
-        </a>
-      </figure>
-    HTML
-  end
-
-  def asset_table_html(before:, after:, diff:)
-    rows =
-      [[before, "ImageMagick"], [after, "Vips"], [diff, "RGBA difference"]].map do |asset, fallback_label|
-        processor = asset["processor"].to_s.empty? ? fallback_label : asset["processor"]
-        path = asset["path"] || asset["view_path"]
-        <<~HTML
-          <tr>
-            <td>#{h(processor)}</td>
-            <td>#{h(format_dimensions(asset["dimensions"]))}</td>
-            <td>#{h(asset["format"])}</td>
-            <td>#{h(exact_bytes(asset["bytes"]))}</td>
-            <td class="sha">#{h(asset["sha256"])}</td>
-            <td>#{path_link(path)}</td>
-          </tr>
-        HTML
-      end.join
-    <<~HTML
-      <div class="table-wrap asset-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Artifact</th>
-              <th>Dimensions</th>
-              <th>Format</th>
-              <th>File size</th>
-              <th>SHA-256</th>
-              <th>File</th>
-            </tr>
-          </thead>
-          <tbody>#{rows}</tbody>
-        </table>
-      </div>
-    HTML
-  end
-
-  def findings
-    Array(@manifest["findings"])
-  end
-
-  def findings_html
-    cards =
-      findings.map do |finding|
-        <<~HTML
-          <article class="finding">
-            <p class="finding__group">#{h(finding["group"])}</p>
-            <div class="finding__header">
-              <h3>#{h(finding["label"] || finding["id"])}</h3>
-              #{status_badge(finding["passed"])}
-            </div>
-            #{render_value(finding["details"])}
-          </article>
-        HTML
-      end.join
-    body = cards.empty? ? "<p class=\"empty\">No non-visual findings were recorded.</p>" : "<div class=\"findings\">#{cards}</div>"
-    <<~HTML
-      <section class="section" id="findings">
-        <h2>Behavioral findings</h2>
-        <p class="section__intro">
-          Animation and frame classification, SVG dimensions, JPEG quality selection, format eligibility,
-          metadata handling, and the deliberate Vips-enabled ICO failure are reported here.
-        </p>
-        #{body}
-      </section>
-    HTML
-  end
-
-  def notes_html
-    notes = Array(@manifest["notes"])
-    return "" if notes.empty?
-
-    items = notes.map { |note| "<li>#{h(note)}</li>" }.join
-    <<~HTML
-      <section class="section" id="notes">
-        <h2>Notes</h2>
-        <ul class="notes">#{items}</ul>
-      </section>
-    HTML
-  end
-
-  def render_value(value)
-    case value
-    when Hash
-      pairs =
-        value.map do |key, nested_value|
-          "<dt>#{h(humanize(key))}</dt><dd>#{render_value(nested_value)}</dd>"
-        end.join
-      "<dl class=\"key-values\">#{pairs}</dl>"
-    when Array
-      return "<span class=\"empty\">None</span>" if value.empty?
-
-      "<ul class=\"value-list\">#{value.map { |item| "<li>#{render_value(item)}</li>" }.join}</ul>"
-    when nil
-      "<span class=\"empty\">Not recorded</span>"
-    else
-      text = value.to_s
-      text.include?("\n") ? "<pre>#{h(text)}</pre>" : h(text)
-    end
-  end
-
-  def render_compact_value(value)
-    return "<span class=\"empty\">Not recorded</span>" if value.nil?
-
-    value.is_a?(String) || value.is_a?(Numeric) || value == true || value == false ? h(value) : render_value(value)
-  end
-
-  def status_badge(passed)
-    case passed
-    when true
-      "<span class=\"status status--pass\">Pass</span>"
-    when false
-      "<span class=\"status status--fail\">Fail</span>"
-    else
-      "<span class=\"status status--unknown\">Not recorded</span>"
-    end
-  end
-
-  def blank_value?(value)
-    value.nil? || value.respond_to?(:empty?) && value.empty?
-  end
-
-  def number(value)
-    return "Not recorded" if value.nil?
-    return format("%.6f", value) if value.is_a?(Float)
-
-    h(value)
-  end
-
-  def dimensions_value(value)
-    return value if value.is_a?(Array) && value.length >= 2
-    return [value["width"], value["height"]] if value.is_a?(Hash)
-
-    value
-  end
-
-  def format_dimensions(value)
-    dimensions = dimensions_value(value)
-    return dimensions.first(2).map(&:to_s).join("×") if dimensions.is_a?(Array)
-    return "Not recorded" if dimensions.nil?
-
-    dimensions.to_s
-  end
-
-  def exact_bytes(value)
-    return "Not recorded" if value.nil?
-
-    "#{value.to_i.to_s.reverse.gsub(/(\\d{3})(?=\\d)/, '\\1,').reverse} B"
-  end
-
-  def file_bytes(path)
-    relative_path = local_path(path)
-    relative_path && File.file?(relative_path) ? File.size(relative_path) : nil
-  end
-
-  def file_sha256(path)
-    relative_path = local_path(path)
-    relative_path && File.file?(relative_path) ? Digest::SHA256.file(relative_path).hexdigest : nil
-  end
-
-  def path_link(path)
-    source = local_asset_url(path)
-    return "<span class=\"empty\">Not recorded</span>" unless source
-
-    "<a href=\"#{h(source)}\">#{h(path)}</a>"
-  end
-
-  def local_asset_url(path)
-    local = local_path(path)
-    return nil unless local
-
-    relative = Pathname.new(local).relative_path_from(Pathname.new(@report_directory)).to_s
-    relative.split("/").map { |segment| CGI.escape(segment).gsub("+", "%20") }.join("/")
-  end
-
-  def local_path(path)
-    return nil if path.to_s.empty?
-
-    candidate = Pathname.new(path.to_s)
-    absolute = candidate.absolute? ? candidate.cleanpath : Pathname.new(@report_directory).join(candidate).cleanpath
-    report_root = Pathname.new(@report_directory).cleanpath
-    relative = absolute.relative_path_from(report_root)
-    raise "asset path escapes report directory: #{path}" if relative.each_filename.first == ".."
-
-    absolute.to_s
-  end
-
-  def anchor(value)
-    cleaned = value.to_s.downcase.gsub(/[^a-z0-9_-]+/, "-").gsub(/\A-+|-+\z/, "")
-    cleaned.empty? ? "case" : cleaned
-  end
-
-  def humanize(value)
-    value.to_s.tr("_", " ").split.map(&:capitalize).join(" ")
-  end
-
-  def h(value)
-    CGI.escapeHTML(value.to_s)
   end
 end
 
-manifest_path = ARGV.fetch(0) { raise ArgumentError, "usage: ruby build_image_processing_report.rb /path/to/manifest.json" }
-ImageProcessingReport.new(manifest_path: manifest_path).write
+manifest_path =
+  ARGV.fetch(0) { raise ArgumentError, "Specify the path to manifest.json." }
+ImageProcessingReport.new(manifest_path:).write
