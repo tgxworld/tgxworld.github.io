@@ -3054,7 +3054,8 @@
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "44350ae7f6e0de0961b416a983ac0005ff3976710de2632bcb06bd8b880c6af9"
+        "sha256": "44350ae7f6e0de0961b416a983ac0005ff3976710de2632bcb06bd8b880c6af9",
+        "orientation": 2
       }
     },
     {
@@ -3100,7 +3101,8 @@
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "e5041a472863c2dd12a52c742708ce23e0310e218e16749f0733c9e0de15d62c"
+        "sha256": "e5041a472863c2dd12a52c742708ce23e0310e218e16749f0733c9e0de15d62c",
+        "orientation": 3
       }
     },
     {
@@ -3146,7 +3148,8 @@
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "df5ffa2071525630758e6885ada31a02b530e53d92c6d51e59ac897ad688ab73"
+        "sha256": "df5ffa2071525630758e6885ada31a02b530e53d92c6d51e59ac897ad688ab73",
+        "orientation": 4
       }
     },
     {
@@ -3187,12 +3190,13 @@
         "path": "images/orientation-5/source.jpg",
         "view_path": "images/orientation-5/source-view.png",
         "dimensions": [
-          1312,
-          2032
+          2032,
+          1312
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "e069c5d2b528939e45c53ad2aac84244d9870052600bbad610dcf54387b63c63"
+        "sha256": "e069c5d2b528939e45c53ad2aac84244d9870052600bbad610dcf54387b63c63",
+        "orientation": 5
       }
     },
     {
@@ -3233,12 +3237,13 @@
         "path": "images/orientation-6/source.jpg",
         "view_path": "images/orientation-6/source-view.png",
         "dimensions": [
-          1312,
-          2032
+          2032,
+          1312
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "a39a55c4919bd6465c740871e62b5704c88b8acc130f698c0fc2ba62a92a2074"
+        "sha256": "a39a55c4919bd6465c740871e62b5704c88b8acc130f698c0fc2ba62a92a2074",
+        "orientation": 6
       }
     },
     {
@@ -3279,12 +3284,13 @@
         "path": "images/orientation-7/source.jpg",
         "view_path": "images/orientation-7/source-view.png",
         "dimensions": [
-          1312,
-          2032
+          2032,
+          1312
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "3412c98d87f2649616a2ac9d412bf324b08e4ff882a6d8c89df0e68ad55bf593"
+        "sha256": "3412c98d87f2649616a2ac9d412bf324b08e4ff882a6d8c89df0e68ad55bf593",
+        "orientation": 7
       }
     },
     {
@@ -3325,12 +3331,13 @@
         "path": "images/orientation-8/source.jpg",
         "view_path": "images/orientation-8/source-view.png",
         "dimensions": [
-          1312,
-          2032
+          2032,
+          1312
         ],
         "format": "jpeg",
         "bytes": 221732,
-        "sha256": "7e25ddea0f936fd63f1a2e668ad712a6a9bd4eae454a57376be0aa903e14ff13"
+        "sha256": "7e25ddea0f936fd63f1a2e668ad712a6a9bd4eae454a57376be0aa903e14ff13",
+        "orientation": 8
       }
     },
     {

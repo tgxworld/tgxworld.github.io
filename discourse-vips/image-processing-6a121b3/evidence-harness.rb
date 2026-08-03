@@ -37,7 +37,7 @@ RSpec.describe "image processing parity evidence" do
   end
 
   def image_info(path, processor, view_path, probe_path: path)
-    {
+    info = {
       processor:,
       path: relative_path(path),
       view_path: relative_path(view_path),
@@ -46,6 +46,9 @@ RSpec.describe "image processing parity evidence" do
       bytes: File.size(path),
       sha256: Digest::SHA256.file(path).hexdigest,
     }
+    orientation = orientation(path)
+    info[:orientation] = orientation if orientation != 1
+    info
   end
 
   def add_contract(id:, group:, description:, expected:, actual:, passed:)
@@ -119,9 +122,11 @@ RSpec.describe "image processing parity evidence" do
     run_command(
       "magick",
       raw_source,
-      "-auto-orient",
       "-alpha",
       "on",
+      "-strip",
+      "-orient",
+      "TopLeft",
       "-define",
       "png:color-type=6",
       source_view,

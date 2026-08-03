@@ -259,6 +259,10 @@ class ImageProcessingReport
               padding: 16px;
             }
 
+            .result-summary--orientation {
+              grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
             .result-summary p { margin: 0; }
 
             .result-summary strong {
@@ -404,7 +408,7 @@ class ImageProcessingReport
               <div class="viewer__body">
                 <div class="images">
                   <figure>
-                    <figcaption>Source</figcaption>
+                    <figcaption>Source: stored pixels</figcaption>
                     <a class="image-frame" id="source-link">
                       <img id="source-image" alt="">
                     </a>
@@ -428,10 +432,11 @@ class ImageProcessingReport
                     </a>
                   </figure>
                 </div>
-                <p class="image-note">Small images remain small. Select an image to open its source file.</p>
+                <p class="image-note" id="image-note">Small images remain small. Select an image to open its source file.</p>
 
-                <div class="result-summary" aria-label="Comparison result">
+                <div class="result-summary" id="result-summary" aria-label="Comparison result">
                   <p><strong>Dimensions</strong><span id="dimensions-result"></span></p>
+                  <p id="orientation-summary" hidden><strong>EXIF orientation</strong><span id="orientation-result"></span></p>
                   <p><strong>Pixel difference</strong><span id="pixel-result"></span></p>
                   <p><strong>File size</strong><span id="size-result"></span></p>
                 </div>
@@ -472,6 +477,16 @@ class ImageProcessingReport
               const formatBytes = (bytes) => `${new Intl.NumberFormat("en-US").format(bytes)} B`;
               const formatPercent = (value, digits = 2) => `${value.toFixed(digits)}%`;
               const dimensions = (asset) => asset.dimensions.join("×");
+              const orientationNames = {
+                1: "upright",
+                2: "mirror horizontally",
+                3: "rotate 180°",
+                4: "mirror vertically",
+                5: "mirror horizontally and rotate 270° clockwise",
+                6: "rotate 90° clockwise",
+                7: "mirror horizontally and rotate 90° clockwise",
+                8: "rotate 270° clockwise"
+              };
 
               const setImage = (name, asset, source, label, target = source) => {
                 const image = document.getElementById(`${name}-image`);
@@ -500,6 +515,7 @@ class ImageProcessingReport
                 const pixelPercent = item.normalizedMeanRgbaError * 100;
                 const sizeChange = (item.sizeRatio - 1) * 100;
                 const sameDimensions = dimensions(item.before) === dimensions(item.after);
+                const hasSourceOrientation = item.source.orientation !== 1;
 
                 document.getElementById("step-label").textContent = `Change ${currentIndex + 1} of ${cases.length}`;
                 document.getElementById("progress").max = cases.length;
@@ -508,9 +524,20 @@ class ImageProcessingReport
                 document.getElementById("case-id").textContent = item.id;
                 document.getElementById("entrypoint").textContent = item.entrypoint;
                 document.getElementById("threshold").textContent = formatPercent(item.threshold * 100);
-                document.getElementById("dimensions-result").textContent = sameDimensions
-                  ? `Both outputs are ${dimensions(item.before)}.`
+                document.getElementById("dimensions-result").textContent = hasSourceOrientation
+                  ? `The source stores ${dimensions(item.source)}. Both outputs are ${dimensions(item.before)}.`
+                  : sameDimensions
+                    ? `Both outputs are ${dimensions(item.before)}.`
                   : `ImageMagick is ${dimensions(item.before)}. Stock libvips is ${dimensions(item.after)}.`;
+                const orientationSummary = document.getElementById("orientation-summary");
+                orientationSummary.hidden = !hasSourceOrientation;
+                document.getElementById("result-summary").classList.toggle("result-summary--orientation", hasSourceOrientation);
+                document.getElementById("orientation-result").textContent = hasSourceOrientation
+                  ? `Source: ${item.source.orientation} (${orientationNames[item.source.orientation]}). ImageMagick: ${item.before.orientation}. Stock libvips: ${item.after.orientation}.`
+                  : "";
+                document.getElementById("image-note").textContent = hasSourceOrientation
+                  ? "The Source panel ignores the EXIF orientation. Both outputs apply it to the stored pixels."
+                  : "Small images remain small. Select an image to open its source file.";
                 document.getElementById("pixel-result").textContent = pixelPercent === 0
                   ? "The decoded pixels match exactly."
                   : `The average channel difference is ${formatPercent(pixelPercent, 3)}.`;
@@ -617,6 +644,7 @@ class ImageProcessingReport
       path: asset.fetch("path"),
       viewPath: asset.fetch("view_path", asset.fetch("path")),
       dimensions: asset.fetch("dimensions"),
+      orientation: asset.fetch("orientation", 1),
       bytes: asset.fetch("bytes")
     }
   end
