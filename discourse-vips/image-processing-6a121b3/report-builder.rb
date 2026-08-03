@@ -204,7 +204,7 @@ class ImageProcessingReport
               align-items: stretch;
               display: grid;
               gap: 16px;
-              grid-template-columns: repeat(3, minmax(0, 1fr));
+              grid-template-columns: repeat(4, minmax(0, 1fr));
             }
 
             figure {
@@ -404,6 +404,12 @@ class ImageProcessingReport
               <div class="viewer__body">
                 <div class="images">
                   <figure>
+                    <figcaption>Source</figcaption>
+                    <a class="image-frame" id="source-link">
+                      <img id="source-image" alt="">
+                    </a>
+                  </figure>
+                  <figure>
                     <figcaption>Before: ImageMagick</figcaption>
                     <a class="image-frame" id="before-link">
                       <img id="before-image" alt="">
@@ -436,6 +442,7 @@ class ImageProcessingReport
                     <dt>Discourse entry point</dt><dd><code id="entrypoint"></code></dd>
                     <dt>Comparison ID</dt><dd><code id="case-id"></code></dd>
                     <dt>Allowed pixel difference</dt><dd id="threshold"></dd>
+                    <dt>Source file</dt><dd id="source-file"></dd>
                     <dt>ImageMagick file</dt><dd id="before-file"></dd>
                     <dt>Stock libvips file</dt><dd id="after-file"></dd>
                     <dt>Difference file</dt><dd id="diff-file"></dd>
@@ -466,14 +473,14 @@ class ImageProcessingReport
               const formatPercent = (value, digits = 2) => `${value.toFixed(digits)}%`;
               const dimensions = (asset) => asset.dimensions.join("×");
 
-              const setImage = (name, asset, source, label) => {
+              const setImage = (name, asset, source, label, target = source) => {
                 const image = document.getElementById(`${name}-image`);
                 const link = document.getElementById(`${name}-link`);
                 image.src = source;
                 image.alt = `${label} for ${cases[currentIndex].label}`;
                 image.width = asset.dimensions[0];
                 image.height = asset.dimensions[1];
-                link.href = source;
+                link.href = target;
               };
 
               const fileLink = (path, bytes) => {
@@ -515,9 +522,11 @@ class ImageProcessingReport
                 badge.textContent = item.passed ? "Pass" : "Fail";
                 badge.className = `result-badge result-badge--${item.passed ? "pass" : "fail"}`;
 
-                setImage("before", item.before, item.before.viewPath, "ImageMagick output");
-                setImage("after", item.after, item.after.viewPath, "Stock libvips output");
+                setImage("source", item.source, item.source.viewPath, "Source image", item.source.path);
+                setImage("before", item.before, item.before.viewPath, "ImageMagick output", item.before.path);
+                setImage("after", item.after, item.after.viewPath, "Stock libvips output", item.after.path);
                 setImage("diff", item.before, item.diffPath, "Pixel difference");
+                replaceWithLink("source-file", item.source.path, item.source.bytes);
                 replaceWithLink("before-file", item.before.path, item.before.bytes);
                 replaceWithLink("after-file", item.after.path, item.after.bytes);
                 replaceWithLink("diff-file", item.diffPath, item.diffBytes);
@@ -577,6 +586,7 @@ class ImageProcessingReport
         visual_cases.map do |item|
           before = asset_data(item.fetch("before"))
           after = asset_data(item.fetch("after"))
+          source = asset_data(item.fetch("source"))
           diff_path = item.fetch("diff_path")
           {
             id: item.fetch("id"),
@@ -586,6 +596,7 @@ class ImageProcessingReport
             normalizedMeanRgbaError: item.fetch("normalized_mean_rgba_error"),
             sizeRatio: item.fetch("size_ratio"),
             passed: item.fetch("passed"),
+            source:,
             before:,
             after:,
             diffPath: diff_path,

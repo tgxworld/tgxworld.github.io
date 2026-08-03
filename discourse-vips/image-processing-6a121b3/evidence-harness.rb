@@ -36,13 +36,13 @@ RSpec.describe "image processing parity evidence" do
     stdout
   end
 
-  def image_info(path, processor, view_path)
+  def image_info(path, processor, view_path, probe_path: path)
     {
       processor:,
       path: relative_path(path),
       view_path: relative_path(view_path),
-      dimensions: FastImage.size(path),
-      format: FastImage.type(path).to_s,
+      dimensions: FastImage.size(probe_path),
+      format: FastImage.type(probe_path).to_s,
       bytes: File.size(path),
       sha256: Digest::SHA256.file(path).hexdigest,
     }
@@ -95,6 +95,7 @@ RSpec.describe "image processing parity evidence" do
     id:,
     label:,
     entrypoint:,
+    source_path:,
     image_magick_path:,
     vips_path:,
     expected_dimensions: nil,
@@ -104,14 +105,27 @@ RSpec.describe "image processing parity evidence" do
   )
     directory = File.join(evidence_root, "images", id)
     FileUtils.mkdir_p(directory)
+    raw_source = File.join(directory, "source#{File.extname(source_path)}")
     raw_image_magick = File.join(directory, "image-magick#{File.extname(image_magick_path)}")
     raw_vips = File.join(directory, "vips#{File.extname(vips_path)}")
+    source_view = File.join(directory, "source-view.png")
     image_magick_view = File.join(directory, "image-magick-view.png")
     vips_view = File.join(directory, "vips-view.png")
     diff = File.join(directory, "diff.png")
     metric_probe = File.join(directory, "metric-probe.png")
+    FileUtils.cp(source_path, raw_source)
     FileUtils.cp(image_magick_path, raw_image_magick)
     FileUtils.cp(vips_path, raw_vips)
+    run_command(
+      "magick",
+      raw_source,
+      "-auto-orient",
+      "-alpha",
+      "on",
+      "-define",
+      "png:color-type=6",
+      source_view,
+    )
     run_command(
       "magick",
       raw_image_magick,
@@ -154,6 +168,7 @@ RSpec.describe "image processing parity evidence" do
       "-composite",
       diff,
     )
+    source = image_info(raw_source, "Source", source_view, probe_path: source_view)
     image_magick = image_info(raw_image_magick, "ImageMagick", image_magick_view)
     vips = image_info(raw_vips, "Stock libvips", vips_view)
     ratio = vips[:bytes].fdiv(image_magick[:bytes])
@@ -175,6 +190,7 @@ RSpec.describe "image processing parity evidence" do
       label:,
       entrypoint:,
       threshold:,
+      source:,
       before: image_magick,
       after: vips,
       diff_path: relative_path(diff),
@@ -229,6 +245,7 @@ RSpec.describe "image processing parity evidence" do
         id:,
         label:,
         entrypoint: "OptimizedImage.#{operation}",
+        source_path: input,
         image_magick_path: image_magick,
         vips_path: vips,
         expected_dimensions:,
@@ -308,6 +325,7 @@ RSpec.describe "image processing parity evidence" do
         id:,
         label:,
         entrypoint: "UploadCreator#create_for",
+        source_path: source,
         image_magick_path: image_magick,
         vips_path: vips,
         expected_dimensions:,
@@ -367,6 +385,7 @@ RSpec.describe "image processing parity evidence" do
         id: "uploaded-avatar-thumbnail-#{size}",
         label: "Uploaded-avatar thumbnail #{size}×#{size}",
         entrypoint: "Upload#create_thumbnail!",
+        source_path: fixture_path("large_and_unoptimized.png"),
         image_magick_path: image_magick,
         vips_path: vips,
         expected_dimensions: [size, size],
@@ -486,6 +505,7 @@ RSpec.describe "image processing parity evidence" do
         id:,
         label: strip_metadata ? "Metadata stripped" : "Metadata preserved",
         entrypoint: "OptimizedImage.resize",
+        source_path: fixture_path("large_and_unoptimized.png"),
         image_magick_path: image_magick,
         vips_path: vips,
         expected_dimensions: [320, 200],
@@ -1053,6 +1073,7 @@ RSpec.describe "image processing parity evidence" do
         id: "shrink-uploaded-image",
         label: "Stored original normalization to 10,000 pixels",
         entrypoint: "ShrinkUploadedImage#perform",
+        source_path: fixture_path("large_and_unoptimized.png"),
         image_magick_path: image_magick,
         vips_path: vips,
         expected_dimensions: [124, 80],
