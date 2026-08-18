@@ -1,0 +1,119 @@
+{
+  "provenance": {
+    "generated_at": "2026-08-18T08:08:39Z",
+    "before_commit": "c71a2d1442f910740f615b7af6489e918da3bdbd",
+    "after_commit": "7b8fa97b571d023aaf46a808fff4df405852489b",
+    "image": "discourse/base:2.0.20260803-0122",
+    "image_digest": "sha256:ab1e7217470759e63313a16bc5b71b9f2dd7d3ae8303286e5985f563ad12b7b3",
+    "imagemagick_version": "Version: ImageMagick 7.1.2-27 Q16-HDRI aarch64 e4c2b403b:20260705 https://imagemagick.org",
+    "vips_version": "vips-8.18.4",
+    "after_pipeline": "vips text && vips gravity && vips flatten",
+    "after_font": "NotoSans-Regular.woff2 from discourse-fonts",
+    "vips_sharpen": "sigma=0.5, m1=0.7"
+  },
+  "sizes": [
+    24,
+    25,
+    40,
+    45,
+    48,
+    72,
+    90,
+    96,
+    120,
+    144,
+    288,
+    360
+  ],
+  "letters": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z"
+  ],
+  "comparison_count": 312,
+  "summaries": [
+    {
+      "size": 24,
+      "mean_normalized_rmse": 0.033441761208140394,
+      "max_normalized_rmse": 0.12017165721974786
+    },
+    {
+      "size": 25,
+      "mean_normalized_rmse": 0.032313499552988414,
+      "max_normalized_rmse": 0.11515175951807098
+    },
+    {
+      "size": 40,
+      "mean_normalized_rmse": 0.03589706313795925,
+      "max_normalized_rmse": 0.13331151602066993
+    },
+    {
+      "size": 45,
+      "mean_normalized_rmse": 0.03677507114830038,
+      "max_normalized_rmse": 0.1289096278432774
+    },
+    {
+      "size": 48,
+      "mean_normalized_rmse": 0.03902362817467364,
+      "max_normalized_rmse": 0.12969771241830064
+    },
+    {
+      "size": 72,
+      "mean_normalized_rmse": 0.04278065775448615,
+      "max_normalized_rmse": 0.133895486070995
+    },
+    {
+      "size": 90,
+      "mean_normalized_rmse": 0.0441358262594563,
+      "max_normalized_rmse": 0.13542921240508632
+    },
+    {
+      "size": 96,
+      "mean_normalized_rmse": 0.04628965555837312,
+      "max_normalized_rmse": 0.13472856070872985
+    },
+    {
+      "size": 120,
+      "mean_normalized_rmse": 0.047921241475451334,
+      "max_normalized_rmse": 0.13387530421271468
+    },
+    {
+      "size": 144,
+      "mean_normalized_rmse": 0.048256030185833354,
+      "max_normalized_rmse": 0.133853598702878
+    },
+    {
+      "size": 288,
+      "mean_normalized_rmse": 0.04812974609951341,
+      "max_normalized_rmse": 0.13196151796218383
+    },
+    {
+      "size": 360,
+      "mean_normalized_rmse": 0.04603123478452352,
+      "max_normalized_rmse": 0.12975748921242106
+    }
+  ]
+}
