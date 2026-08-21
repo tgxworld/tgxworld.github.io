@@ -7,14 +7,34 @@
     <style>
       :root { color-scheme: light dark; }
       body { font: 15px/1.45 system-ui, sans-serif; margin: 2rem; }
+      button, input { font: inherit; }
       code { overflow-wrap: anywhere; }
       section { border-top: 1px solid #8888; margin-top: 2rem; padding-top: 1rem; }
       .grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
       article { border: 1px solid #8888; border-radius: 8px; padding: 1rem; }
       article h3 { margin-top: 0; }
+      .comparison-mode { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.5rem 0; }
+      .comparison-mode button { background: transparent; border: 1px solid #8888; border-radius: 6px; cursor: pointer; padding: .4rem .75rem; }
+      .comparison-mode button[aria-pressed="true"] { background: CanvasText; color: Canvas; }
+      .image-size { color: GrayText; font-size: 12px; margin: 0 0 1rem; }
       figure { display: inline-flex; flex-direction: column; margin: 0 1rem 1rem 0; vertical-align: top; }
       figcaption { font-size: 12px; margin-bottom: .35rem; }
       img { background: repeating-conic-gradient(#bbb 0 25%, #eee 0 50%) 50% / 8px 8px; max-width: 100%; object-fit: contain; }
+      .swipe-comparison { display: none; margin: 0 auto; width: min(100%, max(160px, var(--image-size))); }
+      .swipe-divider { display: none; }
+      .swipe-comparison input { cursor: ew-resize; margin: .75rem 0 0; width: 100%; }
+      .swipe-labels { display: flex; font-size: 12px; justify-content: space-between; margin-top: .25rem; }
+      .swipe-mode .side-by-side { display: block; margin: 0 auto; max-width: 100%; position: relative; width: var(--image-size); }
+      .swipe-mode .side-by-side figure { display: block; margin: 0; }
+      .swipe-mode .side-by-side figcaption { display: none; }
+      .swipe-mode .side-by-side img { display: block; height: auto; width: 100%; }
+      .swipe-mode .side-by-side figure:nth-of-type(2) { clip-path: inset(0 calc(100% - var(--reveal)) 0 0); inset: 0; position: absolute; }
+      .swipe-mode .swipe-divider { background: #fff; box-shadow: 0 0 0 1px #0008; bottom: 0; display: block; left: var(--reveal); pointer-events: none; position: absolute; top: 0; transform: translateX(-1px); width: 2px; }
+      .swipe-mode .swipe-comparison { display: block; }
+
+      @media (max-width: 600px) {
+        body { margin: 1rem; }
+      }
     </style>
   </head>
   <body>
@@ -29,6 +49,12 @@
       <li>Sizes: 24, 25, 40, 45, 48, 72, 90, 96, 120, 144, 288, 360 pixels</li>
       <li>Images use their intrinsic dimensions without browser scaling</li>
     </ul>
+    <p id="image-size-summary"></p>
+    <div class="comparison-mode" aria-label="Comparison mode">
+      <span>View:</span>
+      <button type="button" data-mode="side-by-side" aria-pressed="true">Side by side</button>
+      <button type="button" data-mode="swipe" aria-pressed="false">Swipe</button>
+    </div>
     <section>
   <h2>24px</h2>
   <div class="grid"><article>
@@ -1638,5 +1664,93 @@
 </div>
 </section>
 
+    <script>
+      const formatBytes = (bytes) => {
+        if (Math.abs(bytes) < 1024) {
+          return `${Math.abs(bytes)} B`;
+        }
+
+        const digits = Math.abs(bytes) < 10 * 1024 ? 1 : 0;
+        return `${(Math.abs(bytes) / 1024).toFixed(digits)} KiB`;
+      };
+
+      const dataUrlBytes = (url) => {
+        const encoded = url.slice(url.indexOf(",") + 1);
+        const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+        return Math.floor(encoded.length * 3 / 4) - padding;
+      };
+
+      const formatChange = (before, after) => {
+        const difference = after - before;
+        const sign = difference > 0 ? "+" : difference < 0 ? "−" : "";
+        const percentage = before === 0 ? 0 : Math.abs(difference / before) * 100;
+        return `${sign}${formatBytes(difference)}, ${sign}${percentage.toFixed(1)}%`;
+      };
+
+      let totalBefore = 0;
+      let totalAfter = 0;
+
+      document.querySelectorAll("article").forEach((article) => {
+        const figures = [...article.querySelectorAll("figure")];
+        const [beforeImage, afterImage] = figures.map((figure) => figure.querySelector("img"));
+        const beforeBytes = dataUrlBytes(beforeImage.src);
+        const afterBytes = dataUrlBytes(afterImage.src);
+        const size = beforeImage.getAttribute("width");
+
+        totalBefore += beforeBytes;
+        totalAfter += afterBytes;
+
+        figures[0].querySelector("figcaption").textContent = `ImageMagick · ${formatBytes(beforeBytes)}`;
+        figures[1].querySelector("figcaption").textContent = `libvips · ${formatBytes(afterBytes)}`;
+
+        const sizeSummary = document.createElement("p");
+        sizeSummary.className = "image-size";
+        sizeSummary.textContent = `PNG size: ${formatBytes(beforeBytes)} → ${formatBytes(afterBytes)} (${formatChange(beforeBytes, afterBytes)})`;
+        article.querySelector("h3").after(sizeSummary);
+
+        const sideBySide = document.createElement("div");
+        sideBySide.className = "side-by-side";
+        sideBySide.style.setProperty("--image-size", `${size}px`);
+        sideBySide.style.setProperty("--reveal", "50%");
+        figures.forEach((figure) => sideBySide.append(figure));
+
+        const divider = document.createElement("span");
+        divider.className = "swipe-divider";
+        sideBySide.append(divider);
+        article.append(sideBySide);
+
+        const swipe = document.createElement("div");
+        swipe.className = "swipe-comparison";
+        swipe.style.setProperty("--image-size", `${size}px`);
+
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "0";
+        slider.max = "100";
+        slider.value = "50";
+        slider.setAttribute("aria-label", `${article.querySelector("h3").textContent} at ${size}px: reveal libvips image`);
+        slider.addEventListener("input", () => sideBySide.style.setProperty("--reveal", `${slider.value}%`));
+        swipe.append(slider);
+
+        const labels = document.createElement("div");
+        labels.className = "swipe-labels";
+        labels.innerHTML = "<span>ImageMagick</span><span>libvips</span>";
+        swipe.append(labels);
+        article.append(swipe);
+      });
+
+      document.querySelector("#image-size-summary").textContent =
+        `Total PNG size across all comparisons: ${formatBytes(totalBefore)} → ${formatBytes(totalAfter)} (${formatChange(totalBefore, totalAfter)})`;
+
+      document.querySelectorAll("[data-mode]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const swipeMode = button.dataset.mode === "swipe";
+          document.body.classList.toggle("swipe-mode", swipeMode);
+          document.querySelectorAll("[data-mode]").forEach((modeButton) => {
+            modeButton.setAttribute("aria-pressed", String(modeButton === button));
+          });
+        });
+      });
+    </script>
   </body>
 </html>
