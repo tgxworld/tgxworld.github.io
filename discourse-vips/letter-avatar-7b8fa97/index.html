@@ -20,6 +20,19 @@
       figure { display: inline-flex; flex-direction: column; margin: 0 1rem 1rem 0; vertical-align: top; }
       figcaption { font-size: 12px; margin-bottom: .35rem; }
       img { background: repeating-conic-gradient(#bbb 0 25%, #eee 0 50%) 50% / 8px 8px; max-width: 100%; object-fit: contain; }
+      .image-frame { max-width: 100%; position: relative; width: fit-content; }
+      .image-frame img { display: block; }
+      .grid-overlay { display: none; inset: 0; pointer-events: none; position: absolute; }
+      .grid-visible .grid-overlay {
+        background-image:
+          linear-gradient(to right, transparent calc(50% - .5px), #ff0 calc(50% - .5px), #ff0 calc(50% + .5px), transparent calc(50% + .5px)),
+          linear-gradient(to bottom, transparent calc(50% - .5px), #ff0 calc(50% - .5px), #ff0 calc(50% + .5px), transparent calc(50% + .5px)),
+          linear-gradient(to right, #fff9 1px, transparent 1px),
+          linear-gradient(to bottom, #fff9 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 25% 100%, 100% 25%;
+        box-shadow: inset 0 0 0 1px #fff9;
+        display: block;
+      }
       .swipe-comparison { display: none; margin: 0 auto; width: min(100%, max(160px, var(--image-size))); }
       .swipe-divider { display: none; }
       .swipe-comparison input { cursor: ew-resize; margin: .75rem 0 0; width: 100%; }
@@ -27,6 +40,7 @@
       .swipe-mode .side-by-side { display: block; margin: 0 auto; max-width: 100%; position: relative; width: var(--image-size); }
       .swipe-mode .side-by-side figure { display: block; margin: 0; }
       .swipe-mode .side-by-side figcaption { display: none; }
+      .swipe-mode .side-by-side .image-frame { width: 100%; }
       .swipe-mode .side-by-side img { display: block; height: auto; width: 100%; }
       .swipe-mode .side-by-side figure:nth-of-type(2) { clip-path: inset(0 calc(100% - var(--reveal)) 0 0); inset: 0; position: absolute; }
       .swipe-mode .swipe-divider { background: #fff; box-shadow: 0 0 0 1px #0008; bottom: 0; display: block; left: var(--reveal); pointer-events: none; position: absolute; top: 0; transform: translateX(-1px); width: 2px; }
@@ -50,10 +64,11 @@
       <li>Images use their intrinsic dimensions without browser scaling</li>
     </ul>
     <p id="image-size-summary"></p>
-    <div class="comparison-mode" aria-label="Comparison mode">
+    <div class="comparison-mode" aria-label="Display controls">
       <span>View:</span>
       <button type="button" data-mode="side-by-side" aria-pressed="true">Side by side</button>
       <button type="button" data-mode="swipe" aria-pressed="false">Swipe</button>
+      <button type="button" data-grid aria-pressed="false">Grid</button>
     </div>
     <section>
   <h2>24px</h2>
@@ -1703,6 +1718,18 @@
         figures[0].querySelector("figcaption").textContent = `ImageMagick · ${formatBytes(beforeBytes)}`;
         figures[1].querySelector("figcaption").textContent = `libvips · ${formatBytes(afterBytes)}`;
 
+        figures.forEach((figure) => {
+          const image = figure.querySelector("img");
+          const frame = document.createElement("div");
+          frame.className = "image-frame";
+          image.before(frame);
+          frame.append(image);
+
+          const grid = document.createElement("span");
+          grid.className = "grid-overlay";
+          frame.append(grid);
+        });
+
         const sizeSummary = document.createElement("p");
         sizeSummary.className = "image-size";
         sizeSummary.textContent = `PNG size: ${formatBytes(beforeBytes)} → ${formatBytes(afterBytes)} (${formatChange(beforeBytes, afterBytes)})`;
@@ -1750,6 +1777,11 @@
             modeButton.setAttribute("aria-pressed", String(modeButton === button));
           });
         });
+      });
+
+      document.querySelector("[data-grid]").addEventListener("click", (event) => {
+        const visible = document.body.classList.toggle("grid-visible");
+        event.currentTarget.setAttribute("aria-pressed", String(visible));
       });
     </script>
   </body>
